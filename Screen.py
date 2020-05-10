@@ -15,9 +15,9 @@ class Square:
         self.rect = pygame.Rect(x, y, self.WIDTH, self.HEIGHT)
         self.color = color
         self.original_color = color
-        self.empty = True
         self.tur_cord = tur
         self.line_cord = line
+        self.current_piece = None
 
     def draw(self):
         pygame.draw.rect(screen, self.color, self.rect)
@@ -32,10 +32,18 @@ class Square:
             self.color = self.original_color
 
 
-def square_is_valid(tur, line):
+def square_is_valid(tur, line, is_white_team):
+    """
+    Check if square is in board bounds and not taken by teammate piece.
+    """
     if 0 <= line < BOARD_LINE:
         if 0 <= tur < BOARD_LINE:
-            return squares[line][tur].empty
+            check_square_piece = squares[line][tur].current_piece
+            if check_square_piece is not None:
+                # Check if other piece is on the same team.
+                return is_white_team != check_square_piece.is_white_team
+            # Next move is inside board and empty square.
+            return True
     return False
 
 

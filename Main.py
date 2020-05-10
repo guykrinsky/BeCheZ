@@ -22,29 +22,31 @@ def add_pawns(board_pieces):
 
 
 def place_pieces():
-    board_pieces = [pieces.King(False), pieces.King(True)]
+    board_pieces = [pieces.King(False), pieces.King(True), pieces.Rook(True, Screen.squares[0][0])]
     board_pieces = add_pawns(board_pieces)
     return board_pieces
 
 
-def listen_to_mouse(board_pieces, piece_clicked):
+def listen_to_mouse(board_pieces, last_piece_clicked):
     mouse_pos = pygame.mouse.get_pos()
-    if piece_clicked is None:
+    if last_piece_clicked is None:
         for piece in board_pieces:
             if piece.square.rect.collidepoint(mouse_pos):
                 piece.color_next_step()
-                piece_clicked = piece
+                last_piece_clicked = piece
     else:
         for line in Screen.squares:
             for square in line:
                 if square.rect.collidepoint(mouse_pos):
-                    piece_clicked.move(square)
+                    last_piece_clicked.move(square)
+
+                # Reset square color to its original color(black or white).
                 if square.color != square.original_color:
                     square.coloring_square_by_original_color()
-        piece_clicked = None
 
-    redraw_game_screen(board_pieces)
-    return piece_clicked
+        last_piece_clicked = None
+
+    return last_piece_clicked
 
 
 def game_loop(board_pieces):
@@ -56,6 +58,12 @@ def game_loop(board_pieces):
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 piece_clicked = listen_to_mouse(board_pieces, piece_clicked)
+
+        for piece in board_pieces:
+            if piece.is_eaten:
+                board_pieces.remove(piece)
+
+        redraw_game_screen(board_pieces)
 
 
 def main():
