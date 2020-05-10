@@ -147,27 +147,33 @@ class Rook(Piece):
     def _get_vertical_valid_move_squares(self):
         this_tur = self.square.tur_cord
 
-        return_squares = []
+        valid_moves = []
 
         for line in range(BOARD_LINE):
             if square_is_valid(this_tur, line, self.is_white_team):
                 square = squares[line][this_tur]
-                return_squares.append(square)
+                # If square is empty we just add him to the row.
+                valid_moves.append(square)
                 if square.current_piece is not None:
-                    if self.square in return_squares:
+                    # If square is taken by enemy and including self(this rook), this is the valid squares.
+                    if self.square in valid_moves:
                         break
+                    # Other we start a new raw from this square(including).
                     else:
-                        return_squares = [square]
+                        valid_moves = [square]
                 continue
 
+            # Because self.team equals to self.team he isn't valid but we need to add him to return square.
             if squares[line][this_tur].current_piece == self:
-                return_squares.append(self.square)
+                valid_moves.append(self.square)
 
-            elif self.square in return_squares:
+            # If the row of squares touch teammate square and including self(this rook), this is the valid squares.
+            elif self.square in valid_moves:
                 break
 
+            # Other we have to make a new row.
             else:
-                return_squares = []
+                valid_moves = []
 
-        return_squares.remove(self.square)
-        return return_squares
+        valid_moves.remove(self.square)
+        return valid_moves

@@ -22,7 +22,8 @@ def add_pawns(board_pieces):
 
 
 def place_pieces():
-    board_pieces = [pieces.King(False), pieces.King(True), pieces.Rook(True, Screen.squares[0][0])]
+    board_pieces = [pieces.King(False), pieces.King(True)]
+    board_pieces.extend([pieces.Rook(True, Screen.squares[0][0]), pieces.Rook(False, Screen.squares[7][0]), pieces.Rook(True, Screen.squares[0][7]), pieces.Rook(False, Screen.squares[7][7])])
     board_pieces = add_pawns(board_pieces)
     return board_pieces
 
