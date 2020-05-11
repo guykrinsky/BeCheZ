@@ -111,11 +111,11 @@ class Rook(Piece):
 
     def _get_valid_move_squares(self):
 
-        return_squares = self._get_horizintal_valid_move_squares()
-        return_squares.extend(self._get_vertical_valid_move_squares())
+        return_squares = self._get_vertical_valid_move_squares()
+        return_squares.extend(self._get_horizontal_valid_move_squares())
         return return_squares
 
-    def _get_horizintal_valid_move_squares(self):
+    def _get_vertical_valid_move_squares(self):
         # Check squares left  and right then root.
 
         this_line = self.square.line_cord
@@ -144,7 +144,7 @@ class Rook(Piece):
 
         return return_squares
 
-    def _get_vertical_valid_move_squares(self):
+    def _get_horizontal_valid_move_squares(self):
         this_tur = self.square.tur_cord
 
         valid_moves = []
