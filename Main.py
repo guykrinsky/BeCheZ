@@ -30,6 +30,8 @@ def place_pieces():
     board_pieces.extend([pieces.Bishop(Screen.squares[0][2], True), pieces.Bishop(Screen.squares[0][5], True), pieces.Bishop(Screen.squares[7][2], False),pieces.Bishop(Screen.squares[7][5], False)])
     # Added queens.
     board_pieces.extend([pieces.Queen(Screen.squares[0][4], True), pieces.Queen(Screen.squares[7][4], False)])
+    # Added knights.
+    board_pieces.extend([pieces.Knight(Screen.squares[0][1], True), pieces.Knight(Screen.squares[0][6], True), pieces.Knight(Screen.squares[7][6], False), pieces.Knight(Screen.squares[7][1], False)])
     board_pieces = add_pawns(board_pieces)
     return board_pieces
 

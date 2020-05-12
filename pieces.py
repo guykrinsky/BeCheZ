@@ -91,7 +91,7 @@ class Pawn(Piece):
         if square_is_valid(tur, line, self.is_white_team):
             next_square = squares[line][tur]
 
-            valid_moves.extend(self.diagonal_eat(next_square))
+            valid_moves.extend(self._diagonal_eat(next_square))
 
             if next_square.current_piece is None:
                 valid_moves.append(next_square)
@@ -103,7 +103,7 @@ class Pawn(Piece):
                         valid_moves.append(next_square)
         return valid_moves
 
-    def diagonal_eat(self, next_square):
+    def _diagonal_eat(self, next_square):
         valid_eat_moves = []
 
         # Left check.
@@ -111,17 +111,48 @@ class Pawn(Piece):
         tur = next_square.tur_cord - 1
         if square_is_valid(tur, line, self.is_white_team):
             current_square = squares[line][tur]
-            current_piece = current_square.current_piece
-            if current_piece is not None:
+            if current_square.current_piece is not None:
                 valid_eat_moves.append(current_square)
         # Right check.
         tur += 2
         if square_is_valid(tur, line, self.is_white_team):
             current_square = squares[line][tur]
-            current_piece = current_square.current_piece
-            if current_piece is not None:
+            if current_square.current_piece is not None:
                 valid_eat_moves.append(current_square)
         return valid_eat_moves
+
+class Knight(Piece):
+    BLACK_IMAGE = pygame.image.load('black_knight.png')
+    WHITE_IMAGE = pygame.image.load('white_knight.png')
+
+    def __init__(self, square, is_white):
+        image = self.BLACK_IMAGE
+        if is_white:
+            image= self.WHITE_IMAGE
+        super().__init__(image, square, is_white)
+
+    def _get_valid_move_squares(self):
+        valid_moves = []
+        self_line = self.square.line_cord
+        self_tur = self.square.tur_cord
+        team = self.is_white_team
+        if square_is_valid(self_tur+1, self_line+2, team):
+            valid_moves.append(squares[self_line+2][self_tur+1])
+        if square_is_valid(self_tur+1, self_line - 2, team):
+            valid_moves.append(squares[self_line - 2][self_tur + 1])
+        if square_is_valid(self_tur+2, self_line - 1, team):
+            valid_moves.append(squares[self_line - 1][self_tur + 2])
+        if square_is_valid(self_tur+2, self_line+1, team):
+            valid_moves.append(squares[self_line+1][self_tur+2])
+        if square_is_valid(self_tur-2, self_line - 1, team):
+            valid_moves.append(squares[self_line - 1][self_tur - 2])
+        if square_is_valid(self_tur-1, self_line - 2, team):
+            valid_moves.append(squares[self_line - 2][self_tur - 1])
+        if square_is_valid(self_tur - 1, self_line + 2, team):
+            valid_moves.append(squares[self_line + 2][self_tur - 1])
+        if square_is_valid(self_tur - 2, self_line + 1, team):
+            valid_moves.append(squares[self_line + 1][self_tur - 2])
+        return valid_moves
 
 class Rook(Piece):
     WHITE_IMAGE = pygame.image.load('white_rook.png')
