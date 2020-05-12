@@ -87,16 +87,41 @@ class Pawn(Piece):
         direction = 1 if self.is_white_team else -1
         # Check if nest step is out of board.
         line += direction
+
         if square_is_valid(tur, line, self.is_white_team):
-            square = squares[line][tur]
-            valid_moves.append(square)
-            if self.move_counter == 0:
-                line += direction
-                if square_is_valid(tur, line, self.is_white_team):
-                    square = squares[line][tur]
-                    valid_moves.append(square)
+            next_square = squares[line][tur]
+
+            valid_moves.extend(self.diagonal_eat(next_square))
+
+            if next_square.current_piece is None:
+                valid_moves.append(next_square)
+
+                if self.move_counter == 0:
+                    line += direction
+                    next_square = squares[line][tur]
+                    if next_square.current_piece is None:
+                        valid_moves.append(next_square)
         return valid_moves
 
+    def diagonal_eat(self, next_square):
+        valid_eat_moves = []
+
+        # Left check.
+        line = next_square.line_cord
+        tur = next_square.tur_cord - 1
+        if square_is_valid(tur, line, self.is_white_team):
+            current_square = squares[line][tur]
+            current_piece = current_square.current_piece
+            if current_piece is not None:
+                valid_eat_moves.append(current_square)
+        # Right check.
+        tur += 2
+        if square_is_valid(tur, line, self.is_white_team):
+            current_square = squares[line][tur]
+            current_piece = current_square.current_piece
+            if current_piece is not None:
+                valid_eat_moves.append(current_square)
+        return valid_eat_moves
 
 class Rook(Piece):
     WHITE_IMAGE = pygame.image.load('white_rook.png')
