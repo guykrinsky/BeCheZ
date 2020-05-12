@@ -82,20 +82,20 @@ class Pawn(Piece):
     def _get_valid_move_squares(self):
         line = self.square.line_cord
         tur = self.square.tur_cord
-        return_square = []
+        valid_moves = []
         # Direction represent one square walk.
         direction = 1 if self.is_white_team else -1
         # Check if nest step is out of board.
         line += direction
         if square_is_valid(tur, line, self.is_white_team):
             square = squares[line][tur]
-            return_square.append(square)
+            valid_moves.append(square)
             if self.move_counter == 0:
                 line += direction
                 if square_is_valid(tur, line, self.is_white_team):
                     square = squares[line][tur]
-                    return_square.append(square)
-        return return_square
+                    valid_moves.append(square)
+        return valid_moves
 
 
 class Rook(Piece):
@@ -110,70 +110,142 @@ class Rook(Piece):
         super(Rook, self).__init__(image, square, is_white)
 
     def _get_valid_move_squares(self):
-
-        return_squares = self._get_vertical_valid_move_squares()
-        return_squares.extend(self._get_horizontal_valid_move_squares())
-        return return_squares
-
-    def _get_vertical_valid_move_squares(self):
-        # Check squares left  and right then root.
-
-        this_line = self.square.line_cord
-        return_squares = []
-
-        for tur in range(BOARD_LINE):
-            if square_is_valid(tur, this_line, self.is_white_team):
-                square = squares[this_line][tur]
-                return_squares.append(square)
-                if square.current_piece is not None:
-                    if self.square in return_squares:
-                        break
-                    else:
-                        return_squares = [square]
-                continue
-
-            if squares[this_line][tur].current_piece == self:
-                return_squares.append(self.square)
-
-            elif self.square in return_squares:
-                break
-            else:
-                return_squares = []
-
-        return_squares.remove(self.square)
-
-        return return_squares
-
-    def _get_horizontal_valid_move_squares(self):
-        this_tur = self.square.tur_cord
-
-        valid_moves = []
-
-        for line in range(BOARD_LINE):
-            if square_is_valid(this_tur, line, self.is_white_team):
-                square = squares[line][this_tur]
-                # If square is empty we just add him to the row.
-                valid_moves.append(square)
-                if square.current_piece is not None:
-                    # If square is taken by enemy and including self(this rook), this is the valid squares.
-                    if self.square in valid_moves:
-                        break
-                    # Other we start a new raw from this square(including).
-                    else:
-                        valid_moves = [square]
-                continue
-
-            # Because self.team equals to self.team he isn't valid but we need to add him to return square.
-            if squares[line][this_tur].current_piece == self:
-                valid_moves.append(self.square)
-
-            # If the row of squares touch teammate square and including self(this rook), this is the valid squares.
-            elif self.square in valid_moves:
-                break
-
-            # Other we have to make a new row.
-            else:
-                valid_moves = []
-
-        valid_moves.remove(self.square)
+        valid_moves = _get_vertical_valid_move_squares(self)
+        valid_moves.extend(_get_horizontal_valid_move_squares(self))
         return valid_moves
+
+
+class Bishop(Piece):
+    WHITE_IMAGE = pygame.image.load('white_bis.png')
+    BLACK_IMAGE = pygame.image.load('black_bis.png')
+
+    def __init__(self, square, is_white):
+        image = self.BLACK_IMAGE
+        if is_white:
+            image = self.WHITE_IMAGE
+        super().__init__(image, square, is_white)
+
+    def _get_valid_move_squares(self):
+        return _get_diagonal_valid_moves(self)
+
+
+class Queen(Piece):
+    BLACK_IMAGE = pygame.image.load('black_queen.png')
+    WHITE_IMAGE = pygame.image.load('white_queen.png')
+
+    def __init__(self, square, is_white):
+        image = self.BLACK_IMAGE
+        if is_white:
+            image = self.WHITE_IMAGE
+        super().__init__(image, square, is_white)
+
+    def _get_valid_move_squares(self):
+        valid_squares = []
+        valid_squares.extend(_get_diagonal_valid_moves(self))
+        valid_squares.extend(_get_valid_straight_move_squares(self))
+        return valid_squares
+
+
+def _get_diagonal_valid_moves(piece):
+    valid_squares = []
+    found_right_down = True
+    found_left_down = True
+    found_right_up = True
+    found_left_up = True
+
+    for current_distance in range(1, BOARD_LINE):
+
+        if found_right_down:
+            valid_squares, found_right_down = _check_next_diagonal_valid_move(piece, current_distance, current_distance,
+                                                                              valid_squares)
+        if found_left_down:
+            valid_squares, found_left_down = _check_next_diagonal_valid_move(piece, current_distance,
+                                                                             current_distance * -1, valid_squares)
+        if found_right_up:
+            valid_squares, found_right_up = _check_next_diagonal_valid_move(piece, current_distance * -1,
+                                                                            current_distance, valid_squares)
+        if found_left_up:
+            valid_squares, found_left_up = _check_next_diagonal_valid_move(piece, current_distance * -1,
+                                                                           current_distance * -1,
+                                                                           valid_squares)
+    return valid_squares
+
+
+def _check_next_diagonal_valid_move(piece, line_distance_from_square, tur_distance_from_square, valid_squares):
+    next_tur = piece.square.tur_cord + tur_distance_from_square
+    next_line = piece.square.line_cord + line_distance_from_square
+    if square_is_valid(next_tur, next_line, piece.is_white_team):
+        square = squares[next_line][next_tur]
+        valid_squares.append(square)
+        return valid_squares, square.current_piece is None
+    return valid_squares, False
+
+
+def _get_valid_straight_move_squares(piece):
+    valid_moves = _get_vertical_valid_move_squares(piece)
+    valid_moves.extend(_get_horizontal_valid_move_squares(piece))
+    return valid_moves
+
+
+def _get_horizontal_valid_move_squares(piece):
+    this_tur = piece.square.tur_cord
+
+    valid_moves = []
+
+    for line in range(BOARD_LINE):
+        if square_is_valid(this_tur, line, piece.is_white_team):
+            square = squares[line][this_tur]
+            # If square is empty we just add him to the row.
+            valid_moves.append(square)
+            if square.current_piece is not None:
+                # If square is taken by enemy and including piece(this rook), this is the valid squares.
+                if piece.square in valid_moves:
+                    break
+                # Other we start a new raw from this square(including).
+                else:
+                    valid_moves = [square]
+            continue
+
+        # Because piece.team equals to piece.team he isn't valid but we need to add him to return square.
+        if squares[line][this_tur].current_piece == piece:
+            valid_moves.append(piece.square)
+
+        # If the row of squares touch teammate square and including piece(this piece), this is the valid squares.
+        elif piece.square in valid_moves:
+            break
+
+        # Other we have to make a new row.
+        else:
+            valid_moves = []
+
+    valid_moves.remove(piece.square)
+    return valid_moves
+
+
+def _get_vertical_valid_move_squares(piece):
+    # Check squares left  and right then root.
+
+    this_line = piece.square.line_cord
+    valid_moves = []
+
+    for tur in range(BOARD_LINE):
+        if square_is_valid(tur, this_line, piece.is_white_team):
+            square = squares[this_line][tur]
+            valid_moves.append(square)
+            if square.current_piece is not None:
+                if piece.square in valid_moves:
+                    break
+                else:
+                    valid_moves = [square]
+            continue
+
+        if squares[this_line][tur].current_piece == piece:
+            valid_moves.append(piece.square)
+
+        elif piece.square in valid_moves:
+            break
+        else:
+            valid_moves = []
+
+    valid_moves.remove(piece.square)
+    return valid_moves
