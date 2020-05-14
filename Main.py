@@ -25,48 +25,94 @@ def place_pieces():
     # Added kings.
     board_pieces = [pieces.King(False), pieces.King(True)]
     # Added rooks.
-    board_pieces.extend([pieces.Rook(True, Screen.squares[0][0]), pieces.Rook(False, Screen.squares[7][0]), pieces.Rook(True, Screen.squares[0][7]), pieces.Rook(False, Screen.squares[7][7])])
+    board_pieces.extend([pieces.Rook(True, Screen.squares[0][0]), pieces.Rook(False, Screen.squares[7][0]),
+                         pieces.Rook(True, Screen.squares[0][7]), pieces.Rook(False, Screen.squares[7][7])])
     # Added bishops.
-    board_pieces.extend([pieces.Bishop(Screen.squares[0][2], True), pieces.Bishop(Screen.squares[0][5], True), pieces.Bishop(Screen.squares[7][2], False),pieces.Bishop(Screen.squares[7][5], False)])
+    board_pieces.extend([pieces.Bishop(Screen.squares[0][2], True), pieces.Bishop(Screen.squares[0][5], True),
+                         pieces.Bishop(Screen.squares[7][2], False), pieces.Bishop(Screen.squares[7][5], False)])
     # Added queens.
     board_pieces.extend([pieces.Queen(Screen.squares[0][4], True), pieces.Queen(Screen.squares[7][4], False)])
     # Added knights.
-    board_pieces.extend([pieces.Knight(Screen.squares[0][1], True), pieces.Knight(Screen.squares[0][6], True), pieces.Knight(Screen.squares[7][6], False), pieces.Knight(Screen.squares[7][1], False)])
+    board_pieces.extend([pieces.Knight(Screen.squares[0][1], True), pieces.Knight(Screen.squares[0][6], True),
+                         pieces.Knight(Screen.squares[7][6], False), pieces.Knight(Screen.squares[7][1], False)])
     board_pieces = add_pawns(board_pieces)
     return board_pieces
 
 
-def listen_to_mouse(board_pieces, last_piece_clicked):
+def listen_to_mouse():
     mouse_pos = pygame.mouse.get_pos()
-    if last_piece_clicked is None:
-        for piece in board_pieces:
-            if piece.square.rect.collidepoint(mouse_pos):
-                piece.color_next_step()
-                last_piece_clicked = piece
-    else:
-        for line in Screen.squares:
-            for square in line:
-                if square.rect.collidepoint(mouse_pos):
-                    last_piece_clicked.move(square)
+    # if last_piece_clicked is None:
+    #     for piece in board_pieces:
+    #         if piece.square.rect.collidepoint(mouse_pos) and piece.is_white_team is is_white_team_turn:
+    #             piece.color_next_step()
+    #             last_piece_clicked = piece
+    for line in Screen.squares:
+        for square in line:
+            if square.rect.collidepoint(mouse_pos):
+                return square
 
-                # Reset square color to its original color(black or white).
-                if square.color != square.original_color:
-                    square.coloring_square_by_original_color()
 
-        last_piece_clicked = None
+def move_piece_by_square(square, is_white_team_turn, piece_clicked: pieces.Piece):
+    color_all_square_to_original_color()
+    if piece_clicked.is_white_team is is_white_team_turn:
+        if piece_clicked.move(square):
+            return not is_white_team_turn
+    return is_white_team_turn
 
-    return last_piece_clicked
+def check_chessmate(board_pieces, turn_is_white):
+    for piece in board_pieces:
+        tmp_tur = piece.square.tur_cord
+        tmp_line = piece.square.line_cord
+        valid_move_squares = piece._get_valid_move_squares()
+        for chek_move in valid_move_squares:
+            piece.move(chek_move, real_move=False)
+        
+def check_chess(board_pieces, turn_is_white):
+    for piece in board_pieces:
+        if piece.is_white_team is not turn_is_white:
+            valid_square = piece._get_valid_move_squares()
+            for square in valid_square:
+                if isinstance(square.current_piece, pieces.King):
+                    return True
+    return False
+
+
+def color_all_square_to_original_color():
+    for line in Screen.squares:
+        for square in line:
+            if square.color != square.original_color:
+                square.coloring_square_by_original_color()
+
+
+def chess_turn(square, is_white_team_turn, piece_clicked):
+    if isinstance(piece_clicked, pieces. mn:
+
 
 
 def game_loop(board_pieces):
     running = True
     piece_clicked = None
+    is_white_team_turn = True
+    is_chess = False
     while running:
+        is_chess = check_chess(board_pieces, is_white_team_turn)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                piece_clicked = listen_to_mouse(board_pieces, piece_clicked)
+                square = listen_to_mouse()
+
+                if piece_clicked is None:
+                    if square.current_piece is not None and square.current_piece.is_white_team == is_white_team_turn:
+                        piece_clicked = square.current_piece
+                        piece_clicked.color_next_step()
+                elif is_chess:
+                    is_white_team_turn = chess_turn(square, is_white_team_turn, piece_clicked)
+                else:
+                    is_white_team_turn = move_piece_by_square(square, is_white_team_turn, piece_clicked)
+                    piece_clicked = None
 
         for piece in board_pieces:
             if piece.is_eaten:

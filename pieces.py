@@ -18,19 +18,22 @@ class Piece(metaclass=abc.ABCMeta):
         for square in valid_square:
             square.coloring_square_by_original_color()
 
-    def move(self, next_square: Square):
+    def move(self, next_square: Square, real_move=True):
         valid_squares = self._get_valid_move_squares()
-        if next_square in valid_squares:
-            # Free current square.
-            self.square.current_piece = None
-            # Check if next square is taken by other team.
-            if next_square.current_piece is not None:
-                next_square.current_piece.is_eaten = True
-            # Move to next square.
-            self.square = next_square
-            self.square.current_piece = self
+        if next_square not in valid_squares:
+            return False
 
-            self.move_counter += 1
+        # Free current square.
+        self.square.current_piece = None
+        # Check if next square is taken by other team.
+        if next_square.current_piece is not None and real_move:
+            next_square.current_piece.is_eaten = True
+        # Move to next square.
+        self.square = next_square
+        self.square.current_piece = self
+
+        self.move_counter += 1
+        return True
 
     @abc.abstractmethod
     def _get_valid_move_squares(self):
@@ -55,7 +58,7 @@ class King(Piece):
 
     def _get_valid_move_squares(self):
         line = self.square.line_cord
-        valid_squares = []
+        valid_squares = self._check_castling()
         for line in range(line - 1, line + 2):
             tur = self.square.tur_cord
             for tur in range(tur - 1, tur + 2):
@@ -64,6 +67,67 @@ class King(Piece):
                     valid_squares.append(square)
 
         return valid_squares
+
+    def _check_castling(self):
+        valid_squares = []
+        if self.move_counter != 0:
+            return valid_squares
+
+        self_line = self.square.line_cord
+        # Check castling with left rook.
+        for tur in range(self.square.tur_cord - 1, -1, -1):
+            piece = squares[self_line][tur].current_piece
+            if isinstance(piece, Rook) and piece.move_counter == 0:
+                valid_squares.append(piece.square)
+
+            elif piece is not None:
+                break
+
+        # Check castling with right rook.
+        for tur in range(self.square.tur_cord+1, BOARD_LINE):
+            piece = squares[self_line][tur].current_piece
+            if isinstance(piece, Rook):
+                if piece.move_counter == 0:
+                    valid_squares.append(piece.square)
+
+            elif piece is not None:
+                break
+
+        return valid_squares
+    def _castling(self, rook_square):
+        if rook_square.tur_cord == 0:
+            next_king_square = squares[self.square.line_cord][self.square.tur_cord - 2]
+            next_rook_square = squares[self.square.line_cord][self.square.tur_cord - 1]
+        else:
+            next_king_square = squares[self.square.line_cord][self.square.tur_cord + 2]
+            next_rook_square = squares[self.square.line_cord][self.square.tur_cord + 1]
+
+        rook_square.current_piece.move(next_rook_square)
+        self.move(next_king_square, True)
+
+    def move(self, next_square: Square, is_castling=False):
+        valid_squares = self._get_valid_move_squares()
+        if is_castling:
+            valid_squares = [next_square]
+        is_moved = False
+        if next_square in valid_squares:
+            # Free current square.
+            self.square.current_piece = None
+            # Check if next square is taken by other team.
+            if next_square.current_piece is not None:
+                if isinstance(next_square.current_piece, Rook) and self.move_counter == 0:
+                    self._castling(next_square)
+                    return True
+
+                next_square.current_piece.is_eaten = True
+            # Move to next square.
+            self.square = next_square
+            self.square.current_piece = self
+
+            self.move_counter += 1
+            is_moved = True
+
+        return is_moved
 
 
 class Pawn(Piece):
@@ -121,6 +185,7 @@ class Pawn(Piece):
                 valid_eat_moves.append(current_square)
         return valid_eat_moves
 
+
 class Knight(Piece):
     BLACK_IMAGE = pygame.image.load('black_knight.png')
     WHITE_IMAGE = pygame.image.load('white_knight.png')
@@ -153,6 +218,7 @@ class Knight(Piece):
         if square_is_valid(self_tur - 2, self_line + 1, team):
             valid_moves.append(squares[self_line + 1][self_tur - 2])
         return valid_moves
+
 
 class Rook(Piece):
     WHITE_IMAGE = pygame.image.load('white_rook.png')
