@@ -20,14 +20,19 @@ class Piece(metaclass=abc.ABCMeta):
 
     def move(self, next_square: Square, real_move=True):
         valid_squares = self._get_valid_move_squares()
+
+        if not real_move:
+            valid_squares = [next_square]
+
         if next_square not in valid_squares:
             return False
 
         # Free current square.
         self.square.current_piece = None
         # Check if next square is taken by other team.
-        if next_square.current_piece is not None and real_move:
+        if next_square.current_piece is not None:
             next_square.current_piece.is_eaten = True
+
         # Move to next square.
         self.square = next_square
         self.square.current_piece = self
@@ -94,6 +99,7 @@ class King(Piece):
                 break
 
         return valid_squares
+
     def _castling(self, rook_square):
         if rook_square.tur_cord == 0:
             next_king_square = squares[self.square.line_cord][self.square.tur_cord - 2]
@@ -105,10 +111,12 @@ class King(Piece):
         rook_square.current_piece.move(next_rook_square)
         self.move(next_king_square, True)
 
-    def move(self, next_square: Square, is_castling=False):
+    def move(self, next_square: Square, is_castling=False, real_move=True):
         valid_squares = self._get_valid_move_squares()
-        if is_castling:
+
+        if is_castling or not real_move:
             valid_squares = [next_square]
+
         is_moved = False
         if next_square in valid_squares:
             # Free current square.
@@ -125,9 +133,9 @@ class King(Piece):
             self.square.current_piece = self
 
             self.move_counter += 1
-            is_moved = True
+            return True
 
-        return is_moved
+        return False
 
 
 class Pawn(Piece):

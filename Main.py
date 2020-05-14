@@ -41,11 +41,7 @@ def place_pieces():
 
 def listen_to_mouse():
     mouse_pos = pygame.mouse.get_pos()
-    # if last_piece_clicked is None:
-    #     for piece in board_pieces:
-    #         if piece.square.rect.collidepoint(mouse_pos) and piece.is_white_team is is_white_team_turn:
-    #             piece.color_next_step()
-    #             last_piece_clicked = piece
+
     for line in Screen.squares:
         for square in line:
             if square.rect.collidepoint(mouse_pos):
@@ -59,17 +55,50 @@ def move_piece_by_square(square, is_white_team_turn, piece_clicked: pieces.Piece
             return not is_white_team_turn
     return is_white_team_turn
 
+
 def check_chessmate(board_pieces, turn_is_white):
+    tmp_piece = None
     for piece in board_pieces:
+        if piece.is_white_team is not turn_is_white:
+            continue
         tmp_tur = piece.square.tur_cord
         tmp_line = piece.square.line_cord
         valid_move_squares = piece._get_valid_move_squares()
-        for chek_move in valid_move_squares:
-            piece.move(chek_move, real_move=False)
-        
+        for check_move in valid_move_squares:
+
+            if check_move.current_piece is not None:
+                tmp_piece = check_move.current_piece
+
+            piece.move(check_move, real_move=False)
+
+            if not check_chess(board_pieces, turn_is_white):
+
+                print(check_move.tur_cord)
+                print(check_move.line_cord)
+
+                piece.move(Screen.squares[tmp_line][tmp_tur], False)
+                if tmp_piece is not None:
+                    tmp_piece.square = check_move
+                    tmp_piece.square.current_piece = tmp_piece
+                    tmp_piece.is_eaten = False
+
+                return False
+
+            if tmp_piece is not None:
+                tmp_piece.square = check_move
+                tmp_piece.square.current_piece = tmp_piece
+                tmp_piece.is_eaten = False
+                tmp_piece = None
+
+
+            piece.move(Screen.squares[tmp_line][tmp_tur], False)
+
+    return True
+
+
 def check_chess(board_pieces, turn_is_white):
     for piece in board_pieces:
-        if piece.is_white_team is not turn_is_white:
+        if piece.is_white_team is not turn_is_white and not piece.is_eaten:
             valid_square = piece._get_valid_move_squares()
             for square in valid_square:
                 if isinstance(square.current_piece, pieces.King):
@@ -95,8 +124,6 @@ def game_loop(board_pieces):
     is_white_team_turn = True
     is_chess = False
     while running:
-        is_chess = check_chess(board_pieces, is_white_team_turn)
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -110,9 +137,15 @@ def game_loop(board_pieces):
                         piece_clicked.color_next_step()
                 elif is_chess:
                     is_white_team_turn = chess_turn(square, is_white_team_turn, piece_clicked)
+
                 else:
                     is_white_team_turn = move_piece_by_square(square, is_white_team_turn, piece_clicked)
                     piece_clicked = None
+
+                is_chess = check_chess(board_pieces, is_white_team_turn)
+                if is_chess:
+                    if check_chessmate(board_pieces, is_white_team_turn):
+                        running = False
 
         for piece in board_pieces:
             if piece.is_eaten:
