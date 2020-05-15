@@ -10,23 +10,19 @@ class Piece(metaclass=abc.ABCMeta):
         self.square = square
         self.square.current_piece = self
         self.is_white_team = team
-        self.move_counter = 0
         self.is_eaten = False
+        self.save_location = None
+        self.starting_square = square
+
+    def _is_already_moved(self):
+        return self.square is self.starting_square
 
     def color_next_step(self):
-        valid_square = self._get_valid_move_squares()
+        valid_square = self.get_valid_move_squares()
         for square in valid_square:
             square.coloring_square_by_original_color()
 
-    def move(self, next_square: Square, real_move=True):
-        valid_squares = self._get_valid_move_squares()
-
-        if not real_move:
-            valid_squares = [next_square]
-
-        if next_square not in valid_squares:
-            return False
-
+    def move(self, next_square: Square):
         # Free current square.
         self.square.current_piece = None
         # Check if next square is taken by other team.
@@ -37,11 +33,9 @@ class Piece(metaclass=abc.ABCMeta):
         self.square = next_square
         self.square.current_piece = self
 
-        self.move_counter += 1
-        return True
 
     @abc.abstractmethod
-    def _get_valid_move_squares(self):
+    def get_valid_move_squares(self):
         pass
 
     def draw(self):
@@ -61,7 +55,7 @@ class King(Piece):
             square = squares[7][3]
         super().__init__(image, square, is_white)
 
-    def _get_valid_move_squares(self):
+    def get_valid_move_squares(self):
         line = self.square.line_cord
         valid_squares = self._check_castling()
         for line in range(line - 1, line + 2):
@@ -75,14 +69,14 @@ class King(Piece):
 
     def _check_castling(self):
         valid_squares = []
-        if self.move_counter != 0:
+        if self._is_already_moved():
             return valid_squares
 
         self_line = self.square.line_cord
         # Check castling with left rook.
         for tur in range(self.square.tur_cord - 1, -1, -1):
             piece = squares[self_line][tur].current_piece
-            if isinstance(piece, Rook) and piece.move_counter == 0:
+            if isinstance(piece, Rook) and piece._is_already_moved():
                 valid_squares.append(piece.square)
 
             elif piece is not None:
@@ -92,7 +86,7 @@ class King(Piece):
         for tur in range(self.square.tur_cord+1, BOARD_LINE):
             piece = squares[self_line][tur].current_piece
             if isinstance(piece, Rook):
-                if piece.move_counter == 0:
+                if piece._is_already_moved():
                     valid_squares.append(piece.square)
 
             elif piece is not None:
@@ -111,31 +105,20 @@ class King(Piece):
         rook_square.current_piece.move(next_rook_square)
         self.move(next_king_square, True)
 
-    def move(self, next_square: Square, is_castling=False, real_move=True):
-        valid_squares = self._get_valid_move_squares()
+    def move(self, next_square: Square, is_castling=False):
 
-        if is_castling or not real_move:
-            valid_squares = [next_square]
+        # Free current square.
+        self.square.current_piece = None
+        # Check if next square is taken by other team.
+        if next_square.current_piece is not None:
+            if isinstance(next_square.current_piece, Rook) and self._is_already_moved():
+                self._castling(next_square)
 
-        is_moved = False
-        if next_square in valid_squares:
-            # Free current square.
-            self.square.current_piece = None
-            # Check if next square is taken by other team.
-            if next_square.current_piece is not None:
-                if isinstance(next_square.current_piece, Rook) and self.move_counter == 0:
-                    self._castling(next_square)
-                    return True
+            next_square.current_piece.is_eaten = True
+        # Move to next square.
+        self.square = next_square
+        self.square.current_piece = self
 
-                next_square.current_piece.is_eaten = True
-            # Move to next square.
-            self.square = next_square
-            self.square.current_piece = self
-
-            self.move_counter += 1
-            return True
-
-        return False
 
 
 class Pawn(Piece):
@@ -151,7 +134,7 @@ class Pawn(Piece):
             image = self.BLACK_PAWN
         super().__init__(image, square, is_white)
 
-    def _get_valid_move_squares(self):
+    def get_valid_move_squares(self):
         line = self.square.line_cord
         tur = self.square.tur_cord
         valid_moves = []
@@ -168,7 +151,7 @@ class Pawn(Piece):
             if next_square.current_piece is None:
                 valid_moves.append(next_square)
 
-                if self.move_counter == 0:
+                if self._is_already_moved():
                     line += direction
                     next_square = squares[line][tur]
                     if next_square.current_piece is None:
@@ -204,7 +187,7 @@ class Knight(Piece):
             image= self.WHITE_IMAGE
         super().__init__(image, square, is_white)
 
-    def _get_valid_move_squares(self):
+    def get_valid_move_squares(self):
         valid_moves = []
         self_line = self.square.line_cord
         self_tur = self.square.tur_cord
@@ -239,7 +222,7 @@ class Rook(Piece):
             image = self.BLACK_IMAGE
         super(Rook, self).__init__(image, square, is_white)
 
-    def _get_valid_move_squares(self):
+    def get_valid_move_squares(self):
         valid_moves = _get_vertical_valid_move_squares(self)
         valid_moves.extend(_get_horizontal_valid_move_squares(self))
         return valid_moves
@@ -255,7 +238,7 @@ class Bishop(Piece):
             image = self.WHITE_IMAGE
         super().__init__(image, square, is_white)
 
-    def _get_valid_move_squares(self):
+    def get_valid_move_squares(self):
         return _get_diagonal_valid_moves(self)
 
 
@@ -269,7 +252,7 @@ class Queen(Piece):
             image = self.WHITE_IMAGE
         super().__init__(image, square, is_white)
 
-    def _get_valid_move_squares(self):
+    def get_valid_move_squares(self):
         valid_squares = []
         valid_squares.extend(_get_diagonal_valid_moves(self))
         valid_squares.extend(_get_valid_straight_move_squares(self))
