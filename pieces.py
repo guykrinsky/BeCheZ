@@ -120,7 +120,6 @@ class King(Piece):
         self.square.current_piece = self
 
 
-
 class Pawn(Piece):
     WHITE_IMAGE = pygame.image.load('white_pawn.png')
     BLACK_PAWN = pygame.image.load('black_pawn.png')
