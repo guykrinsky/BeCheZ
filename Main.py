@@ -1,7 +1,4 @@
-import pygame
-import Screen
-import pieces
-import colors
+
 from chess_utils import *
 
 pygame.init()
@@ -27,6 +24,7 @@ def game_loop(board_pieces):
                 else:
                     if move_turn(piece_clicked, square, is_white_team_turn, board_pieces):
                         is_white_team_turn = not is_white_team_turn
+                        piece_clicked.move_counter += 1
                         pygame.mixer.Sound('pong.wav').play()
                     else:
                         pygame.mixer.Sound('error.wav').play()

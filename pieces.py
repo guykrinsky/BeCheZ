@@ -13,6 +13,7 @@ class Piece(metaclass=abc.ABCMeta):
         self.is_eaten = False
         self.save_location = None
         self.starting_square = square
+        self.move_counter = 0
 
     def _is_already_moved(self):
         return self.square is self.starting_square
@@ -32,7 +33,6 @@ class Piece(metaclass=abc.ABCMeta):
         # Move to next square.
         self.square = next_square
         self.square.current_piece = self
-
 
     @abc.abstractmethod
     def get_valid_move_squares(self):
@@ -69,14 +69,14 @@ class King(Piece):
 
     def _check_castling(self):
         valid_squares = []
-        if self._is_already_moved():
+        if self.move_counter > 0:
             return valid_squares
 
         self_line = self.square.line_cord
         # Check castling with left rook.
         for tur in range(self.square.tur_cord - 1, -1, -1):
             piece = squares[self_line][tur].current_piece
-            if isinstance(piece, Rook) and piece._is_already_moved():
+            if isinstance(piece, Rook) and piece.move_counter == 0:
                 valid_squares.append(piece.square)
 
             elif piece is not None:
@@ -86,7 +86,7 @@ class King(Piece):
         for tur in range(self.square.tur_cord+1, BOARD_LINE):
             piece = squares[self_line][tur].current_piece
             if isinstance(piece, Rook):
-                if piece._is_already_moved():
+                if piece.move_counter == 0:
                     valid_squares.append(piece.square)
 
             elif piece is not None:
@@ -103,16 +103,17 @@ class King(Piece):
             next_rook_square = squares[self.square.line_cord][self.square.tur_cord + 1]
 
         rook_square.current_piece.move(next_rook_square)
-        self.move(next_king_square, True)
+        self.move(next_king_square)
 
-    def move(self, next_square: Square, is_castling=False):
+    def move(self, next_square: Square):
 
         # Free current square.
         self.square.current_piece = None
         # Check if next square is taken by other team.
         if next_square.current_piece is not None:
-            if isinstance(next_square.current_piece, Rook) and self._is_already_moved():
+            if isinstance(next_square.current_piece, Rook) and self.move_counter == 0:
                 self._castling(next_square)
+                return
 
             next_square.current_piece.is_eaten = True
         # Move to next square.
@@ -150,7 +151,7 @@ class Pawn(Piece):
             if next_square.current_piece is None:
                 valid_moves.append(next_square)
 
-                if self._is_already_moved():
+                if self.move_counter == 0:
                     line += direction
                     next_square = squares[line][tur]
                     if next_square.current_piece is None:
