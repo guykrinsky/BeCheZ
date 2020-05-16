@@ -1,6 +1,5 @@
 import pygame
 from Screen import screen, squares, BOARD_LINE, square_is_valid, Square
-import colors
 import abc
 
 
@@ -57,7 +56,7 @@ class King(Piece):
 
     def get_valid_move_squares(self):
         line = self.square.line_cord
-        valid_squares = self._check_castling()
+        valid_squares = []
         for line in range(line - 1, line + 2):
             tur = self.square.tur_cord
             for tur in range(tur - 1, tur + 2):
@@ -66,59 +65,6 @@ class King(Piece):
                     valid_squares.append(square)
 
         return valid_squares
-
-    def _check_castling(self):
-        valid_squares = []
-        if self.move_counter > 0:
-            return valid_squares
-
-        self_line = self.square.line_cord
-        # Check castling with left rook.
-        for tur in range(self.square.tur_cord - 1, -1, -1):
-            piece = squares[self_line][tur].current_piece
-            if isinstance(piece, Rook) and piece.move_counter == 0:
-                valid_squares.append(piece.square)
-
-            elif piece is not None:
-                break
-
-        # Check castling with right rook.
-        for tur in range(self.square.tur_cord+1, BOARD_LINE):
-            piece = squares[self_line][tur].current_piece
-            if isinstance(piece, Rook):
-                if piece.move_counter == 0:
-                    valid_squares.append(piece.square)
-
-            elif piece is not None:
-                break
-
-        return valid_squares
-
-    def _castling(self, rook_square):
-        if rook_square.tur_cord == 0:
-            next_king_square = squares[self.square.line_cord][self.square.tur_cord - 2]
-            next_rook_square = squares[self.square.line_cord][self.square.tur_cord - 1]
-        else:
-            next_king_square = squares[self.square.line_cord][self.square.tur_cord + 2]
-            next_rook_square = squares[self.square.line_cord][self.square.tur_cord + 1]
-
-        rook_square.current_piece.move(next_rook_square)
-        self.move(next_king_square)
-
-    def move(self, next_square: Square):
-
-        # Free current square.
-        self.square.current_piece = None
-        # Check if next square is taken by other team.
-        if next_square.current_piece is not None:
-            if isinstance(next_square.current_piece, Rook) and self.move_counter == 0:
-                self._castling(next_square)
-                return
-
-            next_square.current_piece.is_eaten = True
-        # Move to next square.
-        self.square = next_square
-        self.square.current_piece = self
 
 
 class Pawn(Piece):
@@ -184,7 +130,7 @@ class Knight(Piece):
     def __init__(self, square, is_white):
         image = self.BLACK_IMAGE
         if is_white:
-            image= self.WHITE_IMAGE
+            image = self.WHITE_IMAGE
         super().__init__(image, square, is_white)
 
     def get_valid_move_squares(self):
