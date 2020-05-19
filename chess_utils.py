@@ -3,17 +3,6 @@ import Screen
 import pieces
 
 
-def redraw_game_screen():
-    Screen.draw_bg()
-
-    for line in Screen.squares:
-        for square in line:
-            if square.current_piece is not None:
-                square.current_piece.draw()
-
-    pygame.display.flip()
-
-
 def add_pawns(board_pieces):
     for place in range(Screen.BOARD_LINE):
         board_pieces.append(pieces.Pawn(True, place))
@@ -38,15 +27,6 @@ def place_pieces():
                          pieces.Knight(Screen.squares[7][6], False), pieces.Knight(Screen.squares[7][1], False)])
     board_pieces = add_pawns(board_pieces)
     return board_pieces
-
-
-def listen_to_mouse():
-    mouse_pos = pygame.mouse.get_pos()
-
-    for line in Screen.squares:
-        for square in line:
-            if square.rect.collidepoint(mouse_pos):
-                return square
 
 
 def is_checkmated(board_pieces, turn_is_white):
@@ -94,14 +74,7 @@ def do_castling(king, rook, is_white_team_turn, board_pieces):
     return False
 
 
-def color_all_square_to_original_color():
-    for line in Screen.squares:
-        for square in line:
-            if square.color != square.original_color:
-                square.coloring_square_by_original_color()
-
-
-def _check_castling(king, rook_square, is_white_team_turn, board_pieces):
+def check_castling(king, rook_square, is_white_team_turn, board_pieces):
     rook = rook_square.current_piece
 
     if king.move_counter != 0 or rook.move_counter != 0:
@@ -111,26 +84,6 @@ def _check_castling(king, rook_square, is_white_team_turn, board_pieces):
         return False
 
     return do_castling(king, rook, is_white_team_turn, board_pieces)
-
-
-def move_turn(piece_clicked, clicked_square, is_white_team_turn, board_pieces):
-    color_all_square_to_original_color()
-
-    if piece_clicked.is_white_team is not is_white_team_turn:
-        return False
-
-    # check_castling.
-    if isinstance(piece_clicked, pieces.King) and isinstance(clicked_square.current_piece, pieces.Rook):
-        return _check_castling(piece_clicked, clicked_square, is_white_team_turn, board_pieces)
-
-    if clicked_square not in piece_clicked.get_valid_move_squares():
-        return False
-
-    if is_check_after_move(clicked_square, is_white_team_turn, piece_clicked, board_pieces):
-        return False
-
-    piece_clicked.move(clicked_square)
-    return True
 
 
 def is_check_after_move(clicked_square, is_white_team_turn, piece_clicked: pieces.Piece, board_pieces):

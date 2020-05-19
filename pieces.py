@@ -38,7 +38,7 @@ class Piece(metaclass=abc.ABCMeta):
         pass
 
     def draw(self):
-        screen.blit(self.image, self.square.rect.topleft)
+        screen.blit(self.image, self.square.rect)
 
 
 class King(Piece):
