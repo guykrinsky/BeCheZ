@@ -53,6 +53,26 @@ def check_if_there_is_chess(board_pieces, turn_is_white):
     return False
 
 
+def move_turn(piece_clicked, clicked_square, is_white_team_turn, board_pieces):
+    Screen.color_all_square_to_original_color()
+
+    if piece_clicked.is_white_team is not is_white_team_turn:
+        return False
+
+    # check_castling.
+    if isinstance(piece_clicked, pieces.King) and isinstance(clicked_square.current_piece, pieces.Rook):
+        return check_castling(piece_clicked, clicked_square, is_white_team_turn, board_pieces)
+
+    if clicked_square not in piece_clicked.get_valid_move_squares():
+        return False
+
+    if is_check_after_move(clicked_square, is_white_team_turn, piece_clicked, board_pieces):
+        return False
+
+    piece_clicked.move(clicked_square)
+    return True
+
+
 def do_castling(king, rook, is_white_team_turn, board_pieces):
 
     king_line = king.square.line_cord

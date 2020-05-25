@@ -61,10 +61,8 @@ def draw_bg(is_white_team_turn):
 
     if is_white_team_turn:
         text = FONT.render('Turn is white', False, colors.WHITE)
-        color = colors.WHITE
     else:
         text = FONT.render('Turn is black.', False, colors.BLACK)
-        color = colors.BLACK
 
     SCORE_BOARD.blit(text, (SCORE_BOARD.get_width()/2-60, 0))
 
