@@ -52,7 +52,7 @@ def square_is_valid(tur, line, is_white_team):
     return False
 
 
-def draw_bg(is_white_team_turn):
+def draw_bg(is_white_team_turn, white_timer, black_timer):
     screen.blit(SCORE_BOARD, (0, 0))
     pygame.draw.rect(SCORE_BOARD, colors.BROWN, (0, 0, SCORE_BOARD.get_width(), SCORE_BOARD.get_height()))
     for line in squares:
@@ -60,11 +60,16 @@ def draw_bg(is_white_team_turn):
             square.draw()
 
     if is_white_team_turn:
-        text = FONT.render('Turn is white', False, colors.WHITE)
+        text = FONT.render('White Player Turn.', False, colors.WHITE)
     else:
-        text = FONT.render('Turn is black.', False, colors.BLACK)
+        text = FONT.render('Black Player Turn.', False, colors.BLACK)
 
     SCORE_BOARD.blit(text, (SCORE_BOARD.get_width()/2-60, 0))
+
+    text = FONT.render(f"{int(5 - white_timer.get_seconds()/60)}:{60 - white_timer.get_seconds()}", False, colors.WHITE)
+    SCORE_BOARD.blit(text, (0, 0))
+    text = FONT.render(f"{int(5 - black_timer.get_seconds()/60)}:{60 - (black_timer.get_seconds() % 60)}", False, colors.BLACK)
+    SCORE_BOARD.blit(text, (SCORE_BOARD.get_width() - 55, 0))
 
 
 def draw_screen():
