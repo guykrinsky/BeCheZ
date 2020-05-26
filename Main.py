@@ -1,5 +1,6 @@
 from timer import Timer
 from chess_utils import *
+import teams
 
 
 def redraw_game_screen(is_white_team_turn, white_team_timer, black_team_timer):
@@ -31,13 +32,12 @@ def set_timer(is_white_team_turn, white_timer, black_timer):
         white_timer.pause()
 
 
-def game_loop(board_pieces):
+def game_loop(white_team: teams.Team, black_team: teams.Team):
+
+    black_team.timer.pause()
     running = True
     piece_clicked = None
     is_white_team_turn = True
-    black_timer = Timer()
-    black_timer.pause()
-    white_timer = Timer()
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -55,36 +55,40 @@ def game_loop(board_pieces):
                         piece_clicked.color_next_step()
 
                 else:
-                    if move_turn(piece_clicked, square, is_white_team_turn, board_pieces):
+                    if move_turn(piece_clicked, square, is_white_team_turn, white_team, black_team):
                         is_white_team_turn = not is_white_team_turn
                         piece_clicked.move_counter += 1
                         pygame.mixer.Sound('pong.wav').play()
-                        set_timer(is_white_team_turn, white_timer, black_timer)
+                        set_timer(is_white_team_turn, white_team.timer, black_team.timer)
                     else:
                         pygame.mixer.Sound('error.wav').play()
 
                     piece_clicked = None
 
-                if is_checkmated(board_pieces, is_white_team_turn):
+                if is_checkmated(white_team, black_team, is_white_team_turn):
                     running = False
 
-        if white_timer.get_seconds() > 360:
+        if white_team.timer.get_seconds() > 360:
             break
-        if black_timer.get_seconds() > 360:
+        if black_team.timer.get_seconds() > 360:
             break
 
-        for piece in board_pieces:
+        for piece in white_team.pieces:
             if piece.is_eaten:
-                board_pieces.remove(piece)
+                white_team.pieces.remove(piece)
+        for piece in black_team.pieces:
+            if piece.is_eaten:
+                black_team.pieces.remove(piece)
 
-        redraw_game_screen(is_white_team_turn, white_timer, black_timer)
+        redraw_game_screen(is_white_team_turn, white_team.timer, black_team.timer)
 
 
 def main():
-
     Screen.draw_screen()
-    board_pieces = place_pieces()
-    game_loop(board_pieces)
+    white_team = teams.Team(True)
+    black_team = teams.Team(False)
+    place_pieces(white_team, black_team)
+    game_loop(white_team, black_team)
 
 
 if __name__ == '__main__':
