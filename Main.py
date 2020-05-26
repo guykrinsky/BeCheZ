@@ -68,6 +68,11 @@ def game_loop(board_pieces):
                 if is_checkmated(board_pieces, is_white_team_turn):
                     running = False
 
+        if white_timer.get_seconds() > 360:
+            break
+        if black_timer.get_seconds() > 360:
+            break
+
         for piece in board_pieces:
             if piece.is_eaten:
                 board_pieces.remove(piece)
