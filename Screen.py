@@ -66,14 +66,16 @@ def draw_bg(is_white_team_turn, white_timer, black_timer):
 
     SCORE_BOARD.blit(text, (SCORE_BOARD.get_width()/2-60, 0))
 
-    minutes = int(5 - white_timer.get_seconds()/60)
-    seconds = 60 - (white_timer.get_seconds() % 60)
+    # minutes = int(5 - white_timer.get_seconds()/60)
+    # seconds = 60 - (white_timer.get_seconds() % 60)
+    minutes = white_timer.get_minutes_left()
+    seconds = white_timer.get_seconds_left_to_last_minute()
     if seconds == 60:
         seconds = 00
     text = FONT.render(f"{minutes}:{seconds}", False, colors.WHITE)
     SCORE_BOARD.blit(text, (0, 0))
-    minutes = int(5 - black_timer.get_seconds()/60)
-    seconds = 60 - (black_timer.get_seconds() % 60)
+    minutes = black_timer.get_minutes_left()
+    seconds = black_timer.get_seconds_left_to_last_minute()
     if seconds == 60:
         seconds = 0
     text = FONT.render(f"{minutes}:{seconds}", False, colors.BLACK)

@@ -1,6 +1,7 @@
 from timer import Timer
 from chess_utils import *
 import teams
+import timer
 
 
 def redraw_game_screen(is_white_team_turn, white_team_timer, black_team_timer):
@@ -68,9 +69,9 @@ def game_loop(white_team: teams.Team, black_team: teams.Team):
                 if is_checkmated(white_team, black_team, is_white_team_turn):
                     running = False
 
-        if white_team.timer.get_seconds() > 360:
+        if white_team.timer.is_game_ended():
             break
-        if black_team.timer.get_seconds() > 360:
+        if black_team.timer.is_game_ended():
             break
 
         for piece in white_team.pieces:
@@ -84,6 +85,7 @@ def game_loop(white_team: teams.Team, black_team: teams.Team):
 
 
 def main():
+    timer.set_game_length(1)
     Screen.draw_screen()
     white_team = teams.Team(True)
     black_team = teams.Team(False)

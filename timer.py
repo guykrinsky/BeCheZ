@@ -7,7 +7,14 @@ class TimeError(Exception):
     """
 
 
+def set_game_length(minutes):
+    Timer.GAME_LENGTH = minutes*60
+
+
 class Timer:
+    # IN_SECONDS.
+    GAME_LENGTH = 300
+
     def __init__(self):
         self.start_time = time.perf_counter()
         self.time_passed = 0
@@ -31,7 +38,18 @@ class Timer:
         self._update_timer()
         return int(self.time_passed)
 
+    def get_seconds_left_to_last_minute(self):
+        self._update_timer()
+        return int(60 - self.get_seconds() % 60)
+
+    def get_minutes_left(self):
+        self._update_timer()
+        return int(self.GAME_LENGTH / 60 - self.get_seconds() / 60)
+
     def _update_timer(self):
         if self.is_pause:
             return
         self.time_passed = time.perf_counter() - self.start_time - self.total_time_paused
+
+    def is_game_ended(self):
+        return self.get_seconds() >= self.GAME_LENGTH
