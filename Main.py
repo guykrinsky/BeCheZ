@@ -1,7 +1,10 @@
-from timer import Timer
 from chess_utils import *
-import teams
+from teams import Team
 import timer
+import pygame
+import Screen
+
+# def bot_move(white_team: Team, black_team: Team):
 
 
 def redraw_game_screen(is_white_team_turn, white_team_timer, black_team_timer):
@@ -23,17 +26,7 @@ def listen_to_mouse():
             if square.rect.collidepoint(mouse_pos):
                 return square
 
-
-def set_timer(is_white_team_turn, white_timer, black_timer):
-    if is_white_team_turn:
-        white_timer.resume()
-        black_timer.pause()
-    else:
-        black_timer.resume()
-        white_timer.pause()
-
-
-def game_loop(white_team: teams.Team, black_team: teams.Team):
+def game_loop(white_team: Team, black_team: Team):
 
     black_team.timer.pause()
     running = True
@@ -60,14 +53,14 @@ def game_loop(white_team: teams.Team, black_team: teams.Team):
                         is_white_team_turn = not is_white_team_turn
                         piece_clicked.move_counter += 1
                         pygame.mixer.Sound('pong.wav').play()
-                        set_timer(is_white_team_turn, white_team.timer, black_team.timer)
+                        timer.set_timer(is_white_team_turn, white_team.timer, black_team.timer)
                     else:
                         pygame.mixer.Sound('error.wav').play()
 
                     piece_clicked = None
 
                 if is_checkmated(white_team, black_team, is_white_team_turn):
-                    running = False
+                    break
 
         if white_team.timer.is_game_ended():
             break
@@ -85,11 +78,12 @@ def game_loop(white_team: teams.Team, black_team: teams.Team):
 
 
 def main():
-    timer.set_game_length(1)
+    timer.set_game_length(5)
     Screen.draw_screen()
-    white_team = teams.Team(True)
-    black_team = teams.Team(False)
+    white_team = Team(True)
+    black_team = Team(False)
     place_pieces(white_team, black_team)
+    black_team.update_score()
     game_loop(white_team, black_team)
 
 

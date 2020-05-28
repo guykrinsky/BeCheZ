@@ -4,6 +4,8 @@ import abc
 
 
 class Piece(metaclass=abc.ABCMeta):
+    SCORE = 0
+
     def __init__(self, image, square, team):
         self.image = image
         self.square = square
@@ -42,6 +44,7 @@ class Piece(metaclass=abc.ABCMeta):
 
 
 class King(Piece):
+    SCORE = 100
     WHITE_IMAGE = pygame.image.load('white_king.png')
     BLACK_IMAGE = pygame.image.load('black_king.png')
 
@@ -68,6 +71,7 @@ class King(Piece):
 
 
 class Pawn(Piece):
+    SCORE = 1
     WHITE_IMAGE = pygame.image.load('white_pawn.png')
     BLACK_PAWN = pygame.image.load('black_pawn.png')
 
@@ -124,6 +128,7 @@ class Pawn(Piece):
 
 
 class Knight(Piece):
+    SCORE = 3
     BLACK_IMAGE = pygame.image.load('black_knight.png')
     WHITE_IMAGE = pygame.image.load('white_knight.png')
 
@@ -158,6 +163,7 @@ class Knight(Piece):
 
 
 class Rook(Piece):
+    SCORE = 5
     WHITE_IMAGE = pygame.image.load('white_rook.png')
     BLACK_IMAGE = pygame.image.load('black_roock.png')
 
@@ -175,6 +181,7 @@ class Rook(Piece):
 
 
 class Bishop(Piece):
+    SCORE = 3
     WHITE_IMAGE = pygame.image.load('white_bis.png')
     BLACK_IMAGE = pygame.image.load('black_bis.png')
 
@@ -189,6 +196,7 @@ class Bishop(Piece):
 
 
 class Queen(Piece):
+    SCORE = 9
     BLACK_IMAGE = pygame.image.load('black_queen.png')
     WHITE_IMAGE = pygame.image.load('white_queen.png')
 
