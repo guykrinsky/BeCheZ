@@ -9,5 +9,5 @@ class Team:
         self.score = 0
 
     def update_score(self):
-        self.score = sum(piece.SCORE for piece in self.pieces)
+        self.score = sum(piece.SCORE for piece in self.pieces if not piece.is_eaten)
 

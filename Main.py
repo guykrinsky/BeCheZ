@@ -3,8 +3,7 @@ from teams import Team
 import timer
 import pygame
 import Screen
-
-# def bot_move(white_team: Team, black_team: Team):
+import bot
 
 
 def redraw_game_screen(is_white_team_turn, white_team_timer, black_team_timer):
@@ -26,13 +25,30 @@ def listen_to_mouse():
             if square.rect.collidepoint(mouse_pos):
                 return square
 
-def game_loop(white_team: Team, black_team: Team):
 
+def game_loop(white_team: Team, black_team: Team):
     black_team.timer.pause()
     running = True
     piece_clicked = None
     is_white_team_turn = True
     while running:
+        # # # if not is_white_team_turn:
+        # # #     if is_checkmated(white_team, black_team, is_white_team_turn):
+        # #         break
+        #     bot.move(white_team, black_team)
+        #     is_white_team_turn = not is_white_team_turn
+        #     timer.set_timer(is_white_team_turn, white_team.timer, black_team.timer)
+        #     for piece in white_team.pieces:
+        #         if piece.is_eaten:
+        #             white_team.pieces.remove(piece)
+        #     for piece in black_team.pieces:
+        #         if piece.is_eaten:
+        #             black_team.pieces.remove(piece)
+        #     white_team.update_score()
+        #     black_team.update_score()
+        #     if is_checkmated(white_team, black_team, is_white_team_turn):
+        #         break
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -54,6 +70,14 @@ def game_loop(white_team: Team, black_team: Team):
                         piece_clicked.move_counter += 1
                         pygame.mixer.Sound('pong.wav').play()
                         timer.set_timer(is_white_team_turn, white_team.timer, black_team.timer)
+                        for piece in white_team.pieces:
+                            if piece.is_eaten:
+                                white_team.pieces.remove(piece)
+                        for piece in black_team.pieces:
+                            if piece.is_eaten:
+                                black_team.pieces.remove(piece)
+                        white_team.update_score()
+                        black_team.update_score()
                     else:
                         pygame.mixer.Sound('error.wav').play()
 
@@ -66,13 +90,6 @@ def game_loop(white_team: Team, black_team: Team):
             break
         if black_team.timer.is_game_ended():
             break
-
-        for piece in white_team.pieces:
-            if piece.is_eaten:
-                white_team.pieces.remove(piece)
-        for piece in black_team.pieces:
-            if piece.is_eaten:
-                black_team.pieces.remove(piece)
 
         redraw_game_screen(is_white_team_turn, white_team.timer, black_team.timer)
 

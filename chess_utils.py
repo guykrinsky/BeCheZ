@@ -12,22 +12,23 @@ def add_pawns(white_team, black_team):
 
 
 def place_pieces(white_team: Team, black_team: Team):
-    # Added kings.
-    black_team.pieces.append(pieces.King(False))
-    white_team.pieces.append(pieces.King(True))
-    # Added rooks.
-    black_team.pieces.extend([pieces.Rook(False, Screen.squares[7][0]),pieces.Rook(False, Screen.squares[7][7])])
-    white_team.pieces.extend([pieces.Rook(True, Screen.squares[0][0]), pieces.Rook(True, Screen.squares[0][7])])
+    # Added knights.
+    black_team.pieces.extend([pieces.Knight(Screen.squares[7][6], False), pieces.Knight(Screen.squares[7][1], False)])
+    white_team.pieces.extend([pieces.Knight(Screen.squares[0][1], True), pieces.Knight(Screen.squares[0][6], True)])
     # Added bishops.
     black_team.pieces.extend([pieces.Bishop(Screen.squares[7][2], False), pieces.Bishop(Screen.squares[7][5], False)])
     white_team.pieces.extend([pieces.Bishop(Screen.squares[0][2], True), pieces.Bishop(Screen.squares[0][5], True)])
     # Added queens.
     black_team.pieces.append(pieces.Queen(Screen.squares[7][4], False))
     white_team.pieces.append(pieces.Queen(Screen.squares[0][4], True))
-    # Added knights.
-    black_team.pieces.extend([pieces.Knight(Screen.squares[7][6], False), pieces.Knight(Screen.squares[7][1], False)])
-    white_team.pieces.extend([pieces.Knight(Screen.squares[0][1], True), pieces.Knight(Screen.squares[0][6], True)])
+    # Added rooks.
+    black_team.pieces.extend([pieces.Rook(False, Screen.squares[7][0]),pieces.Rook(False, Screen.squares[7][7])])
+    white_team.pieces.extend([pieces.Rook(True, Screen.squares[0][0]), pieces.Rook(True, Screen.squares[0][7])])
+
     add_pawns(white_team, black_team)
+    # Added kings.
+    black_team.pieces.append(pieces.King(False))
+    white_team.pieces.append(pieces.King(True))
 
 
 def is_checkmated(white_team: Team, black_team: Team, is_turn_white):
