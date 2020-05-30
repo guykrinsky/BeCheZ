@@ -84,6 +84,9 @@ class Pawn(Piece):
             image = self.BLACK_PAWN
         super().__init__(image, square, is_white)
 
+    def is_reached_to_end(self):
+        return self.move_counter == 7
+
     def get_valid_move_squares(self):
         line = self.square.line_cord
         tur = self.square.tur_cord

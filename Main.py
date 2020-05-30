@@ -6,8 +6,8 @@ import Screen
 import bot
 
 
-def redraw_game_screen(is_white_team_turn, white_team_timer, black_team_timer):
-    Screen.draw_bg(is_white_team_turn, white_team_timer, black_team_timer)
+def redraw_game_screen(team_got_turn, white_team_timer, black_team_timer):
+    Screen.draw_bg(team_got_turn, white_team_timer, black_team_timer)
 
     for line in Screen.squares:
         for square in line:
@@ -30,7 +30,7 @@ def game_loop(white_team: Team, black_team: Team):
     black_team.timer.pause()
     running = True
     piece_clicked = None
-    is_white_team_turn = True
+    team_got_turn = white_team
     while running:
         # # # if not is_white_team_turn:
         # # #     if is_checkmated(white_team, black_team, is_white_team_turn):
@@ -60,16 +60,19 @@ def game_loop(white_team: Team, black_team: Team):
                     break
 
                 if piece_clicked is None:
-                    if square.current_piece is not None and square.current_piece.is_white_team == is_white_team_turn:
+                    if square.current_piece is not None and square.current_piece in team_got_turn.pieces:
                         piece_clicked = square.current_piece
                         piece_clicked.color_next_step()
 
                 else:
-                    if move_turn(piece_clicked, square, is_white_team_turn, white_team, black_team):
-                        is_white_team_turn = not is_white_team_turn
+                    if move_turn(piece_clicked, square, team_got_turn, white_team, black_team):
+                        if team_got_turn is white_team:
+                            team_got_turn = black_team
+                        else:
+                            team_got_turn = white_team
                         piece_clicked.move_counter += 1
                         pygame.mixer.Sound('pong.wav').play()
-                        timer.set_timer(is_white_team_turn, white_team.timer, black_team.timer)
+                        timer.set_timer(team_got_turn, white_team, black_team)
                         for piece in white_team.pieces:
                             if piece.is_eaten:
                                 white_team.pieces.remove(piece)
@@ -83,7 +86,7 @@ def game_loop(white_team: Team, black_team: Team):
 
                     piece_clicked = None
 
-                if is_checkmated(white_team, black_team, is_white_team_turn):
+                if is_checkmated(white_team, black_team, team_got_turn):
                     break
 
         if white_team.timer.is_game_ended():
@@ -91,14 +94,14 @@ def game_loop(white_team: Team, black_team: Team):
         if black_team.timer.is_game_ended():
             break
 
-        redraw_game_screen(is_white_team_turn, white_team.timer, black_team.timer)
+        redraw_game_screen(team_got_turn, white_team.timer, black_team.timer)
 
 
 def main():
     timer.set_game_length(5)
     Screen.draw_screen()
-    white_team = Team(True)
-    black_team = Team(False)
+    white_team = Team()
+    black_team = Team()
     place_pieces(white_team, black_team)
     black_team.update_score()
     game_loop(white_team, black_team)
