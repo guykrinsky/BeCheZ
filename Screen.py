@@ -46,7 +46,7 @@ def square_is_valid(tur, line, is_white_team):
             check_square_piece = squares[line][tur].current_piece
             if check_square_piece is not None:
                 # Check if other piece is on the same team.
-                return is_white_team != check_square_piece.is_white_team
+                return is_white_team != check_square_piece.IS_IN_WHITE_TEAM
             # Next move is inside board and empty square.
             return True
     return False

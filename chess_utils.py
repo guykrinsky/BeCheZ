@@ -78,14 +78,28 @@ def move_turn(piece_clicked, clicked_square, team_got_turn: Team, white_team, bl
 
     piece_clicked.move(clicked_square)
 
-    # if isinstance(piece_clicked, pieces.Pawn) and piece_clicked.is_reached_to_end():
-
+    if isinstance(piece_clicked, pieces.Pawn) and piece_clicked.is_reached_to_end():
+        replace(team_got_turn, piece_clicked)
     return True
 
 
-def replace(piece_team):
-        piece_chose = input("Witch piece do you want instead of the pawn?")
-        piece_chose
+def replace(pawn_team: Team, pawn):
+        pawn_team.pieces.remove(pawn)
+        print("Which piece do you want instead of the pawn?")
+        piece_chose = input("q - queen, b - bishop, r - rook, k - knight\n")
+        option_to_piece = {
+            'q': pieces.Queen(pawn.square, pawn.IS_IN_WHITE_TEAM),
+            'b': pieces.Bishop(pawn.square, pawn.IS_IN_WHITE_TEAM),
+            'r': pieces.Rook(pawn.IS_IN_WHITE_TEAM, pawn.square),
+            'k': pieces.Knight(pawn.square, pawn.IS_IN_WHITE_TEAM),
+        }
+        try:
+            pawn_team.pieces.append(option_to_piece[piece_chose])
+            pawn.square.current_piece = option_to_piece[piece_chose]
+        except KeyError:
+            pawn_team.pieces.append(pawn)
+            replace(pawn_team, pawn)
+
 
 def do_castling(king, rook, team_got_turn, white_team, black_team):
 
