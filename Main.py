@@ -32,22 +32,20 @@ def game_loop(white_team: Team, black_team: Team):
     piece_clicked = None
     team_got_turn = white_team
     while running:
-        # # # if not is_white_team_turn:
-        # # #     if is_checkmated(white_team, black_team, is_white_team_turn):
-        # #         break
-        #     bot.move(white_team, black_team)
-        #     is_white_team_turn = not is_white_team_turn
-        #     timer.set_timer(is_white_team_turn, white_team.timer, black_team.timer)
-        #     for piece in white_team.pieces:
-        #         if piece.is_eaten:
-        #             white_team.pieces.remove(piece)
-        #     for piece in black_team.pieces:
-        #         if piece.is_eaten:
-        #             black_team.pieces.remove(piece)
-        #     white_team.update_score()
-        #     black_team.update_score()
-        #     if is_checkmated(white_team, black_team, is_white_team_turn):
-        #         break
+        if team_got_turn is black_team:
+            if is_checkmated(white_team, black_team, team_got_turn):
+                break
+            bot.move(white_team, black_team)
+            team_got_turn = white_team
+            timer.set_timer(team_got_turn, white_team, black_team)
+            for piece in white_team.pieces:
+                if piece.is_eaten:
+                    white_team.pieces.remove(piece)
+            for piece in black_team.pieces:
+                if piece.is_eaten:
+                    black_team.pieces.remove(piece)
+            white_team.update_score()
+            black_team.update_score()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

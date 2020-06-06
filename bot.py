@@ -3,27 +3,79 @@ import chess_utils
 
 
 def move(white_team: Team, bot_team: Team):
-    best_score_dif = -200
+    best_score_dif = 200
     save_square = 0
     save_piece = 0
     for piece in bot_team.pieces:
         for square in piece.get_valid_move_squares():
             eaten_piece = square.current_piece
             current_piece_square = piece.square
-            chess_utils.move_turn(piece, square, white_team, bot_team, False)
-            player_team_fake_move = get_best_move(white_team, bot_team, True)
-            print(player_team_fake_move[2])
-            if player_team_fake_move[2] > best_score_dif:
-                save_square = square
+            chess_utils.move_turn(piece, square, bot_team, white_team, bot_team)
+
+            if chess_utils.get_score(white_team, bot_team) < best_score_dif:
                 save_piece = piece
-                best_score_dif = player_team_fake_move[2]
-            piece.move(current_piece_square)
+                save_square = square
+                best_score_dif = chess_utils.get_score(white_team, bot_team)
+
             if eaten_piece is not None:
                 eaten_piece.move(eaten_piece.square)
                 eaten_piece.is_eaten = False
+            piece.move(current_piece_square)
 
-    chess_utils.move_turn(save_piece, save_square, False, white_team, bot_team)
+    chess_utils.move_turn(save_piece, save_square, bot_team, white_team, bot_team)
     save_piece.move_counter += 1
+
+
+
+# def search_mate(white_team, bot_team, fake_moves):
+#     for piece in bot_team.pieces:
+#         for square in piece.get_valid_move_squares():
+#             fake_moves.append([piece, square])
+#             chess_utils.move_turn(piece, square, white_team=white_team, black_team=bot_team,
+#                                   team_got_turn=bot_team)
+#             if chess_utils.check_if_there_is_chess(white_team, bot_team, white_team):
+#                 for move in fake_moves:
+#                     piece = move[0]
+#                     square = move[1]
+#                     piece.move(square)
+#
+#                 for white_piece in white_team.pieces:
+#                     white_piece.is_eaten = False
+#
+#                 move = fake_moves[0]
+#                 piece = move[0]
+#                 square = move[1]
+#                 chess_utils.move_turn(piece, square, white_team=white_team, black_team=bot_team,
+#                                       team_got_turn=bot_team)
+#                 piece.move_counter += 1
+#                 return
+#     search_mate(white_team, bot_team, fake_moves)
+
+def search_mate(white_team, bot_team, fake_moves,):
+    moves = []
+    for piece in bot_team.pieces:
+        for square in piece.get_valid_move_squares():
+            moves.append([piece, square])
+            chess_utils.move_turn(piece, square, white_team=white_team, black_team=bot_team,
+                                  team_got_turn=bot_team)
+            if chess_utils.check_if_there_is_chess(white_team, bot_team, white_team):
+                for move in fake_moves:
+                    piece = move[0]
+                    square = move[1]
+                    piece.move(square)
+
+                for white_piece in white_team.pieces:
+                    white_piece.is_eaten = False
+
+                move = fake_moves[0]
+                piece = move[0]
+                square = move[1]
+                chess_utils.move_turn(piece, square, white_team=white_team, black_team=bot_team,
+                                      team_got_turn=bot_team)
+                piece.move_counter += 1
+                return
+    search_mate(white_team, bot_team, fake_moves)
+
 
 
 def get_best_move(white_team, bot_team, is_fake_turn_white):
