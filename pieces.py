@@ -98,19 +98,18 @@ class Pawn(Piece):
         # Check if nest step is out of board.
         line += direction
 
-        if square_is_valid(tur, line, self.IS_IN_WHITE_TEAM):
-            next_square = squares[line][tur]
+        next_square = squares[line][tur]
 
-            valid_moves.extend(self._diagonal_eat(next_square))
+        valid_moves.extend(self._diagonal_eat(next_square))
 
-            if next_square.current_piece is None:
-                valid_moves.append(next_square)
+        if next_square.current_piece is None:
+            valid_moves.append(next_square)
 
-                if self.move_counter == 0:
-                    line += direction
-                    next_square = squares[line][tur]
-                    if next_square.current_piece is None:
-                        valid_moves.append(next_square)
+            if self.move_counter == 0:
+                line += direction
+                next_square = squares[line][tur]
+                if next_square.current_piece is None:
+                    valid_moves.append(next_square)
         return valid_moves
 
     def _diagonal_eat(self, next_square):

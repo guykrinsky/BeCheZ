@@ -38,28 +38,19 @@ def place_pieces(white_team: Team, black_team: Team):
     white_team.pieces.append(pieces.King(True))
 
 
-def is_checkmated(white_team: Team, black_team: Team, team_got_turn):
-    team_have_turn = black_team
-    if team_got_turn is white_team:
-        team_have_turn = white_team
+def is_checkmated(team_got_turn: Team, team_doesnt_got_turn: Team):
 
-    for piece in team_have_turn.pieces:
-
+    for piece in team_got_turn.pieces:
         valid_move_squares = piece.get_valid_move_squares()
-
         for check_move in valid_move_squares:
-            if not is_check_after_move(check_move, team_got_turn, piece, white_team, black_team):
+            if not is_check_after_move(check_move, team_doesnt_got_turn, piece):
                 return False
 
     return True
 
 
-def check_if_there_is_chess(white_team, black_team, team_got_turn):
-    team_doesnt_have_turn = black_team
-    if team_got_turn is black_team:
-        team_doesnt_have_turn = white_team
-
-    for piece in team_doesnt_have_turn.pieces:
+def check_if_there_is_chess(team_doesnt_got_turn):
+    for piece in team_doesnt_got_turn.pieces:
         if not piece.is_eaten:
             valid_move_squares = piece.get_valid_move_squares()
             for square in valid_move_squares:
@@ -68,7 +59,7 @@ def check_if_there_is_chess(white_team, black_team, team_got_turn):
     return False
 
 
-def move_turn(piece_clicked, clicked_square, team_got_turn: Team, white_team, black_team):
+def move_turn(piece_clicked, clicked_square, team_got_turn: Team, team_doesnt_got_turn: Team):
     Screen.color_all_square_to_original_color()
 
     if piece_clicked not in team_got_turn.pieces:
@@ -76,11 +67,11 @@ def move_turn(piece_clicked, clicked_square, team_got_turn: Team, white_team, bl
 
     # check_castling.
     if isinstance(piece_clicked, pieces.King) and isinstance(clicked_square.current_piece, pieces.Rook):
-        return check_castling(piece_clicked, clicked_square, team_got_turn, white_team, black_team)
+        return check_castling(piece_clicked, clicked_square, team_got_turn, team_doesnt_got_turn)
 
     if clicked_square not in piece_clicked.get_valid_move_squares():
         return False
-    if is_check_after_move(clicked_square, team_got_turn, piece_clicked, white_team, black_team):
+    if is_check_after_move(clicked_square, team_doesnt_got_turn, piece_clicked):
         return False
 
     piece_clicked.move(clicked_square)
@@ -108,7 +99,7 @@ def replace(pawn_team: Team, pawn):
             replace(pawn_team, pawn)
 
 
-def do_castling(king, rook, team_got_turn, white_team, black_team):
+def do_castling(king, rook, team_got_turn, team_doesnt_got_turn):
 
     king_line = king.square.line_cord
     king_tur = king.square.tur_cord
@@ -119,9 +110,9 @@ def do_castling(king, rook, team_got_turn, white_team, black_team):
         next_king_move = 1
 
     king_tur += next_king_move
-    if move_turn(king, Screen.squares[king_line][king_tur], team_got_turn, white_team, black_team):
+    if move_turn(king, Screen.squares[king_line][king_tur], team_got_turn, team_doesnt_got_turn):
         king_tur += next_king_move
-        if move_turn(king, Screen.squares[king_line][king_tur], team_got_turn, white_team, black_team):
+        if move_turn(king, Screen.squares[king_line][king_tur], team_got_turn, team_doesnt_got_turn):
             rook.move(Screen.squares[king_line][king_tur - next_king_move])
             return True
 
@@ -129,25 +120,25 @@ def do_castling(king, rook, team_got_turn, white_team, black_team):
     return False
 
 
-def check_castling(king, rook_square, team_got_turn, white_team, black_team):
+def check_castling(king, rook_square, team_got_turn, team_doesnt_got_turn):
     rook = rook_square.current_piece
 
     if king.move_counter != 0 or rook.move_counter != 0:
         return False
 
-    if check_if_there_is_chess(white_team, black_team, team_got_turn):
+    if check_if_there_is_chess(team_doesnt_got_turn):
         return False
 
-    return do_castling(king, rook, team_got_turn, white_team, black_team)
+    return do_castling(king, rook, team_got_turn, team_doesnt_got_turn)
 
 
-def is_check_after_move(clicked_square, team_got_turn, piece_clicked: pieces.Piece, white_team: Team, black_team: Team):
+def is_check_after_move(clicked_square, team_doesnt_got_turn, piece_clicked: pieces.Piece):
     eaten_piece = clicked_square.current_piece
 
     current_piece_square = piece_clicked.square
     piece_clicked.move(clicked_square)
 
-    check_after_move = check_if_there_is_chess(white_team, black_team, team_got_turn)
+    check_after_move = check_if_there_is_chess(team_doesnt_got_turn)
 
     piece_clicked.move(current_piece_square)
 
