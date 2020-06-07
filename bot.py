@@ -8,21 +8,21 @@ def move(white_team: Team, bot_team: Team):
     save_piece = None
 
     for piece in bot_team.pieces:
-        for square in piece.get_valid_move_squares():
+        valid_moves = piece.get_valid_move_squares()
+        for square in valid_moves:
             eaten_piece = square.current_piece
             current_piece_square = piece.square
-            chess_utils.move_turn(piece, square, bot_team, white_team)
+            if chess_utils.move_turn(piece, square, bot_team, white_team):
+                score_after_move = maxi(white_team, bot_team)
+                if score_after_move < best_score:
+                    save_piece = piece
+                    save_square = square
+                    best_score = score_after_move
 
-            score_after_move = maxi(white_team, bot_team)
-            if score_after_move < best_score:
-                save_piece = piece
-                save_square = square
-                best_score = score_after_move
-
-            if eaten_piece is not None:
-                eaten_piece.move(eaten_piece.square)
-                eaten_piece.is_eaten = False
-            piece.move(current_piece_square)
+                piece.move(current_piece_square)
+                if eaten_piece is not None:
+                    eaten_piece.move(eaten_piece.square)
+                    eaten_piece.is_eaten = False
 
     for piece in bot_team.pieces:
         piece.is_eaten = False
@@ -40,14 +40,15 @@ def maxi(white_team: Team, bot_team: Team):
             eaten_piece = move_square.current_piece
             current_piece_square = piece.square
 
-            chess_utils.move_turn(piece, move_square, white_team, bot_team)
-            score_after_move = chess_utils.get_score(white_team, bot_team)
-            best_score_dif = max(best_score_dif, score_after_move)
+            if chess_utils.move_turn(piece, move_square, white_team, bot_team):
+                score_after_move = chess_utils.get_score(white_team, bot_team)
 
-            if eaten_piece is not None:
-                eaten_piece.move(eaten_piece.square)
-                eaten_piece.is_eaten = False
-            piece.move(current_piece_square)
+                best_score_dif = max(best_score_dif, score_after_move)
+
+                piece.move(current_piece_square)
+                if eaten_piece is not None:
+                    eaten_piece.move(eaten_piece.square)
+                    eaten_piece.is_eaten = False
 
     return best_score_dif
 

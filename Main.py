@@ -9,8 +9,8 @@ team_got_turn = None
 team_doesnt_got_turn = None
 
 
-def redraw_game_screen(team_got_turn, white_team_timer, black_team_timer):
-    Screen.draw_bg(team_got_turn, white_team_timer, black_team_timer)
+def redraw_game_screen(is_white_team_turn, white_team_timer, black_team_timer):
+    Screen.draw_bg(is_white_team_turn, white_team_timer, black_team_timer)
 
     for line in Screen.squares:
         for square in line:
@@ -74,7 +74,7 @@ def game_loop(white_team: Team, black_team: Team):
                 clicked_square = get_square_clicked()
 
                 if clicked_square is None:
-                    break
+                    continue
 
                 if piece_clicked is None:
                     if clicked_square.current_piece is not None and clicked_square.current_piece in team_got_turn.pieces:
@@ -97,7 +97,7 @@ def game_loop(white_team: Team, black_team: Team):
         if black_team.timer.is_game_ended():
             break
 
-        redraw_game_screen(team_got_turn, white_team.timer, black_team.timer)
+        redraw_game_screen(team_got_turn is white_team, white_team.timer, black_team.timer)
 
 
 def main():

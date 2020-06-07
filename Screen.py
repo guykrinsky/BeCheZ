@@ -29,7 +29,7 @@ class Square:
 
     def coloring_square_by_original_color(self):
         if self.color == self.original_color:
-            if self.original_color == colors.DARK_GREEN:
+            if self.original_color == colors.BROWN:
                 self.color = colors.DARK_RED
             else:
                 self.color = colors.LIGHT_RED
@@ -66,18 +66,16 @@ def draw_bg(is_white_team_turn, white_timer, black_timer):
 
     SCORE_BOARD.blit(text, (SCORE_BOARD.get_width()/2-60, 0))
 
-    # minutes = int(5 - white_timer.get_seconds()/60)
-    # seconds = 60 - (white_timer.get_seconds() % 60)
     minutes = white_timer.get_minutes_left()
     seconds = white_timer.get_seconds_left_to_last_minute()
     if seconds == 60:
-        seconds = 00
+        seconds = '00'
     text = FONT.render(f"{minutes}:{seconds}", False, colors.WHITE)
     SCORE_BOARD.blit(text, (0, 0))
     minutes = black_timer.get_minutes_left()
     seconds = black_timer.get_seconds_left_to_last_minute()
     if seconds == 60:
-        seconds = 0
+        seconds = '00'
     text = FONT.render(f"{minutes}:{seconds}", False, colors.BLACK)
     SCORE_BOARD.blit(text, (SCORE_BOARD.get_width() - 55, 0))
 
@@ -93,7 +91,7 @@ def draw_screen():
             if tur % 2 == tmp:
                 color = colors.WHITE
             else:
-                color = colors.DARK_GREEN
+                color = colors.BROWN
 
             square_in_line.append(Square(x, y, color, tur, line))
             x += Square.WIDTH
