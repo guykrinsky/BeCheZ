@@ -7,15 +7,9 @@ class TimeError(Exception):
     """
 
 
-def set_timer(team_got_turn, white_team, black_team):
-    white_timer = white_team.timer
-    black_timer = black_team.timer
-    if team_got_turn is white_team:
-        white_timer.resume()
-        black_timer.pause()
-    else:
-        black_timer.resume()
-        white_timer.pause()
+def switch_timers(team_got_turn, team_doesnt_got_turn):
+    team_got_turn.timer.resume()
+    team_doesnt_got_turn.timer.pause()
 
 
 def set_game_length(minutes):

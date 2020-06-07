@@ -3,28 +3,53 @@ import chess_utils
 
 
 def move(white_team: Team, bot_team: Team):
-    best_score_dif = 200
-    save_square = 0
-    save_piece = 0
+    best_score = 200
+    save_square = None
+    save_piece = None
+
     for piece in bot_team.pieces:
         for square in piece.get_valid_move_squares():
             eaten_piece = square.current_piece
             current_piece_square = piece.square
-            chess_utils.move_turn(piece, square, bot_team, white_team, bot_team)
+            chess_utils.move_turn(piece, square, bot_team, white_team)
 
-            if chess_utils.get_score(white_team, bot_team) < best_score_dif:
+            score_after_move = maxi(white_team, bot_team)
+            if score_after_move < best_score:
                 save_piece = piece
                 save_square = square
-                best_score_dif = chess_utils.get_score(white_team, bot_team)
+                best_score = score_after_move
 
             if eaten_piece is not None:
                 eaten_piece.move(eaten_piece.square)
                 eaten_piece.is_eaten = False
             piece.move(current_piece_square)
 
-    chess_utils.move_turn(save_piece, save_square, bot_team, white_team, bot_team)
-    save_piece.move_counter += 1
+    for piece in bot_team.pieces:
+        piece.is_eaten = False
+    for piece in white_team.pieces:
+        piece.is_eaten = False
 
+    chess_utils.move_turn(save_piece, save_square, bot_team, white_team)
+    return save_piece
+
+
+def maxi(white_team: Team, bot_team: Team):
+    best_score_dif = -200
+    for piece in white_team.pieces:
+        for move_square in piece.get_valid_move_squares():
+            eaten_piece = move_square.current_piece
+            current_piece_square = piece.square
+
+            chess_utils.move_turn(piece, move_square, white_team, bot_team)
+            score_after_move = chess_utils.get_score(white_team, bot_team)
+            best_score_dif = max(best_score_dif, score_after_move)
+
+            if eaten_piece is not None:
+                eaten_piece.move(eaten_piece.square)
+                eaten_piece.is_eaten = False
+            piece.move(current_piece_square)
+
+    return best_score_dif
 
 
 # def search_mate(white_team, bot_team, fake_moves):
