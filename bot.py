@@ -1,50 +1,63 @@
 from teams import Team
 import chess_utils
+import pieces
 
 
 def move(white_team: Team, bot_team: Team, depth=2):
+    _, best_move = mini(white_team, bot_team, depth)
+    piece, move_square = best_move
+    chess_utils.move_turn(piece, move_square, bot_team, white_team)
+    return piece
+
+
+def mini(white_team: Team, bot_team: Team, depth):
     if depth == 0:
-        return chess_utils.get_score(white_team, bot_team)
+        return chess_utils.get_score(white_team, bot_team), None
 
     best_score = 1000
-    save_square = None
-    save_piece = None
+    best_move = None
+
+    if chess_utils.is_checkmated(white_team, bot_team):
+        return best_score, best_move
 
     for piece in bot_team.pieces:
         valid_moves = piece.get_valid_move_squares()
-        for square in valid_moves:
-            with chess_utils.SaveMove(piece, square):
-                if chess_utils.move_turn(piece, square, bot_team, white_team):
-                    score_after_move = maxi(white_team, bot_team, depth-1)
+        for move_square in valid_moves:
+            with chess_utils.SaveMove(piece, move_square):
+
+                if chess_utils.move_turn(piece, move_square, bot_team, white_team):
+                    score_after_move, _ = maxi(white_team, bot_team, depth-1)
 
                     if score_after_move < best_score:
                         # Bigger score -> White player is winning.
-                        save_piece = piece
-                        save_square = square
+                        best_move = (piece, move_square)
                         best_score = score_after_move
 
-    if depth == 2:
-        chess_utils.move_turn(save_piece, save_square, bot_team, white_team)
-        return save_piece
-    return best_score
+    return best_score, best_move
 
 
 def maxi(white_team: Team, bot_team: Team, depth):
     if depth == 0:
-        return chess_utils.get_score(white_team, bot_team)
+        return chess_utils.get_score(white_team, bot_team), None
 
-    best_score_dif = -1000
+    best_move = None
+    best_score = -1000
+
+    if chess_utils.is_checkmated(white_team, bot_team):
+        return best_score, best_move
+
     for piece in white_team.pieces:
         for move_square in piece.get_valid_move_squares():
-
             with chess_utils.SaveMove(piece, move_square):
+
                 if chess_utils.move_turn(piece, move_square, white_team, bot_team):
-                    score_after_move = move(white_team, bot_team, depth-1)
+                    score_after_move, _ = mini(white_team, bot_team, depth-1)
+                    if score_after_move > best_score:
+                        # Bigger score -> White player is winning.
+                        best_move = (piece, move_square)
+                        best_score = score_after_move
 
-                    # Bigger score -> White player is winning.
-                    best_score_dif = max(best_score_dif, score_after_move)
-
-    return best_score_dif
+    return best_score, best_move
 
 
 # def search_mate(white_team, bot_team, fake_moves):

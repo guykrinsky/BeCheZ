@@ -34,6 +34,7 @@ class Piece(metaclass=abc.ABCMeta):
         # Move to next square.
         self.square = next_square
         self.square.current_piece = self
+        self.update_score()
 
     @abc.abstractmethod
     def get_valid_move_squares(self):
@@ -41,6 +42,9 @@ class Piece(metaclass=abc.ABCMeta):
 
     def draw(self):
         screen.blit(self.image, self.square.rect)
+
+    def update_score(self):
+        pass
 
 
 class King(Piece):
@@ -111,6 +115,11 @@ class Pawn(Piece):
                 if next_square.current_piece is None:
                     valid_moves.append(next_square)
         return valid_moves
+
+    # def update_score(self):
+    #     self.SCORE = 25
+    #     if 3 <= self.square.tur_cord <= 5:
+    #         self.SCORE = 35
 
     def _diagonal_eat(self, next_square):
         valid_eat_moves = []

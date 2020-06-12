@@ -9,8 +9,8 @@ team_got_turn = None
 team_doesnt_got_turn = None
 
 
-def redraw_game_screen(is_white_team_turn, white_team_timer, black_team_timer):
-    Screen.draw_bg(is_white_team_turn, white_team_timer, black_team_timer)
+def redraw_game_screen(is_white_team_turn, white_team, black_team):
+    Screen.draw_bg(is_white_team_turn, white_team, black_team)
 
     for line in Screen.squares:
         for square in line:
@@ -62,9 +62,9 @@ def game_loop(white_team: Team, black_team: Team):
     team_doesnt_got_turn = black_team
     while running:
 
-        if team_got_turn is black_team:
-            piece_moved = bot.move(white_team, black_team)
-            move_played(piece_moved, team_got_turn, team_doesnt_got_turn)
+        # if team_got_turn is black_team:
+        #     piece_moved = bot.move(white_team, black_team)
+        #     move_played(piece_moved, team_got_turn, team_doesnt_got_turn)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -97,7 +97,7 @@ def game_loop(white_team: Team, black_team: Team):
         if black_team.timer.is_game_ended():
             break
 
-        redraw_game_screen(team_got_turn is white_team, white_team.timer, black_team.timer)
+        redraw_game_screen(team_got_turn is white_team, white_team, black_team)
 
 
 def main():

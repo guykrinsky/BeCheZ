@@ -1,5 +1,6 @@
 import pygame
 import colors
+from teams import Team
 
 pygame.init()
 
@@ -29,7 +30,7 @@ class Square:
 
     def coloring_square_by_original_color(self):
         if self.color == self.original_color:
-            if self.original_color == colors.BROWN:
+            if self.original_color == colors.DARK_BROWN:
                 self.color = colors.DARK_RED
             else:
                 self.color = colors.LIGHT_RED
@@ -52,7 +53,9 @@ def square_is_valid(tur, line, is_white_team):
     return False
 
 
-def draw_bg(is_white_team_turn, white_timer, black_timer):
+def draw_bg(is_white_team_turn, white_team: Team, black_team: Team):
+    white_timer = white_team.timer
+    black_timer = black_team.timer
     screen.blit(SCORE_BOARD, (0, 0))
     pygame.draw.rect(SCORE_BOARD, colors.BROWN, (0, 0, SCORE_BOARD.get_width(), SCORE_BOARD.get_height()))
     for line in squares:
@@ -60,11 +63,11 @@ def draw_bg(is_white_team_turn, white_timer, black_timer):
             square.draw()
 
     if is_white_team_turn:
-        text = FONT.render('White Player Turn.', False, colors.WHITE)
+        text = FONT.render('White Player Turn', False, colors.WHITE)
     else:
-        text = FONT.render('Black Player Turn.', False, colors.BLACK)
+        text = FONT.render('Black Player Turn', False, colors.BLACK)
 
-    SCORE_BOARD.blit(text, (SCORE_BOARD.get_width()/2-60, 0))
+    SCORE_BOARD.blit(text, (SCORE_BOARD.get_width()/2-80, 0))
 
     minutes = white_timer.get_minutes_left()
     seconds = white_timer.get_seconds_left_to_last_minute()
@@ -79,6 +82,17 @@ def draw_bg(is_white_team_turn, white_timer, black_timer):
     text = FONT.render(f"{minutes}:{seconds}", False, colors.BLACK)
     SCORE_BOARD.blit(text, (SCORE_BOARD.get_width() - 55, 0))
 
+    length = (white_team.score-100)*5
+    text = FONT.render("score:", False, colors.WHITE)
+    SCORE_BOARD.blit(text, (0, SCORE_BOARD.get_height() - 50))
+    pygame.draw.rect(SCORE_BOARD, colors.WHITE, (0, SCORE_BOARD.get_height() - 15, length, 10))
+
+    length = (black_team.score-100)*5
+    x_pos = SCORE_BOARD.get_width() - length
+    text = FONT.render("score:", False, colors.BLACK)
+    SCORE_BOARD.blit(text, (x_pos, SCORE_BOARD.get_height() - 50))
+    pygame.draw.rect(SCORE_BOARD, colors.BLACK, (x_pos, SCORE_BOARD.get_height() - 15, length, 10))
+
 
 def draw_screen():
     SCORE_BOARD.fill(colors.BROWN)
@@ -91,7 +105,7 @@ def draw_screen():
             if tur % 2 == tmp:
                 color = colors.WHITE
             else:
-                color = colors.BROWN
+                color = colors.DARK_BROWN
 
             square_in_line.append(Square(x, y, color, tur, line))
             x += Square.WIDTH
