@@ -58,17 +58,29 @@ def draw_bg(is_white_team_turn, white_team: Team, black_team: Team):
     black_timer = black_team.timer
     screen.blit(SCORE_BOARD, (0, 0))
     pygame.draw.rect(SCORE_BOARD, colors.BROWN, (0, 0, SCORE_BOARD.get_width(), SCORE_BOARD.get_height()))
+
+    draw_squares_bg()
+    draw_who_turn_is(is_white_team_turn)
+    draw_timer(white_timer, black_timer)
+    draw_score(white_team, black_team)
+
+
+def draw_squares_bg():
     for line in squares:
         for square in line:
             square.draw()
 
+
+def draw_who_turn_is(is_white_team_turn):
     if is_white_team_turn:
         text = FONT.render('White Player Turn', False, colors.WHITE)
     else:
         text = FONT.render('Black Player Turn', False, colors.BLACK)
 
-    SCORE_BOARD.blit(text, (SCORE_BOARD.get_width()/2-80, 0))
+    SCORE_BOARD.blit(text, (SCORE_BOARD.get_width() / 2 - 80, 0))
 
+
+def draw_timer(white_timer, black_timer):
     minutes = white_timer.get_minutes_left()
     seconds = white_timer.get_seconds_left_to_last_minute()
     if seconds == 60:
@@ -82,15 +94,23 @@ def draw_bg(is_white_team_turn, white_team: Team, black_team: Team):
     text = FONT.render(f"{minutes}:{seconds}", False, colors.BLACK)
     SCORE_BOARD.blit(text, (SCORE_BOARD.get_width() - 55, 0))
 
-    length = (white_team.score-100)*5
-    text = FONT.render("score:", False, colors.WHITE)
+
+def draw_score(white_team, black_team):
+    white_team.update_score()
+    black_team.update_score()
+
+    start_team_score = 195
+    length = (white_team.score - 100) * 5
+    text = FONT.render("White team score:", False, colors.WHITE)
     SCORE_BOARD.blit(text, (0, SCORE_BOARD.get_height() - 50))
+    pygame.draw.rect(SCORE_BOARD, colors.BLACK, (0, SCORE_BOARD.get_height() - 15, start_team_score, 10))
     pygame.draw.rect(SCORE_BOARD, colors.WHITE, (0, SCORE_BOARD.get_height() - 15, length, 10))
 
-    length = (black_team.score-100)*5
-    x_pos = SCORE_BOARD.get_width() - length
-    text = FONT.render("score:", False, colors.BLACK)
+    length = (black_team.score - 100) * 5
+    x_pos = SCORE_BOARD.get_width() - start_team_score
+    text = FONT.render("Black team score:", False, colors.BLACK)
     SCORE_BOARD.blit(text, (x_pos, SCORE_BOARD.get_height() - 50))
+    pygame.draw.rect(SCORE_BOARD, colors.WHITE, (x_pos, SCORE_BOARD.get_height() - 15, start_team_score, 10))
     pygame.draw.rect(SCORE_BOARD, colors.BLACK, (x_pos, SCORE_BOARD.get_height() - 15, length, 10))
 
 
