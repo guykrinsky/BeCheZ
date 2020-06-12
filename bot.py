@@ -2,53 +2,47 @@ from teams import Team
 import chess_utils
 
 
-def move(white_team: Team, bot_team: Team):
-    best_score = 200
+def move(white_team: Team, bot_team: Team, depth=2):
+    if depth == 0:
+        return chess_utils.get_score(white_team, bot_team)
+
+    best_score = 1000
     save_square = None
     save_piece = None
 
     for piece in bot_team.pieces:
         valid_moves = piece.get_valid_move_squares()
         for square in valid_moves:
-            eaten_piece = square.current_piece
-            current_piece_square = piece.square
-            if chess_utils.move_turn(piece, square, bot_team, white_team):
-                score_after_move = maxi(white_team, bot_team)
-                if score_after_move < best_score:
-                    save_piece = piece
-                    save_square = square
-                    best_score = score_after_move
+            with chess_utils.SaveMove(piece, square):
+                if chess_utils.move_turn(piece, square, bot_team, white_team):
+                    score_after_move = maxi(white_team, bot_team, depth-1)
 
-                piece.move(current_piece_square)
-                if eaten_piece is not None:
-                    eaten_piece.move(eaten_piece.square)
-                    eaten_piece.is_eaten = False
+                    if score_after_move < best_score:
+                        # Bigger score -> White player is winning.
+                        save_piece = piece
+                        save_square = square
+                        best_score = score_after_move
 
-    for piece in bot_team.pieces:
-        piece.is_eaten = False
-    for piece in white_team.pieces:
-        piece.is_eaten = False
-
-    chess_utils.move_turn(save_piece, save_square, bot_team, white_team)
-    return save_piece
+    if depth == 2:
+        chess_utils.move_turn(save_piece, save_square, bot_team, white_team)
+        return save_piece
+    return best_score
 
 
-def maxi(white_team: Team, bot_team: Team):
-    best_score_dif = -200
+def maxi(white_team: Team, bot_team: Team, depth):
+    if depth == 0:
+        return chess_utils.get_score(white_team, bot_team)
+
+    best_score_dif = -1000
     for piece in white_team.pieces:
         for move_square in piece.get_valid_move_squares():
-            eaten_piece = move_square.current_piece
-            current_piece_square = piece.square
 
-            if chess_utils.move_turn(piece, move_square, white_team, bot_team):
-                score_after_move = chess_utils.get_score(white_team, bot_team)
+            with chess_utils.SaveMove(piece, move_square):
+                if chess_utils.move_turn(piece, move_square, white_team, bot_team):
+                    score_after_move = move(white_team, bot_team, depth-1)
 
-                best_score_dif = max(best_score_dif, score_after_move)
-
-                piece.move(current_piece_square)
-                if eaten_piece is not None:
-                    eaten_piece.move(eaten_piece.square)
-                    eaten_piece.is_eaten = False
+                    # Bigger score -> White player is winning.
+                    best_score_dif = max(best_score_dif, score_after_move)
 
     return best_score_dif
 

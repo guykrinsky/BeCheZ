@@ -4,6 +4,25 @@ import pieces
 from teams import Team
 
 
+class SaveMove:
+    def __init__(self, piece: pieces.Piece, move_square: Screen.Square):
+        self.piece = piece
+        self.move_square = move_square
+        self.eaten_piece = None
+        self.current_piece_square = None
+
+    def __enter__(self):
+        self.eaten_piece = self.move_square.current_piece
+        self.current_piece_square = self.piece.square
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        # Move pieces moved to there last position.
+        self.piece.move(self.current_piece_square)
+        if self.eaten_piece is not None:
+            self.eaten_piece.move(self.eaten_piece.square)
+            self.eaten_piece.is_eaten = False
+
+
 def add_pawns(white_team, black_team):
     for place in range(Screen.BOARD_LINE):
         white_team.pieces.append(pieces.Pawn(True, place))
@@ -82,21 +101,21 @@ def move_turn(piece_clicked, clicked_square, team_got_turn: Team, team_doesnt_go
 
 
 def replace(pawn_team: Team, pawn):
-        pawn_team.pieces.remove(pawn)
-        print("Which piece do you want instead of the pawn?")
-        piece_chose = input("q - queen, b - bishop, r - rook, k - knight\n")
-        option_to_piece = {
-            'q': pieces.Queen(pawn.square, pawn.IS_IN_WHITE_TEAM),
-            'b': pieces.Bishop(pawn.square, pawn.IS_IN_WHITE_TEAM),
-            'r': pieces.Rook(pawn.IS_IN_WHITE_TEAM, pawn.square),
-            'k': pieces.Knight(pawn.square, pawn.IS_IN_WHITE_TEAM),
-        }
-        try:
-            pawn_team.pieces.append(option_to_piece[piece_chose])
-            pawn.square.current_piece = option_to_piece[piece_chose]
-        except KeyError:
-            pawn_team.pieces.append(pawn)
-            replace(pawn_team, pawn)
+    pawn_team.pieces.remove(pawn)
+    print("Which piece do you want instead of the pawn?")
+    piece_chose = input("q - queen, b - bishop, r - rook, k - knight\n")
+    option_to_piece = {
+        'q': pieces.Queen(pawn.square, pawn.IS_IN_WHITE_TEAM),
+        'b': pieces.Bishop(pawn.square, pawn.IS_IN_WHITE_TEAM),
+        'r': pieces.Rook(pawn.IS_IN_WHITE_TEAM, pawn.square),
+        'k': pieces.Knight(pawn.square, pawn.IS_IN_WHITE_TEAM),
+    }
+    try:
+        pawn_team.pieces.append(option_to_piece[piece_chose])
+        pawn.square.current_piece = option_to_piece[piece_chose]
+    except KeyError:
+        pawn_team.pieces.append(pawn)
+        replace(pawn_team, pawn)
 
 
 def do_castling(king, rook, team_got_turn, team_doesnt_got_turn):
