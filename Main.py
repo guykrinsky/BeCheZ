@@ -62,9 +62,9 @@ def game_loop(white_team: Team, black_team: Team):
     team_doesnt_got_turn = black_team
     while running:
 
-        # if team_got_turn is black_team:
-        #     piece_moved = bot.move(white_team, black_team)
-        #     move_played(piece_moved, team_got_turn, team_doesnt_got_turn)
+        if team_got_turn is black_team:
+            piece_moved = bot.move(white_team, black_team)
+            move_played(piece_moved, team_got_turn, team_doesnt_got_turn)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

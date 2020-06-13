@@ -75,7 +75,7 @@ class King(Piece):
 
 
 class Pawn(Piece):
-    SCORE = 1
+    SCORE = 10
     WHITE_IMAGE = pygame.image.load('white_pawn.png')
     BLACK_PAWN = pygame.image.load('black_pawn.png')
 
@@ -116,11 +116,6 @@ class Pawn(Piece):
                     valid_moves.append(next_square)
         return valid_moves
 
-    # def update_score(self):
-    #     self.SCORE = 25
-    #     if 3 <= self.square.tur_cord <= 5:
-    #         self.SCORE = 35
-
     def _diagonal_eat(self, next_square):
         valid_eat_moves = []
 
@@ -141,7 +136,7 @@ class Pawn(Piece):
 
 
 class Knight(Piece):
-    SCORE = 3
+    SCORE = 30
     BLACK_IMAGE = pygame.image.load('black_knight.png')
     WHITE_IMAGE = pygame.image.load('white_knight.png')
 
@@ -156,27 +151,20 @@ class Knight(Piece):
         self_line = self.square.line_cord
         self_tur = self.square.tur_cord
         team = self.IS_IN_WHITE_TEAM
-        if square_is_valid(self_tur+1, self_line+2, team):
-            valid_moves.append(squares[self_line+2][self_tur+1])
-        if square_is_valid(self_tur+1, self_line - 2, team):
-            valid_moves.append(squares[self_line - 2][self_tur + 1])
-        if square_is_valid(self_tur+2, self_line - 1, team):
-            valid_moves.append(squares[self_line - 1][self_tur + 2])
-        if square_is_valid(self_tur+2, self_line+1, team):
-            valid_moves.append(squares[self_line+1][self_tur+2])
-        if square_is_valid(self_tur-2, self_line - 1, team):
-            valid_moves.append(squares[self_line - 1][self_tur - 2])
-        if square_is_valid(self_tur-1, self_line - 2, team):
-            valid_moves.append(squares[self_line - 2][self_tur - 1])
-        if square_is_valid(self_tur - 1, self_line + 2, team):
-            valid_moves.append(squares[self_line + 2][self_tur - 1])
-        if square_is_valid(self_tur - 2, self_line + 1, team):
-            valid_moves.append(squares[self_line + 1][self_tur - 2])
+        knight_moves = [(1, 2), (1, -2), (2, -1), (2, 1), (-2, -1), (-1, -2), (-2, 1), (-1, 2)]
+        for tur_move, line_move in knight_moves:
+            if square_is_valid(self_tur + tur_move, self_line + line_move, team):
+                valid_moves.append(squares[self_line+line_move][self_tur+tur_move])
         return valid_moves
+
+    def update_score(self):
+        self.SCORE = 25
+        if 3 <= self.square.tur_cord <= 5:
+            self.SCORE = 35
 
 
 class Rook(Piece):
-    SCORE = 5
+    SCORE = 50
     WHITE_IMAGE = pygame.image.load('white_rook.png')
     BLACK_IMAGE = pygame.image.load('black_roock.png')
 
@@ -194,7 +182,7 @@ class Rook(Piece):
 
 
 class Bishop(Piece):
-    SCORE = 3
+    SCORE = 30
     WHITE_IMAGE = pygame.image.load('white_bis.png')
     BLACK_IMAGE = pygame.image.load('black_bis.png')
 
@@ -209,7 +197,7 @@ class Bishop(Piece):
 
 
 class Queen(Piece):
-    SCORE = 9
+    SCORE = 90
     BLACK_IMAGE = pygame.image.load('black_queen.png')
     WHITE_IMAGE = pygame.image.load('white_queen.png')
 

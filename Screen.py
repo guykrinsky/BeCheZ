@@ -85,12 +85,16 @@ def draw_timer(white_timer, black_timer):
     seconds = white_timer.get_seconds_left_to_last_minute()
     if seconds == 60:
         seconds = '00'
+    seconds = str(seconds).zfill(2)
+    minutes = str(minutes).zfill(2)
     text = FONT.render(f"{minutes}:{seconds}", False, colors.WHITE)
     SCORE_BOARD.blit(text, (0, 0))
     minutes = black_timer.get_minutes_left()
     seconds = black_timer.get_seconds_left_to_last_minute()
     if seconds == 60:
         seconds = '00'
+    seconds = str(seconds).zfill(2)
+    minutes = str(minutes).zfill(2)
     text = FONT.render(f"{minutes}:{seconds}", False, colors.BLACK)
     SCORE_BOARD.blit(text, (SCORE_BOARD.get_width() - 55, 0))
 
@@ -100,13 +104,13 @@ def draw_score(white_team, black_team):
     black_team.update_score()
 
     start_team_score = 195
-    length = (white_team.score - 100) * 5
+    length = (white_team.score - 100)/2
     text = FONT.render("White team score:", False, colors.WHITE)
     SCORE_BOARD.blit(text, (0, SCORE_BOARD.get_height() - 50))
     pygame.draw.rect(SCORE_BOARD, colors.BLACK, (0, SCORE_BOARD.get_height() - 15, start_team_score, 10))
     pygame.draw.rect(SCORE_BOARD, colors.WHITE, (0, SCORE_BOARD.get_height() - 15, length, 10))
 
-    length = (black_team.score - 100) * 5
+    length = (black_team.score - 100)/2
     x_pos = SCORE_BOARD.get_width() - start_team_score
     text = FONT.render("Black team score:", False, colors.BLACK)
     SCORE_BOARD.blit(text, (x_pos, SCORE_BOARD.get_height() - 50))

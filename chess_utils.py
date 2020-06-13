@@ -70,11 +70,14 @@ def is_checkmated(team_got_turn: Team, team_doesnt_got_turn: Team):
 
 def check_if_there_is_chess(team_doesnt_got_turn):
     for piece in team_doesnt_got_turn.pieces:
-        if not piece.is_eaten:
-            valid_move_squares = piece.get_valid_move_squares()
-            for square in valid_move_squares:
-                if isinstance(square.current_piece, pieces.King):
-                    return True
+        if piece.is_eaten:
+            continue
+
+        valid_move_squares = piece.get_valid_move_squares()
+        for square in valid_move_squares:
+            if isinstance(square.current_piece, pieces.King):
+                return True
+
     return False
 
 
@@ -152,17 +155,8 @@ def check_castling(king, rook_square, team_got_turn, team_doesnt_got_turn):
 
 
 def is_check_after_move(clicked_square, team_doesnt_got_turn, piece_clicked: pieces.Piece):
-    eaten_piece = clicked_square.current_piece
-
-    current_piece_square = piece_clicked.square
-    piece_clicked.move(clicked_square)
-
-    check_after_move = check_if_there_is_chess(team_doesnt_got_turn)
-
-    piece_clicked.move(current_piece_square)
-
-    if eaten_piece is not None:
-        eaten_piece.move(clicked_square)
-        eaten_piece.is_eaten = False
+    with SaveMove(piece_clicked, clicked_square):
+        piece_clicked.move(clicked_square)
+        check_after_move = check_if_there_is_chess(team_doesnt_got_turn)
 
     return check_after_move

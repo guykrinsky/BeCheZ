@@ -17,9 +17,6 @@ def mini(white_team: Team, bot_team: Team, depth):
     best_score = 1000
     best_move = None
 
-    if chess_utils.is_checkmated(white_team, bot_team):
-        return best_score, best_move
-
     for piece in bot_team.pieces:
         valid_moves = piece.get_valid_move_squares()
         for move_square in valid_moves:
