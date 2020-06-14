@@ -103,7 +103,7 @@ def draw_score(white_team, black_team):
     white_team.update_score()
     black_team.update_score()
 
-    start_team_score = 195
+    start_team_score = 200
     length = white_team.score / 2
     text = FONT.render("White team score:", False, colors.WHITE)
     SCORE_BOARD.blit(text, (0, SCORE_BOARD.get_height() - 50))

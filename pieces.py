@@ -134,9 +134,14 @@ class Pawn(Piece):
                 valid_eat_moves.append(current_square)
         return valid_eat_moves
 
+    def update_score(self):
+        self.SCORE = 10
+        if 3 <= self.square.line_cord <= 5:
+            self.SCORE = 11
+
 
 class Knight(Piece):
-    SCORE = 30
+    SCORE = 32
     BLACK_IMAGE = pygame.image.load('black_knight.png')
     WHITE_IMAGE = pygame.image.load('white_knight.png')
 
@@ -182,7 +187,7 @@ class Rook(Piece):
 
 
 class Bishop(Piece):
-    SCORE = 30
+    SCORE = 33
     WHITE_IMAGE = pygame.image.load('white_bis.png')
     BLACK_IMAGE = pygame.image.load('black_bis.png')
 
@@ -194,6 +199,11 @@ class Bishop(Piece):
 
     def get_valid_move_squares(self):
         return _get_diagonal_valid_moves(self)
+
+    def update_score(self):
+        self.SCORE = 30
+        if 3 <= self.square.tur_cord <= 5:
+            self.SCORE = 35
 
 
 class Queen(Piece):
@@ -237,6 +247,7 @@ def _get_diagonal_valid_moves(piece):
                                                                            current_distance * -1,
                                                                            valid_squares)
     return valid_squares
+
 
 
 def _check_next_diagonal_valid_move(piece, line_distance_from_square, tur_distance_from_square, valid_squares):

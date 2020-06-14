@@ -63,7 +63,7 @@ def game_loop(white_team: Team, black_team: Team):
     while running:
 
         if team_got_turn is black_team:
-            piece_moved = bot.move(white_team, black_team, 4)
+            piece_moved = bot.move(white_team, black_team)
             if piece_moved is None:
                 # Bot has nowhere to go, because it's checkmated.
                 break

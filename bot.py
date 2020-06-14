@@ -2,8 +2,31 @@ from teams import Team
 import chess_utils
 import pieces
 
+def try_castling(white_team, bot_team):
+    king = None
+    rook1_square = None
+    rook2_square = None
+    for piece in bot_team.pieces:
+        if isinstance(piece, pieces.King):
+            king = piece
+            continue
+
+        if isinstance(piece, pieces.Rook):
+            if rook1_square is None:
+                rook1_square = piece.square
+                continue
+            rook2_square = piece.square
+
+    if chess_utils.move_turn(king, rook1_square, bot_team, white_team):
+        return True, king
+    return chess_utils.move_turn(king, rook2_square, bot_team, white_team), king
+
 
 def move(white_team: Team, bot_team: Team, depth=2):
+    is_castling, king = try_castling(white_team, bot_team)
+    if is_castling:
+        return king
+
     if chess_utils.is_checkmated(bot_team, white_team):
         return None
 
@@ -16,6 +39,7 @@ def move(white_team: Team, bot_team: Team, depth=2):
 def mini(white_team: Team, bot_team: Team, alpha, beta, depth):
     best_score = 1000
     best_move = None
+    score_after_move = 0
 
     if chess_utils.is_checkmated(bot_team, white_team):
         return best_score, best_move
@@ -33,12 +57,14 @@ def mini(white_team: Team, bot_team: Team, alpha, beta, depth):
 
                     if score_after_move <= alpha:
                         best_move = (piece, move_square)
-                        return alpha, best_move
 
                     if score_after_move < beta:
                         # Bigger score -> White player is winning.
                         best_move = (piece, move_square)
                         beta = score_after_move
+
+            if score_after_move <= alpha:
+                return alpha, best_move
 
     return beta, best_move
 
@@ -46,6 +72,7 @@ def mini(white_team: Team, bot_team: Team, alpha, beta, depth):
 def maxi(white_team: Team, bot_team: Team, alpha, beta, depth):
     best_move = None
     best_score = -1000
+    score_after_move = 0
 
     if chess_utils.is_checkmated(white_team, bot_team):
         return best_score, best_move
@@ -63,14 +90,17 @@ def maxi(white_team: Team, bot_team: Team, alpha, beta, depth):
 
                 if chess_utils.move_turn(piece, move_square, white_team, bot_team):
                     score_after_move, _ = mini(white_team, bot_team, alpha, beta, depth-1)
-                    if score_after_move > beta:
+
+                    if score_after_move >= beta:
                         best_move = (piece, move_square)
-                        return beta, best_move
 
                     if score_after_move > alpha:
                         # Bigger score -> White player is winning.
                         best_move = (piece, move_square)
                         alpha = score_after_move
+
+            if score_after_move >= beta:
+                return beta, best_move
 
     return alpha, best_move
 
