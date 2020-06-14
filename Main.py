@@ -63,8 +63,25 @@ def game_loop(white_team: Team, black_team: Team):
     while running:
 
         if team_got_turn is black_team:
-            piece_moved = bot.move(white_team, black_team)
+            piece_moved = bot.move(white_team, black_team, 4)
+            if piece_moved is None:
+                # Bot has nowhere to go, because it's checkmated.
+                break
             move_played(piece_moved, team_got_turn, team_doesnt_got_turn)
+
+            # Check if after bot move, you are checkmated.
+            if is_checkmated(team_got_turn, team_doesnt_got_turn):
+                break
+        # else:
+        #     piece_moved = bot.move(black_team, white_team)
+        #     if piece_moved is None:
+        #         # Bot has nowhere to go, because it's checkmated.
+        #         break
+        #     move_played(piece_moved, team_got_turn, team_doesnt_got_turn)
+        #
+        #     # Check if after bot move, you are checkmated.
+        #     if is_checkmated(team_got_turn, team_doesnt_got_turn):
+        #         break
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -99,8 +116,12 @@ def game_loop(white_team: Team, black_team: Team):
 
         redraw_game_screen(team_got_turn is white_team, white_team, black_team)
 
+# def opening_screen():
+#     Screen.screen.
+
 
 def main():
+
     timer.set_game_length(5)
     Screen.draw_screen()
     white_team = Team()

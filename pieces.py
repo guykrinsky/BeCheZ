@@ -48,7 +48,7 @@ class Piece(metaclass=abc.ABCMeta):
 
 
 class King(Piece):
-    SCORE = 100
+    SCORE = 0
     WHITE_IMAGE = pygame.image.load('white_king.png')
     BLACK_IMAGE = pygame.image.load('black_king.png')
 

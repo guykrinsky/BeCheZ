@@ -104,13 +104,13 @@ def draw_score(white_team, black_team):
     black_team.update_score()
 
     start_team_score = 195
-    length = (white_team.score - 100)/2
+    length = white_team.score / 2
     text = FONT.render("White team score:", False, colors.WHITE)
     SCORE_BOARD.blit(text, (0, SCORE_BOARD.get_height() - 50))
     pygame.draw.rect(SCORE_BOARD, colors.BLACK, (0, SCORE_BOARD.get_height() - 15, start_team_score, 10))
     pygame.draw.rect(SCORE_BOARD, colors.WHITE, (0, SCORE_BOARD.get_height() - 15, length, 10))
 
-    length = (black_team.score - 100)/2
+    length = black_team.score / 2
     x_pos = SCORE_BOARD.get_width() - start_team_score
     text = FONT.render("Black team score:", False, colors.BLACK)
     SCORE_BOARD.blit(text, (x_pos, SCORE_BOARD.get_height() - 50))
