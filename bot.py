@@ -155,7 +155,6 @@ def search_mate(white_team, bot_team, fake_moves,):
     search_mate(white_team, bot_team, fake_moves)
 
 
-
 def get_best_move(white_team, bot_team, is_fake_turn_white):
     best_score_dif = -180
     save_square = None

@@ -52,7 +52,7 @@ def move_played(piece_clicked, black_team, white_team):
     black_team.update_score()
 
 
-def game_loop(white_team: Team, black_team: Team):
+def game_loop(white_team: Team, black_team: Team, is_one_player):
     black_team.timer.pause()
     running = True
     piece_clicked = None
@@ -62,7 +62,7 @@ def game_loop(white_team: Team, black_team: Team):
     team_doesnt_got_turn = black_team
     while running:
 
-        if team_got_turn is black_team:
+        if team_got_turn is black_team and is_one_player:
             piece_moved = bot.move(white_team, black_team)
             if piece_moved is None:
                 # Bot has nowhere to go, because it's checkmated.
@@ -116,19 +116,16 @@ def game_loop(white_team: Team, black_team: Team):
 
         redraw_game_screen(team_got_turn is white_team, white_team, black_team)
 
-# def opening_screen():
-#     Screen.screen.
-
 
 def main():
-
+    is_one_player = Screen.starting_screen()
     timer.set_game_length(5)
     Screen.draw_screen()
     white_team = Team()
     black_team = Team()
     place_pieces(white_team, black_team)
     black_team.update_score()
-    game_loop(white_team, black_team)
+    game_loop(white_team, black_team, is_one_player)
 
 
 if __name__ == '__main__':

@@ -5,6 +5,8 @@ from teams import Team
 pygame.init()
 
 screen = pygame.display.set_mode((480, 600))
+SCREEN_WIDTH = 480
+SCREEN_HEIGHT = 600
 squares = []
 
 BOARD_LINE = 8
@@ -144,3 +146,45 @@ def color_all_square_to_original_color():
         for square in line:
             if square.color != square.original_color:
                 square.coloring_square_by_original_color()
+
+
+MIDDLE_HORIZENTAL = SCREEN_WIDTH/2
+RECT_WIDTH = 200
+RECT_HEIGHT = 100
+
+
+def starting_screen():
+    screen.fill(colors.WHITE)
+
+    current_print_height = 10
+
+    text = FONT.render("Welcome to chess", False, colors.DARK_RED)
+    screen.blit(text, (MIDDLE_HORIZENTAL - 90, current_print_height))
+    current_print_height += 100
+
+    one_player_rect = pygame.Rect(MIDDLE_HORIZENTAL - RECT_WIDTH/2, current_print_height, RECT_WIDTH, RECT_HEIGHT)
+    pygame.draw.rect(screen, colors.DARK_RED, one_player_rect)
+
+    text = FONT.render("One Player", False, colors.WHITE)
+    screen.blit(text, (one_player_rect.centerx - 50, one_player_rect.centery - 10))
+    current_print_height += 200
+
+    tow_player_rect = pygame.Rect(MIDDLE_HORIZENTAL - RECT_WIDTH/2, current_print_height, RECT_WIDTH, RECT_HEIGHT)
+    pygame.draw.rect(screen, colors.DARK_RED, tow_player_rect)
+
+    text = FONT.render("Tow Players", False, colors.WHITE)
+    screen.blit(text, (tow_player_rect.centerx - 50, tow_player_rect.centery - 10))
+    current_print_height += 100
+
+    pygame.display.flip()
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+
+                if one_player_rect.collidepoint(mouse_pos[0], mouse_pos[1]):
+                    return True
+
+                elif tow_player_rect.collidepoint(mouse_pos[0], mouse_pos[1]):
+                    return False
