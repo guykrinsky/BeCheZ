@@ -49,8 +49,8 @@ class Piece(metaclass=abc.ABCMeta):
 
 class King(Piece):
     SCORE = 0
-    WHITE_IMAGE = pygame.image.load('white_king.png')
-    BLACK_IMAGE = pygame.image.load('black_king.png')
+    WHITE_IMAGE = pygame.image.load('White_pictures/white_king.png')
+    BLACK_IMAGE = pygame.image.load('Black_pictures/black_king.png')
 
     def __init__(self, is_white):
         if is_white:
@@ -76,8 +76,8 @@ class King(Piece):
 
 class Pawn(Piece):
     SCORE = 10
-    WHITE_IMAGE = pygame.image.load('white_pawn.png')
-    BLACK_PAWN = pygame.image.load('black_pawn.png')
+    WHITE_IMAGE = pygame.image.load('White_pictures/white_pawn.png')
+    BLACK_PAWN = pygame.image.load('Black_pictures/black_pawn.png')
 
     def __init__(self, is_white, place):
         if is_white:
@@ -142,8 +142,8 @@ class Pawn(Piece):
 
 class Knight(Piece):
     SCORE = 32
-    BLACK_IMAGE = pygame.image.load('black_knight.png')
-    WHITE_IMAGE = pygame.image.load('white_knight.png')
+    BLACK_IMAGE = pygame.image.load('Black_pictures/black_knight.png')
+    WHITE_IMAGE = pygame.image.load('White_pictures/white_knight.png')
 
     def __init__(self, square, is_white):
         image = self.BLACK_IMAGE
@@ -170,8 +170,8 @@ class Knight(Piece):
 
 class Rook(Piece):
     SCORE = 50
-    WHITE_IMAGE = pygame.image.load('white_rook.png')
-    BLACK_IMAGE = pygame.image.load('black_roock.png')
+    WHITE_IMAGE = pygame.image.load('White_pictures/white_rook.png')
+    BLACK_IMAGE = pygame.image.load('Black_pictures/black_roock.png')
 
     def __init__(self, is_white, square):
         if is_white:
@@ -188,8 +188,8 @@ class Rook(Piece):
 
 class Bishop(Piece):
     SCORE = 33
-    WHITE_IMAGE = pygame.image.load('white_bis.png')
-    BLACK_IMAGE = pygame.image.load('black_bis.png')
+    WHITE_IMAGE = pygame.image.load('White_pictures/white_bis.png')
+    BLACK_IMAGE = pygame.image.load('Black_pictures/black_bis.png')
 
     def __init__(self, square, is_white):
         image = self.BLACK_IMAGE
@@ -208,8 +208,8 @@ class Bishop(Piece):
 
 class Queen(Piece):
     SCORE = 90
-    BLACK_IMAGE = pygame.image.load('black_queen.png')
-    WHITE_IMAGE = pygame.image.load('white_queen.png')
+    BLACK_IMAGE = pygame.image.load('Black_pictures/black_queen.png')
+    WHITE_IMAGE = pygame.image.load('White_pictures/white_queen.png')
 
     def __init__(self, square, is_white):
         image = self.BLACK_IMAGE
@@ -247,7 +247,6 @@ def _get_diagonal_valid_moves(piece):
                                                                            current_distance * -1,
                                                                            valid_squares)
     return valid_squares
-
 
 
 def _check_next_diagonal_valid_move(piece, line_distance_from_square, tur_distance_from_square, valid_squares):

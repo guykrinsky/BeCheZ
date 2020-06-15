@@ -2,6 +2,7 @@ from teams import Team
 import chess_utils
 import pieces
 
+
 def try_castling(white_team, bot_team):
     king = None
     rook1_square = None
@@ -17,9 +18,12 @@ def try_castling(white_team, bot_team):
                 continue
             rook2_square = piece.square
 
-    if chess_utils.move_turn(king, rook1_square, bot_team, white_team):
+    if rook1_square is not None and chess_utils.move_turn(king, rook1_square, bot_team, white_team):
         return True, king
-    return chess_utils.move_turn(king, rook2_square, bot_team, white_team), king
+    if rook2_square is not None and chess_utils.move_turn(king, rook2_square, bot_team, white_team):
+        return True, king
+
+    return False, king
 
 
 def move(white_team: Team, bot_team: Team, depth=2):
