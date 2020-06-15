@@ -119,6 +119,8 @@ def game_loop(white_team: Team, black_team: Team, is_one_player):
 
 def main():
     is_one_player = Screen.starting_screen()
+    if is_one_player is None:
+        return
     timer.set_game_length(5)
     Screen.draw_screen()
     white_team = Team()
