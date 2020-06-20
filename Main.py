@@ -4,6 +4,9 @@ import timer
 import pygame
 import Screen
 import bot
+import os
+
+SOUNDS_PATH = 'sounds'
 
 team_got_turn = None
 team_doesnt_got_turn = None
@@ -41,7 +44,7 @@ def move_played(piece_clicked, black_team, white_team):
     timer.switch_timers(team_got_turn, team_doesnt_got_turn)
 
     piece_clicked.move_counter += 1
-    pygame.mixer.Sound('pong.wav').play()
+    pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'pong.wav')).play()
     for piece in white_team.pieces:
         if piece.is_eaten:
             white_team.pieces.remove(piece)
@@ -105,7 +108,7 @@ def game_loop(white_team: Team, black_team: Team, is_one_player):
                             running = False
 
                     else:
-                        pygame.mixer.Sound('error.wav').play()
+                        pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'error.wav')).play()
 
                     piece_clicked = None
 

@@ -1,6 +1,10 @@
 import pygame
 from Screen import screen, squares, BOARD_LINE, square_is_valid, Square
 import abc
+import os
+
+WHITE_PIECES_PATH = os.path.join('pictures', 'white_pieces')
+BLACK_PIECES_PATH = os.path.join('pictures', 'black_pieces')
 
 
 class Piece(metaclass=abc.ABCMeta):
@@ -49,8 +53,8 @@ class Piece(metaclass=abc.ABCMeta):
 
 class King(Piece):
     SCORE = 0
-    WHITE_IMAGE = pygame.image.load('White_pictures/white_king.png')
-    BLACK_IMAGE = pygame.image.load('Black_pictures/black_king.png')
+    WHITE_IMAGE = pygame.image.load(os.path.join(WHITE_PIECES_PATH, 'white_king.png'))
+    BLACK_IMAGE = pygame.image.load(os.path.join(BLACK_PIECES_PATH, 'black_king.png'))
 
     def __init__(self, is_white):
         if is_white:
@@ -76,8 +80,8 @@ class King(Piece):
 
 class Pawn(Piece):
     SCORE = 10
-    WHITE_IMAGE = pygame.image.load('White_pictures/white_pawn.png')
-    BLACK_PAWN = pygame.image.load('Black_pictures/black_pawn.png')
+    WHITE_IMAGE = pygame.image.load(os.path.join(WHITE_PIECES_PATH, 'white_pawn.png'))
+    BLACK_PAWN = pygame.image.load(os.path.join(BLACK_PIECES_PATH, 'black_pawn.png'))
 
     def __init__(self, is_white, place):
         if is_white:
@@ -142,8 +146,8 @@ class Pawn(Piece):
 
 class Knight(Piece):
     SCORE = 32
-    BLACK_IMAGE = pygame.image.load('Black_pictures/black_knight.png')
-    WHITE_IMAGE = pygame.image.load('White_pictures/white_knight.png')
+    BLACK_IMAGE = pygame.image.load(os.path.join(BLACK_PIECES_PATH, 'black_knight.png'))
+    WHITE_IMAGE = pygame.image.load(os.path.join(WHITE_PIECES_PATH, 'white_knight.png'))
 
     def __init__(self, square, is_white):
         image = self.BLACK_IMAGE
@@ -170,8 +174,8 @@ class Knight(Piece):
 
 class Rook(Piece):
     SCORE = 50
-    WHITE_IMAGE = pygame.image.load('White_pictures/white_rook.png')
-    BLACK_IMAGE = pygame.image.load('Black_pictures/black_roock.png')
+    WHITE_IMAGE = pygame.image.load(os.path.join(WHITE_PIECES_PATH, 'white_rook.png'))
+    BLACK_IMAGE = pygame.image.load(os.path.join(BLACK_PIECES_PATH, 'black_roock.png'))
 
     def __init__(self, is_white, square):
         if is_white:
@@ -188,8 +192,8 @@ class Rook(Piece):
 
 class Bishop(Piece):
     SCORE = 33
-    WHITE_IMAGE = pygame.image.load('White_pictures/white_bis.png')
-    BLACK_IMAGE = pygame.image.load('Black_pictures/black_bis.png')
+    WHITE_IMAGE = pygame.image.load(os.path.join(WHITE_PIECES_PATH, 'white_bis.png'))
+    BLACK_IMAGE = pygame.image.load(os.path.join(BLACK_PIECES_PATH, 'black_bis.png'))
 
     def __init__(self, square, is_white):
         image = self.BLACK_IMAGE
@@ -208,8 +212,8 @@ class Bishop(Piece):
 
 class Queen(Piece):
     SCORE = 90
-    BLACK_IMAGE = pygame.image.load('Black_pictures/black_queen.png')
-    WHITE_IMAGE = pygame.image.load('White_pictures/white_queen.png')
+    BLACK_IMAGE = pygame.image.load(os.path.join(BLACK_PIECES_PATH, 'black_queen.png'))
+    WHITE_IMAGE = pygame.image.load(os.path.join(WHITE_PIECES_PATH, 'white_queen.png'))
 
     def __init__(self, square, is_white):
         image = self.BLACK_IMAGE

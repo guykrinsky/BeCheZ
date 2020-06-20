@@ -1,13 +1,15 @@
 import pygame
 import colors
 from teams import Team
+import os
 
 pygame.init()
 
-screen = pygame.display.set_mode((480, 600))
 SCREEN_WIDTH = 480
 SCREEN_HEIGHT = 600
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 squares = []
+PICTURES_PATH = 'pictures'
 
 BOARD_LINE = 8
 HEIGHT_OF_SCOREBOARD = 120
@@ -155,7 +157,7 @@ RECT_HEIGHT = 100
 
 def starting_screen():
     screen.fill(colors.WHITE)
-    bg_image = pygame.image.load('chess.png')
+    bg_image = pygame.image.load(os.path.join(PICTURES_PATH, 'opening_screen_picture.png'))
     screen.blit(bg_image, (0, 0))
     current_print_height = 150
 
