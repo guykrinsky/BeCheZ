@@ -45,7 +45,8 @@ class Piece(metaclass=abc.ABCMeta):
         pass
 
     def draw(self):
-        screen.blit(self.image, self.square.rect)
+        if not self.is_eaten:
+            screen.blit(self.image, self.square.rect)
 
     def update_score(self):
         pass

@@ -68,7 +68,7 @@ def is_checkmated(team_got_turn: Team, team_doesnt_got_turn: Team):
     return True
 
 
-def check_if_there_is_chess(team_doesnt_got_turn):
+def is_there_chess(team_doesnt_got_turn):
     for piece in team_doesnt_got_turn.pieces:
         if piece.is_eaten:
             continue
@@ -79,6 +79,13 @@ def check_if_there_is_chess(team_doesnt_got_turn):
                 return True
 
     return False
+
+
+def is_check_after_move(clicked_square, team_doesnt_got_turn, piece_clicked: pieces.Piece):
+    with SaveMove(piece_clicked, clicked_square):
+        piece_clicked.move(clicked_square)
+        check_after_move = is_there_chess(team_doesnt_got_turn)
+    return check_after_move
 
 
 def move_turn(piece_clicked, clicked_square, team_got_turn: Team, team_doesnt_got_turn: Team):
@@ -148,15 +155,8 @@ def check_castling(king, rook_square, team_got_turn, team_doesnt_got_turn):
     if king.move_counter != 0 or rook.move_counter != 0:
         return False
 
-    if check_if_there_is_chess(team_doesnt_got_turn):
+    if is_there_chess(team_doesnt_got_turn):
         return False
 
     return do_castling(king, rook, team_got_turn, team_doesnt_got_turn)
 
-
-def is_check_after_move(clicked_square, team_doesnt_got_turn, piece_clicked: pieces.Piece):
-    with SaveMove(piece_clicked, clicked_square):
-        piece_clicked.move(clicked_square)
-        check_after_move = check_if_there_is_chess(team_doesnt_got_turn)
-
-    return check_after_move
