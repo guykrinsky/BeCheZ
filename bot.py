@@ -26,7 +26,7 @@ def try_castling(white_team, bot_team):
     return False, king
 
 
-def move(white_team: Team, bot_team: Team, depth=2):
+def move(white_team: Team, bot_team: Team, depth=1):
     is_castling, king = try_castling(white_team, bot_team)
     if is_castling:
         return king

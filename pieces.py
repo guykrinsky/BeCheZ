@@ -8,7 +8,8 @@ BLACK_PIECES_PATH = os.path.join('pictures', 'black_pieces')
 
 
 class Piece(metaclass=abc.ABCMeta):
-    SCORE = 0
+    BASIC_SCORE = 0
+    SCORE_EVOLUTION_TABLE = None
 
     def __init__(self, image, square, team):
         self.image = image
@@ -19,6 +20,8 @@ class Piece(metaclass=abc.ABCMeta):
         self.save_location = None
         self.starting_square = square
         self.move_counter = 0
+        self.score = 0
+        self.update_score()
 
     def _is_already_moved(self):
         return self.square is self.starting_square
@@ -48,14 +51,27 @@ class Piece(metaclass=abc.ABCMeta):
         if not self.is_eaten:
             screen.blit(self.image, self.square.rect)
 
+    @property
+    def _score(self):
+        return self.BASIC_SCORE + self.SCORE_EVOLUTION_TABLE[self.square.line_cord][self.square.tur_cord]
+
     def update_score(self):
-        pass
+        self.score = self.BASIC_SCORE
+        self.score += self.SCORE_EVOLUTION_TABLE[self.square.line_cord][self.square.tur_cord]
 
 
 class King(Piece):
-    SCORE = 0
+    BASIC_SCORE = 0
     WHITE_IMAGE = pygame.image.load(os.path.join(WHITE_PIECES_PATH, 'white_king.png'))
     BLACK_IMAGE = pygame.image.load(os.path.join(BLACK_PIECES_PATH, 'black_king.png'))
+    SCORE_EVOLUTION_TABLE = ([-30, -40, -40, -50, -50, -40, -40, -30],
+                             [-30, -40, -40, -50, -50, -40, -40, -30],
+                             [-30, -40, -40, -50, -50, -40, -40, -30],
+                             [-30, -40, -40, -50, -50, -40, -40, -30],
+                             [-20, -30, -30, -40, -40, -30, -30, -20],
+                             [-10, -20, -20, -20, -20, -20, -20, -10],
+                             [20, 20,  0,  0,  0,  0, 20, 20],
+                             [20, 30, 10,  0,  0, 10, 30, 20])
 
     def __init__(self, is_white):
         if is_white:
@@ -80,9 +96,17 @@ class King(Piece):
 
 
 class Pawn(Piece):
-    SCORE = 10
+    BASIC_SCORE = 10
     WHITE_IMAGE = pygame.image.load(os.path.join(WHITE_PIECES_PATH, 'white_pawn.png'))
     BLACK_PAWN = pygame.image.load(os.path.join(BLACK_PIECES_PATH, 'black_pawn.png'))
+    SCORE_EVOLUTION_TABLE = ([0,  0,  0,  0,  0,  0,  0,  0],
+                            [50, 50, 50, 50, 50, 50, 50, 50],
+                            [10, 10, 20, 30, 30, 20, 10, 10],
+                             [5,  5, 10, 25, 25, 10,  5,  5],
+                             [0,  0,  0, 20, 200,  0,  0,  0],
+                             [5, -5,-10,  0,  0,-10, -5,  5],
+                             [5, 10, 10,-20,-20, 10, 10,  5],
+                             [0,  0,  0,  0,  0,  0,  0,  0])
 
     def __init__(self, is_white, place):
         if is_white:
@@ -139,16 +163,19 @@ class Pawn(Piece):
                 valid_eat_moves.append(current_square)
         return valid_eat_moves
 
-    def update_score(self):
-        self.SCORE = 10
-        if 3 <= self.square.line_cord <= 5:
-            self.SCORE = 11
-
 
 class Knight(Piece):
-    SCORE = 32
+    BASIC_SCORE = 32
     BLACK_IMAGE = pygame.image.load(os.path.join(BLACK_PIECES_PATH, 'black_knight.png'))
     WHITE_IMAGE = pygame.image.load(os.path.join(WHITE_PIECES_PATH, 'white_knight.png'))
+    SCORE_EVOLUTION_TABLE = ([-50,-40,-30,-30,-30,-30,-40,-50],
+                            [-40,-20,  0,  0,  0,  0, -20, -40],
+                            [-30,  0, 10, 15, 15, 10,  0, -30],
+                            [-30,  5, 15, 20, 20, 15,  5, -30],
+                            [-30,  0, 15, 20, 20, 15,  0, -30],
+                            [-30,  5, 10, 15, 15, 10,  5, -30],
+                            [-40, -20,  0,  5,  5,  0, -20, -40],
+                            [-50, -40, -30, -30, -30, -30, -40, -50])
 
     def __init__(self, square, is_white):
         image = self.BLACK_IMAGE
@@ -167,16 +194,19 @@ class Knight(Piece):
                 valid_moves.append(squares[self_line+line_move][self_tur+tur_move])
         return valid_moves
 
-    def update_score(self):
-        self.SCORE = 25
-        if 3 <= self.square.tur_cord <= 5:
-            self.SCORE = 35
-
 
 class Rook(Piece):
-    SCORE = 50
+    BASIC_SCORE = 50
     WHITE_IMAGE = pygame.image.load(os.path.join(WHITE_PIECES_PATH, 'white_rook.png'))
     BLACK_IMAGE = pygame.image.load(os.path.join(BLACK_PIECES_PATH, 'black_roock.png'))
+    SCORE_EVOLUTION_TABLE = ([0,  0,  0,  0,  0,  0,  0,  0],
+                             [5, 10, 10, 10, 10, 10, 10,  5],
+                             [-5,  0,  0,  0,  0,  0,  0, -5],
+                             [-5,  0,  0,  0,  0,  0,  0, -5],
+                             [-5,  0,  0,  0,  0,  0,  0, -5],
+                             [-5,  0,  0,  0,  0,  0,  0, -5],
+                             [-5,  0,  0,  0,  0,  0,  0, -5],
+                             [0,  0,  0,  5,  5,  0,  0,  0])
 
     def __init__(self, is_white, square):
         if is_white:
@@ -192,9 +222,17 @@ class Rook(Piece):
 
 
 class Bishop(Piece):
-    SCORE = 33
+    BASIC_SCORE = 33
     WHITE_IMAGE = pygame.image.load(os.path.join(WHITE_PIECES_PATH, 'white_bis.png'))
     BLACK_IMAGE = pygame.image.load(os.path.join(BLACK_PIECES_PATH, 'black_bis.png'))
+    SCORE_EVOLUTION_TABLE = ([-20,-10,-10,-10,-10,-10,-10,-20],
+                            [-10,  0,  0,  0,  0,  0,  0,-10],
+                            [-10,  0,  5, 10, 10,  5,  0,-10],
+                            [-10,  5,  5, 10, 10,  5,  5,-10],
+                            [-10,  0, 10, 10, 10, 10,  0,-10],
+                            [-10, 10, 10, 10, 10, 10, 10,-10],
+                            [-10,  5,  0,  0,  0,  0,  5,-10],
+                            [-20,-10,-10,-10,-10,-10,-10,-20])
 
     def __init__(self, square, is_white):
         image = self.BLACK_IMAGE
@@ -205,16 +243,19 @@ class Bishop(Piece):
     def get_valid_move_squares(self):
         return _get_diagonal_valid_moves(self)
 
-    def update_score(self):
-        self.SCORE = 30
-        if 3 <= self.square.tur_cord <= 5:
-            self.SCORE = 35
-
 
 class Queen(Piece):
-    SCORE = 90
+    BASIC_SCORE = 90
     BLACK_IMAGE = pygame.image.load(os.path.join(BLACK_PIECES_PATH, 'black_queen.png'))
     WHITE_IMAGE = pygame.image.load(os.path.join(WHITE_PIECES_PATH, 'white_queen.png'))
+    SCORE_EVOLUTION_TABLE = ([-20, -10, -10, -5, -5, -10, -10, -20],
+                             [-10, 0, 0, 0, 0, 0, 0, -10],
+                             [-10, 0, 5, 5, 5, 5, 0, -10],
+                             [-5, 0, 5, 5, 5, 5, 0, -5],
+                             [0, 0, 5, 5, 5, 5, 0, -5],
+                             [-10, 5, 5, 5, 5, 5, 0, -10],
+                             [-10, 0, 5, 0, 0, 0, 0, -10],
+                             [-20, -10, -10, -5, -5, -10, -10, -20])
 
     def __init__(self, square, is_white):
         image = self.BLACK_IMAGE
