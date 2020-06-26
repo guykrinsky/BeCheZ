@@ -32,7 +32,7 @@ def get_square_clicked():
                 return square
 
 
-def move_played(piece_clicked, black_team, white_team):
+def update_game_after_move(piece_clicked, black_team, white_team):
     global team_got_turn
     global team_doesnt_got_turn
     team_got_turn = team_doesnt_got_turn
@@ -70,7 +70,7 @@ def game_loop(white_team: Team, black_team: Team, is_one_player):
             if piece_moved is None:
                 # Bot has nowhere to go, because it's checkmated.
                 break
-            move_played(piece_moved, team_got_turn, team_doesnt_got_turn)
+            update_game_after_move(piece_moved, team_got_turn, team_doesnt_got_turn)
 
             # Check if after bot move, you are checkmated.
             if is_checkmated(team_got_turn, team_doesnt_got_turn):
@@ -103,7 +103,7 @@ def game_loop(white_team: Team, black_team: Team, is_one_player):
 
                 else:
                     if move_turn(piece_clicked, clicked_square, team_got_turn, team_doesnt_got_turn):
-                        move_played(piece_clicked, black_team, white_team)
+                        update_game_after_move(piece_clicked, black_team, white_team)
                         if is_checkmated(team_got_turn, team_doesnt_got_turn):
                             running = False
 
