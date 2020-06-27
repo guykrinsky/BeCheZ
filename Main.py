@@ -32,7 +32,7 @@ def get_square_clicked():
                 return square
 
 
-def update_game_after_move(piece_clicked, black_team, white_team):
+def switch_turn(white_team, black_team):
     global team_got_turn
     global team_doesnt_got_turn
     team_got_turn = team_doesnt_got_turn
@@ -43,14 +43,24 @@ def update_game_after_move(piece_clicked, black_team, white_team):
 
     timer.switch_timers(team_got_turn, team_doesnt_got_turn)
 
-    piece_clicked.move_counter += 1
-    pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'pong.wav')).play()
+
+def remove_eaten_pieces(white_team, black_team):
     for piece in white_team.pieces:
         if piece.is_eaten:
             white_team.pieces.remove(piece)
     for piece in black_team.pieces:
         if piece.is_eaten:
             black_team.pieces.remove(piece)
+
+
+def update_game_after_move(piece_clicked, black_team, white_team):
+    pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'pong.wav')).play()
+
+    switch_turn(white_team, black_team)
+
+    piece_clicked.move_counter += 1
+
+    remove_eaten_pieces(white_team, black_team)
     white_team.update_score()
     black_team.update_score()
 
@@ -97,17 +107,20 @@ def game_loop(white_team: Team, black_team: Team, is_one_player):
                     continue
 
                 if piece_clicked is None:
-                    if clicked_square.current_piece is not None and clicked_square.current_piece in team_got_turn.pieces:
-                        piece_clicked = clicked_square.current_piece
+                    piece_clicked = clicked_square.current_piece
+                    if piece_clicked in team_got_turn.pieces:
                         piece_clicked.color_next_step()
 
+                # If user already clicked on a piece, we want to check which square he clicked on.
                 else:
                     if move_turn(piece_clicked, clicked_square, team_got_turn, team_doesnt_got_turn):
+                        # Move is valid.
                         update_game_after_move(piece_clicked, black_team, white_team)
                         if is_checkmated(team_got_turn, team_doesnt_got_turn):
                             running = False
 
                     else:
+                        # The move wasn't valid.
                         pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'error.wav')).play()
 
                     piece_clicked = None
