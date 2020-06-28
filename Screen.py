@@ -6,13 +6,13 @@ import os
 pygame.init()
 
 SCREEN_WIDTH = 480
-SCREEN_HEIGHT = 600
+SCREEN_HEIGHT = 680
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 squares = []
 PICTURES_PATH = 'pictures'
 
 BOARD_LINE = 8
-HEIGHT_OF_SCOREBOARD = 120
+HEIGHT_OF_SCOREBOARD = 200
 SCORE_BOARD = pygame.Surface((screen.get_width(), HEIGHT_OF_SCOREBOARD))
 FONT = pygame.font.SysFont('comicsansms', 30)
 
@@ -57,16 +57,21 @@ def square_is_valid(tur, line, is_white_team):
     return False
 
 
-def draw_bg(is_white_team_turn, white_team: Team, black_team: Team):
-    white_timer = white_team.timer
-    black_timer = black_team.timer
+def draw_bg(team_got_turn: Team, team_doesnt_got_turn: Team):
+    white_timer = team_doesnt_got_turn.timer
+    black_timer = team_got_turn.timer
+    if team_got_turn.is_white_team:
+        white_timer = team_got_turn.timer
+        black_timer = team_doesnt_got_turn.timer
+
     screen.blit(SCORE_BOARD, (0, 0))
-    pygame.draw.rect(SCORE_BOARD, colors.BROWN, (0, 0, SCORE_BOARD.get_width(), SCORE_BOARD.get_height()))
+    bg_image = pygame.image.load(os.path.join(PICTURES_PATH, 'boardscore_bg.png'))
+    SCORE_BOARD.blit(bg_image, (0, 0))
 
     draw_squares_bg()
-    draw_who_turn_is(is_white_team_turn)
+    draw_who_turn_is(team_got_turn)
     draw_timer(white_timer, black_timer)
-    draw_score(white_team, black_team)
+    draw_score(team_got_turn, team_doesnt_got_turn)
 
 
 def draw_squares_bg():
@@ -75,8 +80,8 @@ def draw_squares_bg():
             square.draw()
 
 
-def draw_who_turn_is(is_white_team_turn):
-    if is_white_team_turn:
+def draw_who_turn_is(team_got_turn):
+    if team_got_turn.is_white_team:
         text = FONT.render('White Player Turn', False, colors.WHITE)
     else:
         text = FONT.render('Black Player Turn', False, colors.BLACK)
@@ -103,26 +108,32 @@ def draw_timer(white_timer, black_timer):
     SCORE_BOARD.blit(text, (SCORE_BOARD.get_width() - 55, 0))
 
 
-def draw_score(white_team, black_team):
+def draw_score(team_got_turn, team_doesnt_got_turn):
+    white_team = team_doesnt_got_turn
+    black_team = team_got_turn
+    if team_got_turn.is_white_team:
+        white_team = team_got_turn
+        black_team = team_doesnt_got_turn
+
     white_team.update_score()
     black_team.update_score()
 
     start_team_score = 200
-    length = white_team.score / 2
+    length = (white_team.score-2000) / 100
     text = FONT.render("White team score:", False, colors.WHITE)
     SCORE_BOARD.blit(text, (0, SCORE_BOARD.get_height() - 50))
     pygame.draw.rect(SCORE_BOARD, colors.BLACK, (0, SCORE_BOARD.get_height() - 15, start_team_score, 10))
     pygame.draw.rect(SCORE_BOARD, colors.WHITE, (0, SCORE_BOARD.get_height() - 15, length, 10))
 
-    length = black_team.score / 2
+    length = (black_team.score-2000) / 100
     x_pos = SCORE_BOARD.get_width() - start_team_score
-    text = FONT.render("Black team score:", False, colors.BLACK)
+    text = FONT.render("Black team score:", False, colors.WHITE)
     SCORE_BOARD.blit(text, (x_pos, SCORE_BOARD.get_height() - 50))
     pygame.draw.rect(SCORE_BOARD, colors.WHITE, (x_pos, SCORE_BOARD.get_height() - 15, start_team_score, 10))
     pygame.draw.rect(SCORE_BOARD, colors.BLACK, (x_pos, SCORE_BOARD.get_height() - 15, length, 10))
 
 
-def draw_screen():
+def add_squares_to_board():
     SCORE_BOARD.fill(colors.BROWN)
     x = 0
     y = HEIGHT_OF_SCOREBOARD
@@ -131,7 +142,7 @@ def draw_screen():
         square_in_line = []
         for tur in range(BOARD_LINE):
             if tur % 2 == tmp:
-                color = colors.WHITE
+                color = colors.LIGHT_BROWN
             else:
                 color = colors.DARK_BROWN
 
