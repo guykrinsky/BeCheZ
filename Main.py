@@ -12,8 +12,8 @@ team_got_turn = None
 team_doesnt_got_turn = None
 
 
-def redraw_game_screen(is_white_team_turn, white_team, black_team):
-    Screen.draw_bg(is_white_team_turn, white_team, black_team)
+def redraw_game_screen(team_got_turn, team_doesnt_got_turn):
+    Screen.draw_bg(team_got_turn, team_doesnt_got_turn)
 
     for line in Screen.squares:
         for square in line:
@@ -65,7 +65,7 @@ def update_game_after_move(piece_clicked, black_team, white_team):
     black_team.update_score()
 
 
-def game_loop(white_team: Team, black_team: Team, is_one_player):
+def game_loop(white_team: Team, black_team: Team, is_one_player_playing):
     black_team.timer.pause()
     running = True
     piece_clicked = None
@@ -75,15 +75,17 @@ def game_loop(white_team: Team, black_team: Team, is_one_player):
     team_doesnt_got_turn = black_team
     while running:
 
-        if team_got_turn is black_team and is_one_player:
+        if team_got_turn is black_team and is_one_player_playing:
             piece_moved = bot.move(white_team, black_team)
             if piece_moved is None:
                 # Bot has nowhere to go, because it's checkmated.
+                print(f'Team won is {team_doesnt_got_turn}')
                 break
             update_game_after_move(piece_moved, team_got_turn, team_doesnt_got_turn)
 
             # Check if after bot move, you are checkmated.
             if is_checkmated(team_got_turn, team_doesnt_got_turn):
+                print(f'Team won is {team_doesnt_got_turn}')
                 break
         # else:
         #     piece_moved = bot.move(black_team, white_team)
@@ -111,15 +113,18 @@ def game_loop(white_team: Team, black_team: Team, is_one_player):
                     if piece_clicked in team_got_turn.pieces:
                         piece_clicked.color_next_step()
 
-                # If user already clicked on a piece, we want to check which square he clicked on.
                 else:
-                    if move_turn(piece_clicked, clicked_square, team_got_turn, team_doesnt_got_turn):
+                    # If user already clicked on a piece,
+                    # we try to move the piece to the square the user clicked on.
+                    try:
+                        try_to_move(piece_clicked, clicked_square, team_got_turn, team_doesnt_got_turn)
                         # Move is valid.
                         update_game_after_move(piece_clicked, black_team, white_team)
                         if is_checkmated(team_got_turn, team_doesnt_got_turn):
+                            print(f'Team won is {team_doesnt_got_turn}')
                             running = False
 
-                    else:
+                    except MoveError:
                         # The move wasn't valid.
                         pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'error.wav')).play()
 
@@ -130,7 +135,7 @@ def game_loop(white_team: Team, black_team: Team, is_one_player):
         if black_team.timer.is_game_ended():
             break
 
-        redraw_game_screen(team_got_turn is white_team, white_team, black_team)
+        redraw_game_screen(team_got_turn, team_doesnt_got_turn)
 
 
 def main():
@@ -138,9 +143,9 @@ def main():
     if is_one_player is None:
         return
     timer.set_game_length(5)
-    Screen.draw_screen()
-    white_team = Team()
-    black_team = Team()
+    Screen.add_squares_to_board()
+    white_team = Team(True)
+    black_team = Team(False)
     place_pieces(white_team, black_team)
     black_team.update_score()
     game_loop(white_team, black_team, is_one_player)

@@ -80,7 +80,7 @@ class King(Piece):
         else:
             image = self.BLACK_IMAGE
             square = squares[7][3]
-        super().__init__(image, square, is_white)
+        super().__init__(image, square, is_white, 'King')
 
     def get_valid_move_squares(self):
         line = self.square.line_cord
@@ -115,7 +115,7 @@ class Pawn(Piece):
         else:
             square = squares[6][place]
             image = self.BLACK_PAWN
-        super().__init__(image, square, is_white)
+        super().__init__(image, square, is_white, 'Pawn')
 
     def is_reached_to_end(self):
         if self.IS_IN_WHITE_TEAM:
@@ -181,7 +181,7 @@ class Knight(Piece):
         image = self.BLACK_IMAGE
         if is_white:
             image = self.WHITE_IMAGE
-        super().__init__(image, square, is_white)
+        super().__init__(image, square, is_white, 'Knight')
 
     def get_valid_move_squares(self):
         valid_moves = []
@@ -213,7 +213,7 @@ class Rook(Piece):
             image = self.WHITE_IMAGE
         else:
             image = self.BLACK_IMAGE
-        super(Rook, self).__init__(image, square, is_white)
+        super(Rook, self).__init__(image, square, is_white, 'Rook')
 
     def get_valid_move_squares(self):
         valid_moves = _get_vertical_valid_move_squares(self)
@@ -238,7 +238,7 @@ class Bishop(Piece):
         image = self.BLACK_IMAGE
         if is_white:
             image = self.WHITE_IMAGE
-        super().__init__(image, square, is_white)
+        super().__init__(image, square, is_white, 'Bishop')
 
     def get_valid_move_squares(self):
         return _get_diagonal_valid_moves(self)
@@ -261,7 +261,7 @@ class Queen(Piece):
         image = self.BLACK_IMAGE
         if is_white:
             image = self.WHITE_IMAGE
-        super().__init__(image, square, is_white)
+        super().__init__(image, square, is_white, 'Queen')
 
     def get_valid_move_squares(self):
         valid_squares = []

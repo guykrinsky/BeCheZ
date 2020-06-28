@@ -23,6 +23,26 @@ class SaveMove:
             self.eaten_piece.is_eaten = False
 
 
+class MoveError(Exception):
+    pass
+
+
+class CheckAfterMove(MoveError):
+    pass
+
+
+class SquareNotInValidMoves(MoveError):
+    pass
+
+
+class TeamDoesntGotTurn(MoveError):
+    pass
+
+
+class CantCastling(MoveError):
+    pass
+
+
 def add_pawns(white_team, black_team):
     for place in range(Screen.BOARD_LINE):
         white_team.pieces.append(pieces.Pawn(True, place))
@@ -48,7 +68,7 @@ def place_pieces(white_team: Team, black_team: Team):
     black_team.pieces.append(pieces.Queen(Screen.squares[7][4], False))
     white_team.pieces.append(pieces.Queen(Screen.squares[0][4], True))
     # Added rooks.
-    black_team.pieces.extend([pieces.Rook(False, Screen.squares[7][0]),pieces.Rook(False, Screen.squares[7][7])])
+    black_team.pieces.extend([pieces.Rook(False, Screen.squares[7][0]), pieces.Rook(False, Screen.squares[7][7])])
     white_team.pieces.extend([pieces.Rook(True, Screen.squares[0][0]), pieces.Rook(True, Screen.squares[0][7])])
 
     add_pawns(white_team, black_team)
@@ -58,7 +78,6 @@ def place_pieces(white_team: Team, black_team: Team):
 
 
 def is_checkmated(team_got_turn: Team, team_doesnt_got_turn: Team):
-
     for piece in team_got_turn.pieces:
         valid_move_squares = piece.get_valid_move_squares()
         for check_move in valid_move_squares:
@@ -88,26 +107,29 @@ def is_check_after_move(clicked_square, team_doesnt_got_turn, piece_clicked: pie
     return check_after_move
 
 
-def move_turn(piece_clicked, clicked_square, team_got_turn: Team, team_doesnt_got_turn: Team):
+def try_to_move(piece_clicked, clicked_square, team_got_turn: Team, team_doesnt_got_turn: Team):
     Screen.color_all_square_to_original_color()
 
     if piece_clicked not in team_got_turn.pieces:
-        return False
+        raise TeamDoesntGotTurn
 
     # check_castling.
     if isinstance(piece_clicked, pieces.King) and isinstance(clicked_square.current_piece, pieces.Rook):
-        return check_castling(piece_clicked, clicked_square, team_got_turn, team_doesnt_got_turn)
+        if not check_castling(piece_clicked, clicked_square, team_got_turn, team_doesnt_got_turn):
+            raise CantCastling
+        # Did castling.
+        return
 
     if clicked_square not in piece_clicked.get_valid_move_squares():
-        return False
+        raise SquareNotInValidMoves
+
     if is_check_after_move(clicked_square, team_doesnt_got_turn, piece_clicked):
-        return False
+        raise CheckAfterMove
 
     piece_clicked.move(clicked_square)
 
     if isinstance(piece_clicked, pieces.Pawn) and piece_clicked.is_reached_to_end():
         replace(team_got_turn, piece_clicked)
-    return True
 
 
 def replace(pawn_team: Team, pawn):
@@ -129,7 +151,6 @@ def replace(pawn_team: Team, pawn):
 
 
 def do_castling(king, rook, team_got_turn, team_doesnt_got_turn):
-
     king_line = king.square.line_cord
     king_tur = king.square.tur_cord
     save_king_location = (king_line, king_tur)
@@ -139,9 +160,9 @@ def do_castling(king, rook, team_got_turn, team_doesnt_got_turn):
         next_king_move = 1
 
     king_tur += next_king_move
-    if move_turn(king, Screen.squares[king_line][king_tur], team_got_turn, team_doesnt_got_turn):
+    if try_to_move(king, Screen.squares[king_line][king_tur], team_got_turn, team_doesnt_got_turn):
         king_tur += next_king_move
-        if move_turn(king, Screen.squares[king_line][king_tur], team_got_turn, team_doesnt_got_turn):
+        if try_to_move(king, Screen.squares[king_line][king_tur], team_got_turn, team_doesnt_got_turn):
             rook.move(Screen.squares[king_line][king_tur - next_king_move])
             return True
 
@@ -159,4 +180,3 @@ def check_castling(king, rook_square, team_got_turn, team_doesnt_got_turn):
         return False
 
     return do_castling(king, rook, team_got_turn, team_doesnt_got_turn)
-
