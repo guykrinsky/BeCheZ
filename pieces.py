@@ -11,7 +11,7 @@ class Piece(metaclass=abc.ABCMeta):
     BASIC_SCORE = 0
     SCORE_EVOLUTION_TABLE = None
 
-    def __init__(self, image, square, team):
+    def __init__(self, image, square, team, type):
         self.image = image
         self.square = square
         self.square.current_piece = self
@@ -20,8 +20,9 @@ class Piece(metaclass=abc.ABCMeta):
         self.save_location = None
         self.starting_square = square
         self.move_counter = 0
+        self.TYPE = type
         if self.IS_IN_WHITE_TEAM:
-                self.SCORE_EVOLUTION_TABLE.reverse()
+            self.SCORE_EVOLUTION_TABLE.reverse()
 
     def _is_already_moved(self):
         return self.square is self.starting_square
@@ -53,6 +54,10 @@ class Piece(metaclass=abc.ABCMeta):
     @property
     def score(self):
         return self.BASIC_SCORE + self.SCORE_EVOLUTION_TABLE[self.square.line_cord][self.square.tur_cord]
+
+    def __str__(self):
+        return f'{self.TYPE} position - line: {self.square.line_cord} tur: {self.square.tur_cord}' \
+               f' is eaten - {self.is_eaten}'
 
 
 class King(Piece):
