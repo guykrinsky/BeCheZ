@@ -65,7 +65,15 @@ def update_game_after_move(piece_clicked, black_team, white_team):
     black_team.update_score()
 
 
+def print_board(white_team, black_team):
+    print(white_team)
+    white_team.print_pieces()
+    print(black_team)
+    black_team.print_pieces()
+
+
 def game_loop(white_team: Team, black_team: Team, is_one_player_playing):
+    print_board(white_team, black_team)
     black_team.timer.pause()
     running = True
     piece_clicked = None

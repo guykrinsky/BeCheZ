@@ -41,6 +41,9 @@ class Square:
         else:
             self.color = self.original_color
 
+    def __str__(self):
+        return f'(line: {self.line_cord}, tur: {self.tur_cord})'
+
 
 def square_is_valid(tur, line, is_white_team):
     """
@@ -51,7 +54,7 @@ def square_is_valid(tur, line, is_white_team):
             check_square_piece = squares[line][tur].current_piece
             if check_square_piece is not None:
                 # Check if other piece is on the same team.
-                return is_white_team != check_square_piece.IS_IN_WHITE_TEAM
+                return is_white_team != check_square_piece.is_in_white_team
             # Next move is inside board and empty square.
             return True
     return False
