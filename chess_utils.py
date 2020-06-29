@@ -15,12 +15,18 @@ class SaveMove:
         self.eaten_piece = self.move_square.current_piece
         self.current_piece_square = self.piece.square
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exception_type, exc_value, exc_tb):
         # Move pieces moved to there last position.
+        if exception_type is DidntMove:
+            return
         self.piece.move(self.current_piece_square)
         if self.eaten_piece is not None:
             self.eaten_piece.move(self.eaten_piece.square)
             self.eaten_piece.is_eaten = False
+
+
+class DidntMove(Exception):
+    pass
 
 
 class MoveError(Exception):
@@ -53,8 +59,8 @@ def add_pawns(white_team, black_team):
 def get_score(white_team: Team, black_team: Team):
     white_team.update_score()
     black_team.update_score()
-
-    return white_team.score - black_team.score
+    score_dif = white_team.score - black_team.score
+    return score_dif
 
 
 def place_pieces(white_team: Team, black_team: Team):
@@ -137,10 +143,10 @@ def replace(pawn_team: Team, pawn):
     print("Which piece do you want instead of the pawn?")
     piece_chose = input("q - queen, b - bishop, r - rook, k - knight\n")
     option_to_piece = {
-        'q': pieces.Queen(pawn.square, pawn.IS_IN_WHITE_TEAM),
-        'b': pieces.Bishop(pawn.square, pawn.IS_IN_WHITE_TEAM),
-        'r': pieces.Rook(pawn.IS_IN_WHITE_TEAM, pawn.square),
-        'k': pieces.Knight(pawn.square, pawn.IS_IN_WHITE_TEAM),
+        'q': pieces.Queen(pawn.square, pawn.is_in_white_team),
+        'b': pieces.Bishop(pawn.square, pawn.is_in_white_team),
+        'r': pieces.Rook(pawn.is_in_white_team, pawn.square),
+        'k': pieces.Knight(pawn.square, pawn.is_in_white_team),
     }
     try:
         pawn_team.pieces.append(option_to_piece[piece_chose])
@@ -160,14 +166,16 @@ def do_castling(king, rook, team_got_turn, team_doesnt_got_turn):
         next_king_move = 1
 
     king_tur += next_king_move
-    if try_to_move(king, Screen.squares[king_line][king_tur], team_got_turn, team_doesnt_got_turn):
+    try:
+        try_to_move(king, Screen.squares[king_line][king_tur], team_got_turn, team_doesnt_got_turn)
         king_tur += next_king_move
-        if try_to_move(king, Screen.squares[king_line][king_tur], team_got_turn, team_doesnt_got_turn):
-            rook.move(Screen.squares[king_line][king_tur - next_king_move])
-            return True
-
-    king.move(Screen.squares[save_king_location[0]][save_king_location[1]])
-    return False
+        try_to_move(king, Screen.squares[king_line][king_tur], team_got_turn, team_doesnt_got_turn)
+        rook.move(Screen.squares[king_line][king_tur - next_king_move])
+        return True
+    
+    except MoveError:
+        king.move(Screen.squares[save_king_location[0]][save_king_location[1]])
+        return False
 
 
 def check_castling(king, rook_square, team_got_turn, team_doesnt_got_turn):
@@ -180,3 +188,11 @@ def check_castling(king, rook_square, team_got_turn, team_doesnt_got_turn):
         return False
 
     return do_castling(king, rook, team_got_turn, team_doesnt_got_turn)
+
+
+def is_tie(team_got_turn, team_doesnt_got_turn):
+    for piece in team_got_turn.pieces:
+        for _ in piece.get_valid_move_squares():
+            return False
+
+    return True
