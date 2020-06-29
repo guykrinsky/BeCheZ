@@ -36,15 +36,19 @@ def try_castling(white_team, bot_team):
     return False, king
 
 
-def move(white_team: Team, bot_team: Team, depth=2):
+def move(white_team: Team, bot_team: Team, depth=3):
     is_castling, king = try_castling(white_team, bot_team)
     if is_castling:
         return king
 
-    if chess_utils.is_checkmated(bot_team, white_team):
+    if chess_utils.is_checkmated(bot_team, white_team) or chess_utils.is_tie(bot_team, white_team):
         return None
 
-    _, best_move = mini(white_team, bot_team, depth)
+    score, best_move = mini(white_team, bot_team, depth)
+
+    print(f'piece - {best_move[0]}. moved to - {best_move[1]}\n'
+          f'current score after the move is {score}')
+
     piece, move_square = best_move
     chess_utils.try_to_move(piece, move_square, bot_team, white_team)
     return piece
@@ -54,23 +58,30 @@ def mini(white_team: Team, bot_team: Team, depth):
     best_score = 1000
     best_move = None
 
+    if chess_utils.is_tie(bot_team, white_team):
+        return 0
+
     if depth == 0:
         return chess_utils.get_score(white_team, bot_team), best_move
 
     for piece in bot_team.pieces:
         valid_moves = piece.get_valid_move_squares()
         for move_square in valid_moves:
-            with chess_utils.SaveMove(piece, move_square):
+            try:
+                with chess_utils.SaveMove(piece, move_square):
 
-                try:
-                    chess_utils.try_to_move(piece, move_square, bot_team, white_team)
-                except chess_utils.MoveError:
-                    continue
+                    try:
+                        chess_utils.try_to_move(piece, move_square, bot_team, white_team)
+                    except chess_utils.MoveError:
+                        raise chess_utils.DidntMove
 
-                score_after_move, _ = maxi(white_team, bot_team, depth - 1)
-                if score_after_move < best_score:
-                    best_move = (piece, move_square)
-                    best_score = score_after_move
+                    score_after_move, _ = maxi(white_team, bot_team, depth - 1)
+                    if score_after_move < best_score:
+                        best_move = (piece, move_square)
+                        best_score = score_after_move
+
+            except chess_utils.DidntMove:
+                pass
 
     return best_score, best_move
 
@@ -79,22 +90,28 @@ def maxi(white_team: Team, bot_team: Team, depth):
     best_move = None
     best_score = -1000
 
+    if chess_utils.is_tie(bot_team, white_team):
+        return 0
+
     if depth == 0:
         return chess_utils.get_score(white_team, bot_team), best_move
 
     for piece in white_team.pieces:
         for move_square in piece.get_valid_move_squares():
-            with chess_utils.SaveMove(piece, move_square):
+            try:
+                with chess_utils.SaveMove(piece, move_square):
+                    try:
+                        chess_utils.try_to_move(piece, move_square, white_team, bot_team)
+                    except chess_utils.MoveError:
+                        raise chess_utils.DidntMove
 
-                try:
-                    chess_utils.try_to_move(piece, move_square, bot_team, white_team)
-                except chess_utils.MoveError:
-                    continue
+                    score_after_move, _ = mini(white_team, bot_team, depth-1)
+                    if score_after_move > best_score:
+                        best_move = (piece, move_square)
+                        best_score = score_after_move
 
-                score_after_move, _ = mini(white_team, bot_team, depth-1)
-                if score_after_move > best_score:
-                    best_move = (piece, move_square)
-                    best_score = score_after_move
+            except chess_utils.DidntMove:
+                pass
 
     return best_score, best_move
 
