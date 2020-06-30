@@ -36,7 +36,7 @@ def try_castling(white_team, bot_team):
     return False, king
 
 
-def move(white_team: Team, bot_team: Team, depth=3):
+def move(white_team: Team, bot_team: Team, depth=2):
     is_castling, king = try_castling(white_team, bot_team)
     if is_castling:
         return king
@@ -65,20 +65,17 @@ def mini(white_team: Team, bot_team: Team, depth):
         return chess_utils.get_score(white_team, bot_team), best_move
 
     for piece in bot_team.pieces:
+        if piece.is_eaten:
+            continue
         valid_moves = piece.get_valid_move_squares()
         for move_square in valid_moves:
             try:
-                with chess_utils.SaveMove(piece, move_square):
+                # If Didn't move, code wouldn't crash, just move to next move.
+                score_after_move = futuire_move(piece, move_square, white_team, bot_team, depth, is_bot_futiure_turn=True)
 
-                    try:
-                        chess_utils.try_to_move(piece, move_square, bot_team, white_team)
-                    except chess_utils.MoveError:
-                        raise chess_utils.DidntMove
-
-                    score_after_move, _ = maxi(white_team, bot_team, depth - 1)
-                    if score_after_move < best_score:
-                        best_move = (piece, move_square)
-                        best_score = score_after_move
+                if score_after_move < best_score:
+                    best_move = (piece, move_square)
+                    best_score = score_after_move
 
             except chess_utils.DidntMove:
                 pass
@@ -97,15 +94,16 @@ def maxi(white_team: Team, bot_team: Team, depth):
         return chess_utils.get_score(white_team, bot_team), best_move
 
     for piece in white_team.pieces:
-        for move_square in piece.get_valid_move_squares():
-            try:
-                with chess_utils.SaveMove(piece, move_square):
-                    try:
-                        chess_utils.try_to_move(piece, move_square, white_team, bot_team)
-                    except chess_utils.MoveError:
-                        raise chess_utils.DidntMove
+        if piece.is_eaten:
+            continue
 
-                    score_after_move, _ = mini(white_team, bot_team, depth-1)
+        valid_moves = piece.get_valid_move_squares()
+        for move_square in valid_moves:
+            try:
+                # If Didn't move code wouldn't crash, just move to next move.
+                with chess_utils.SaveMove(piece, move_square):
+                    score_after_move = futuire_move(piece, move_square, white_team, bot_team, depth, is_bot_futiure_turn=False)
+
                     if score_after_move > best_score:
                         best_move = (piece, move_square)
                         best_score = score_after_move
@@ -114,6 +112,22 @@ def maxi(white_team: Team, bot_team: Team, depth):
                 pass
 
     return best_score, best_move
+
+
+def futuire_move(piece, move_square, white_team, bot_team, depth, is_bot_futiure_turn):
+    next_move = maxi if is_bot_futiure_turn else mini
+    team_got_turn = bot_team if is_bot_futiure_turn else white_team
+    team_doesnt_got_turn = white_team if team_got_turn is bot_team else bot_team
+
+    with chess_utils.SaveMove(piece, move_square):
+        try:
+            chess_utils.try_to_move(piece, move_square, team_got_turn, team_doesnt_got_turn)
+        except chess_utils.MoveError:
+            raise chess_utils.DidntMove
+
+        score_after_move, _ = next_move(white_team, bot_team, depth - 1)
+
+    return score_after_move
 
 
 # This two fuctions not in use.
