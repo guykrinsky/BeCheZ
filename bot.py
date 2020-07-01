@@ -1,4 +1,4 @@
-from teams import Team
+import teams
 import chess_utils
 import pieces
 
@@ -36,7 +36,7 @@ def try_castling(white_team, bot_team):
     return False, king
 
 
-def move(white_team: Team, bot_team: Team, depth=2):
+def move(white_team: teams.Team, bot_team: teams.Team, depth=2):
     is_castling, king = try_castling(white_team, bot_team)
     if is_castling:
         return king
@@ -54,7 +54,7 @@ def move(white_team: Team, bot_team: Team, depth=2):
     return piece
 
 
-def mini(white_team: Team, bot_team: Team, depth):
+def mini(white_team: teams.Team, bot_team: teams.Team, depth):
     best_score = 1000
     best_move = None
 
@@ -62,7 +62,7 @@ def mini(white_team: Team, bot_team: Team, depth):
         return 0
 
     if depth == 0:
-        return chess_utils.get_score(white_team, bot_team), best_move
+        return teams.get_score_dif(white_team, bot_team), best_move
 
     for piece in bot_team.pieces:
         if piece.is_eaten:
@@ -83,7 +83,7 @@ def mini(white_team: Team, bot_team: Team, depth):
     return best_score, best_move
 
 
-def maxi(white_team: Team, bot_team: Team, depth):
+def maxi(white_team: teams.Team, bot_team: teams.Team, depth):
     best_move = None
     best_score = -1000
 
@@ -91,7 +91,7 @@ def maxi(white_team: Team, bot_team: Team, depth):
         return 0
 
     if depth == 0:
-        return chess_utils.get_score(white_team, bot_team), best_move
+        return teams.get_score_dif(white_team, bot_team), best_move
 
     for piece in white_team.pieces:
         if piece.is_eaten:
@@ -131,7 +131,7 @@ def futuire_move(piece, move_square, white_team, bot_team, depth, is_bot_futiure
 
 
 # This two fuctions not in use.
-def maxi_without_with(white_team: Team, bot_team: Team, depth):
+def maxi_without_with(white_team: teams.Team, bot_team: teams.Team, depth):
     best_move = None
     best_score = -1000
 
@@ -139,7 +139,7 @@ def maxi_without_with(white_team: Team, bot_team: Team, depth):
         return best_score, best_move
 
     if depth == 0:
-        return chess_utils.get_score(white_team, bot_team), best_move
+        return teams.get_score_dif(white_team, bot_team), best_move
 
     for piece in white_team.pieces:
         for move_square in piece.get_valid_move_squares():
@@ -161,12 +161,12 @@ def maxi_without_with(white_team: Team, bot_team: Team, depth):
     return best_score, best_move
 
 
-def mini_with_alph_beta_proving(white_team: Team, bot_team: Team, alpha, beta, depth):
+def mini_with_alph_beta_proving(white_team: teams.Team, bot_team: teams.Team, alpha, beta, depth):
     best_score = 1000
     best_move = None
 
     if depth == 0:
-        return chess_utils.get_score(white_team, bot_team), best_move
+        return teams.get_score_dif(white_team, bot_team), best_move
 
     for piece in bot_team.pieces:
         valid_moves = piece.get_valid_move_squares()

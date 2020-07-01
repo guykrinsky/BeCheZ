@@ -1,6 +1,6 @@
 import pygame
 import colors
-from teams import Team
+from teams import Team,get_score_dif
 import os
 
 pygame.init()
@@ -54,7 +54,7 @@ def square_is_valid(tur, line, is_white_team):
             check_square_piece = squares[line][tur].current_piece
             if check_square_piece is not None:
                 # Check if other piece is on the same team.
-                return is_white_team != check_square_piece.is_in_white_team
+                return is_white_team is not check_square_piece.is_in_white_team
             # Next move is inside board and empty square.
             return True
     return False
@@ -112,28 +112,23 @@ def draw_timer(white_timer, black_timer):
 
 
 def draw_score(team_got_turn, team_doesnt_got_turn):
-    white_team = team_doesnt_got_turn
-    black_team = team_got_turn
-    if team_got_turn.is_white_team:
-        white_team = team_got_turn
-        black_team = team_doesnt_got_turn
+    white_team = team_got_turn if team_got_turn.is_white_team else team_doesnt_got_turn
+    black_team = team_got_turn if not team_got_turn.is_white_team else team_doesnt_got_turn
 
     white_team.update_score()
     black_team.update_score()
 
-    start_team_score = 200
-    length = (white_team.score-2000) / 100
+    length = SCREEN_WIDTH - 20
     text = FONT.render("White team score:", False, colors.WHITE)
     SCORE_BOARD.blit(text, (0, SCORE_BOARD.get_height() - 50))
-    pygame.draw.rect(SCORE_BOARD, colors.BLACK, (0, SCORE_BOARD.get_height() - 15, start_team_score, 10))
-    pygame.draw.rect(SCORE_BOARD, colors.WHITE, (0, SCORE_BOARD.get_height() - 15, length, 10))
 
-    length = (black_team.score-2000) / 100
-    x_pos = SCORE_BOARD.get_width() - start_team_score
+    x_pos = SCREEN_WIDTH - 200
     text = FONT.render("Black team score:", False, colors.WHITE)
     SCORE_BOARD.blit(text, (x_pos, SCORE_BOARD.get_height() - 50))
-    pygame.draw.rect(SCORE_BOARD, colors.WHITE, (x_pos, SCORE_BOARD.get_height() - 15, start_team_score, 10))
-    pygame.draw.rect(SCORE_BOARD, colors.BLACK, (x_pos, SCORE_BOARD.get_height() - 15, length, 10))
+
+    pygame.draw.rect(SCORE_BOARD, colors.BLACK, (0, SCORE_BOARD.get_height() - 15, length, 10))
+    white_rect_length = length/2 + get_score_dif(white_team, black_team)/10
+    pygame.draw.rect(SCORE_BOARD, colors.WHITE, (0, SCORE_BOARD.get_height() - 15, white_rect_length, 10))
 
 
 def add_squares_to_board():

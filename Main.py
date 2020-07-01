@@ -1,5 +1,5 @@
 from chess_utils import *
-from teams import Team
+from teams import Team, get_score_dif
 import timer
 import pygame
 import Screen
@@ -63,6 +63,8 @@ def update_game_after_move(piece_clicked, black_team, white_team):
     remove_eaten_pieces(white_team, black_team)
     white_team.update_score()
     black_team.update_score()
+    score_dif = get_score_dif(white_team, black_team)
+    print(f'score diffence is {score_dif}')
 
 
 def print_board(white_team, black_team):

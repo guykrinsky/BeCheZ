@@ -56,13 +56,6 @@ def add_pawns(white_team, black_team):
         black_team.pieces.append(pieces.Pawn(False, place))
 
 
-def get_score(white_team: Team, black_team: Team):
-    white_team.update_score()
-    black_team.update_score()
-    score_dif = white_team.score - black_team.score
-    return score_dif
-
-
 def place_pieces(white_team: Team, black_team: Team):
     # Added knights.
     black_team.pieces.extend([pieces.Knight(Screen.squares[7][6], False), pieces.Knight(Screen.squares[7][1], False)])

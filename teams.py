@@ -20,3 +20,10 @@ class Team:
         for piece in self.pieces:
             print(f'\n{piece}')
 
+
+def get_score_dif(white_team: Team, black_team: Team):
+    white_team.update_score()
+    black_team.update_score()
+    score_dif = white_team.score - black_team.score
+    return score_dif
+
