@@ -22,7 +22,7 @@ class Piece(metaclass=abc.ABCMeta):
         self.move_counter = 0
         self.type = type
         if self.is_in_white_team:
-            self.SCORE_EVOLUTION_TABLE.reverse()
+            self.SCORE_EVOLUTION_TABLE = self.SCORE_EVOLUTION_TABLE[::-1]
 
     def _is_already_moved(self):
         return self.square is self.starting_square
@@ -91,8 +91,7 @@ class King(Piece):
             tur = self.square.tur_cord
             for tur in range(tur - 1, tur + 2):
                 if square_is_valid(tur, line, self.is_in_white_team):
-                    square = squares[line][tur]
-                    valid_squares.append(square)
+                    valid_squares.append(squares[line][tur])
 
         return valid_squares
 
