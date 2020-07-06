@@ -37,8 +37,8 @@ def try_castling(white_team, bot_team):
 
 
 def move(white_team: teams.Team, bot_team: teams.Team, depth=2):
-    is_castling, king = try_castling(white_team, bot_team)
-    if is_castling:
+    did_castling, king = try_castling(white_team, bot_team)
+    if did_castling:
         return king
 
     if chess_utils.is_checkmated(bot_team, white_team) or chess_utils.is_tie(bot_team, white_team):
@@ -60,7 +60,7 @@ def mini(white_team: teams.Team, bot_team: teams.Team, depth):
     best_move = None
 
     if chess_utils.is_tie(bot_team, white_team):
-        return 0
+        return 0, None
 
     if depth == 0:
         return teams.get_score_dif(white_team, bot_team), best_move
@@ -72,7 +72,7 @@ def mini(white_team: teams.Team, bot_team: teams.Team, depth):
         for move_square in valid_moves:
             try:
                 # If Didn't move, code wouldn't crash, just move to next move.
-                score_after_move = futuire_move(piece, move_square, white_team, bot_team, depth, is_bot_futiure_turn=True)
+                score_after_move = future_move(piece, move_square, white_team, bot_team, depth, is_bot_futiure_turn=True)
 
                 return_piece_to_pawn_if_needed(piece, move_square, bot_team)
                 if score_after_move < best_score:
@@ -90,7 +90,7 @@ def maxi(white_team: teams.Team, bot_team: teams.Team, depth):
     best_score = -1000
 
     if chess_utils.is_tie(bot_team, white_team):
-        return 0
+        return 0, None
 
     if depth == 0:
         return teams.get_score_dif(white_team, bot_team), best_move
@@ -102,7 +102,7 @@ def maxi(white_team: teams.Team, bot_team: teams.Team, depth):
         for move_square in valid_moves:
             try:
                 # If Didn't move code wouldn't crash, just move to next move.
-                score_after_move = futuire_move(piece, move_square, white_team, bot_team, depth, is_bot_futiure_turn=False)
+                score_after_move = future_move(piece, move_square, white_team, bot_team, depth, is_bot_futiure_turn=False)
 
                 return_piece_to_pawn_if_needed(piece, move_square, white_team)
                 if score_after_move > best_score:
@@ -122,7 +122,7 @@ def return_piece_to_pawn_if_needed(piece, move_square, team_got_turn):
         team_got_turn.pieces.append(piece)
 
 
-def futuire_move(piece, move_square, white_team, bot_team, depth, is_bot_futiure_turn):
+def future_move(piece, move_square, white_team, bot_team, depth, is_bot_futiure_turn):
     next_move = maxi if is_bot_futiure_turn else mini
     team_got_turn = bot_team if is_bot_futiure_turn else white_team
     team_doesnt_got_turn = white_team if team_got_turn is bot_team else bot_team
