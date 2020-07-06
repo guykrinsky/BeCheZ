@@ -50,34 +50,35 @@ class CantCastling(MoveError):
 
 
 def add_pawns(white_team, black_team):
-    for place in range(Screen.BOARD_LINE):
-        white_team.pieces.append(pieces.Pawn(True, place))
-    for place in range(Screen.BOARD_LINE):
-        black_team.pieces.append(pieces.Pawn(False, place))
+    for tur in range(Screen.BOARD_LINE):
+        white_team.pieces.append(pieces.Pawn(True, tur))
+        black_team.pieces.append(pieces.Pawn(False, tur))
 
 
 def place_pieces(white_team: Team, black_team: Team):
-    # Added knights.
+    # Add knights.
     black_team.pieces.extend([pieces.Knight(Screen.squares[7][6], False), pieces.Knight(Screen.squares[7][1], False)])
     white_team.pieces.extend([pieces.Knight(Screen.squares[0][1], True), pieces.Knight(Screen.squares[0][6], True)])
-    # Added bishops.
+    # Add bishops.
     black_team.pieces.extend([pieces.Bishop(Screen.squares[7][2], False), pieces.Bishop(Screen.squares[7][5], False)])
     white_team.pieces.extend([pieces.Bishop(Screen.squares[0][2], True), pieces.Bishop(Screen.squares[0][5], True)])
-    # Added queens.
+    # Add queens.
     black_team.pieces.append(pieces.Queen(Screen.squares[7][4], False))
     white_team.pieces.append(pieces.Queen(Screen.squares[0][4], True))
-    # Added rooks.
+    # Add rooks.
     black_team.pieces.extend([pieces.Rook(False, Screen.squares[7][0]), pieces.Rook(False, Screen.squares[7][7])])
     white_team.pieces.extend([pieces.Rook(True, Screen.squares[0][0]), pieces.Rook(True, Screen.squares[0][7])])
 
     add_pawns(white_team, black_team)
-    # Added kings.
+    # Add kings.
     black_team.pieces.append(pieces.King(False))
     white_team.pieces.append(pieces.King(True))
 
 
 def is_checkmated(team_got_turn: Team, team_doesnt_got_turn: Team):
     for piece in team_got_turn.pieces:
+        if piece.is_eaten:
+            continue
         valid_move_squares = piece.get_valid_move_squares()
         for check_move in valid_move_squares:
             if not is_check_after_move(check_move, team_doesnt_got_turn, piece):
@@ -128,7 +129,12 @@ def try_to_move(piece_clicked, clicked_square, team_got_turn: Team, team_doesnt_
     piece_clicked.move(clicked_square)
 
     if isinstance(piece_clicked, pieces.Pawn) and piece_clicked.is_reached_to_end():
-        replace(team_got_turn, piece_clicked)
+        replace_auto_to_queen(team_got_turn, piece_clicked)
+
+
+def replace_auto_to_queen(pawn_team: Team, pawn):
+    pawn_team.pieces.remove(pawn)
+    pawn_team.pieces.append(pieces.Queen(pawn.square, pawn_team.is_white_team))
 
 
 def replace(pawn_team: Team, pawn):
@@ -149,14 +155,12 @@ def replace(pawn_team: Team, pawn):
         replace(pawn_team, pawn)
 
 
-def do_castling(king, rook, team_got_turn, team_doesnt_got_turn):
+def castling(king, rook, team_got_turn, team_doesnt_got_turn):
     king_line = king.square.line_cord
     king_tur = king.square.tur_cord
     save_king_location = (king_line, king_tur)
 
-    next_king_move = -1
-    if rook.square.tur_cord > king_tur:
-        next_king_move = 1
+    next_king_move = -1 if rook.square.tur_cord > king_tur else 1
 
     king_tur += next_king_move
     try:
@@ -180,10 +184,11 @@ def check_castling(king, rook_square, team_got_turn, team_doesnt_got_turn):
     if is_there_chess(team_doesnt_got_turn):
         return False
 
-    return do_castling(king, rook, team_got_turn, team_doesnt_got_turn)
+    return castling(king, rook, team_got_turn, team_doesnt_got_turn)
 
 
-def is_tie(team_got_turn, team_doesnt_got_turn):
+def is_tie(team_got_turn):
+    # TODO check if it works.
     for piece in team_got_turn.pieces:
         for _ in piece.get_valid_move_squares():
             return False

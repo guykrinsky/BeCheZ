@@ -59,7 +59,7 @@ def mini(white_team: teams.Team, bot_team: teams.Team, depth):
     best_score = 1000
     best_move = None
 
-    if chess_utils.is_tie(bot_team, white_team):
+    if chess_utils.is_tie(bot_team):
         return 0, None
 
     if depth == 0:
@@ -89,7 +89,7 @@ def maxi(white_team: teams.Team, bot_team: teams.Team, depth):
     best_move = None
     best_score = -1000
 
-    if chess_utils.is_tie(bot_team, white_team):
+    if chess_utils.is_tie(bot_team):
         return 0, None
 
     if depth == 0:
@@ -116,6 +116,7 @@ def maxi(white_team: teams.Team, bot_team: teams.Team, depth):
 
 
 def return_piece_to_pawn_if_needed(piece, move_square, team_got_turn):
+    # TODO make it work.
     if isinstance(piece, pieces.Pawn) and move_square.line_cord == 8:
         team_got_turn.pieces.remove(piece.square.current_piece)
         piece.square.current_piece = piece
