@@ -44,13 +44,12 @@ def switch_turn(white_team, black_team):
     timer.switch_timers(team_got_turn, team_doesnt_got_turn)
 
 
+# Changed
 def remove_eaten_pieces(white_team, black_team):
-    for piece in white_team.pieces:
+    for piece in white_team.pieces + black_team.pieces:
+        piece_team = white_team if piece.is_in_white_team else black_team
         if piece.is_eaten:
-            white_team.pieces.remove(piece)
-    for piece in black_team.pieces:
-        if piece.is_eaten:
-            black_team.pieces.remove(piece)
+            piece_team.pieces.remove(piece)
 
 
 def update_game_after_move(piece_clicked, black_team, white_team):
@@ -74,6 +73,7 @@ def print_board(white_team, black_team):
     black_team.print_pieces()
 
 
+# Changed
 def game_loop(white_team: Team, black_team: Team, is_one_player_playing):
     print_board(white_team, black_team)
     black_team.timer.pause()
@@ -97,20 +97,10 @@ def game_loop(white_team: Team, black_team: Team, is_one_player_playing):
             if is_checkmated(team_got_turn, team_doesnt_got_turn):
                 print(f'Team won is {team_doesnt_got_turn}')
                 break
-        # else:
-        #     piece_moved = bot.move(black_team, white_team)
-        #     if piece_moved is None:
-        #         # Bot has nowhere to go, because it's checkmated.
-        #         break
-        #     move_played(piece_moved, team_got_turn, team_doesnt_got_turn)
-        #
-        #     # Check if after bot move, you are checkmated.
-        #     if is_checkmated(team_got_turn, team_doesnt_got_turn):
-        #         break
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                raise Screen.ExitGame
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 clicked_square = get_square_clicked()
@@ -122,23 +112,22 @@ def game_loop(white_team: Team, black_team: Team, is_one_player_playing):
                     piece_clicked = clicked_square.current_piece
                     if piece_clicked in team_got_turn.pieces:
                         piece_clicked.color_next_step()
+                    continue
 
-                else:
-                    # If user already clicked on a piece,
-                    # we try to move the piece to the square the user clicked on.
-                    try:
-                        try_to_move(piece_clicked, clicked_square, team_got_turn, team_doesnt_got_turn)
-                        # Move is valid.
-                        update_game_after_move(piece_clicked, black_team, white_team)
-                        if is_checkmated(team_got_turn, team_doesnt_got_turn):
-                            print(f'Team won is {team_doesnt_got_turn}')
-                            running = False
+                # If user already clicked on a piece,
+                # we try to move the piece to the square the user clicked on.
+                try:
+                    try_to_move(piece_clicked, clicked_square, team_got_turn, team_doesnt_got_turn)
+                    # Move is valid.
+                    update_game_after_move(piece_clicked, black_team, white_team)
+                    if is_checkmated(team_got_turn, team_doesnt_got_turn):
+                        print(f'Team won is {team_doesnt_got_turn}')
+                        running = False
+                except MoveError:
+                    # The move wasn't valid.
+                    pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'error.wav')).play()
 
-                    except MoveError:
-                        # The move wasn't valid.
-                        pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'error.wav')).play()
-
-                    piece_clicked = None
+                piece_clicked = None
 
         if white_team.timer.is_game_ended():
             break
@@ -149,16 +138,19 @@ def game_loop(white_team: Team, black_team: Team, is_one_player_playing):
 
 
 def main():
-    is_one_player = Screen.starting_screen()
-    if is_one_player is None:
-        return
-    timer.set_game_length(5)
-    Screen.add_squares_to_board()
-    white_team = Team(True)
-    black_team = Team(False)
-    place_pieces(white_team, black_team)
-    black_team.update_score()
-    game_loop(white_team, black_team, is_one_player)
+    try:
+        is_one_player = Screen.starting_screen()
+        if is_one_player is None:
+            return
+        timer.set_game_length(5)
+        Screen.add_squares_to_board()
+        white_team = Team(True)
+        black_team = Team(False)
+        place_pieces(white_team, black_team)
+        game_loop(white_team, black_team, is_one_player)
+
+    except Screen.ExitGame:
+        pass
 
 
 if __name__ == '__main__':
