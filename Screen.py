@@ -1,6 +1,6 @@
 import pygame
 import colors
-from teams import Team,get_score_dif
+from teams import Team, get_score_dif
 import os
 
 pygame.init()
@@ -15,6 +15,10 @@ BOARD_LINE = 8
 HEIGHT_OF_SCOREBOARD = 200
 SCORE_BOARD = pygame.Surface((screen.get_width(), HEIGHT_OF_SCOREBOARD))
 FONT = pygame.font.SysFont('comicsansms', 30)
+
+
+class ExitGame(Exception):
+    pass
 
 
 class Square:
@@ -45,27 +49,28 @@ class Square:
         return f'(line: {self.line_cord}, tur: {self.tur_cord})'
 
 
-def square_is_valid(tur, line, is_white_team):
+# Changed
+def is_move_to_square_valid(tur, line, is_white_team):
     """
     Check if square is in board bounds and not taken by teammate piece.
     """
-    if 0 <= line < BOARD_LINE:
-        if 0 <= tur < BOARD_LINE:
-            check_square_piece = squares[line][tur].current_piece
-            if check_square_piece is not None:
-                # Check if other piece is on the same team.
-                return is_white_team is not check_square_piece.is_in_white_team
-            # Next move is inside board and empty square.
-            return True
+    if 0 <= line < BOARD_LINE and 0 <= tur < BOARD_LINE:
+        # Square is on the board
+        check_square_piece = squares[line][tur].current_piece
+        if check_square_piece is not None:
+            # Check if other piece is on the same team.
+            return is_white_team is not check_square_piece.is_in_white_team
+        # Next move is inside board and empty square.
+        return True
     return False
 
 
 def draw_bg(team_got_turn: Team, team_doesnt_got_turn: Team):
-    white_timer = team_doesnt_got_turn.timer
-    black_timer = team_got_turn.timer
+    white_team = team_doesnt_got_turn
+    black_team = team_got_turn
     if team_got_turn.is_white_team:
-        white_timer = team_got_turn.timer
-        black_timer = team_doesnt_got_turn.timer
+        white_team = team_got_turn
+        black_team = team_doesnt_got_turn
 
     screen.blit(SCORE_BOARD, (0, 0))
     bg_image = pygame.image.load(os.path.join(PICTURES_PATH, 'boardscore_bg.png'))
@@ -73,7 +78,7 @@ def draw_bg(team_got_turn: Team, team_doesnt_got_turn: Team):
 
     draw_squares_bg()
     draw_who_turn_is(team_got_turn)
-    draw_timer(white_timer, black_timer)
+    draw_timers(white_team, black_team)
     draw_score(team_got_turn, team_doesnt_got_turn)
 
 
@@ -92,23 +97,22 @@ def draw_who_turn_is(team_got_turn):
     SCORE_BOARD.blit(text, (SCORE_BOARD.get_width() / 2 - 80, 0))
 
 
-def draw_timer(white_timer, black_timer):
-    minutes = white_timer.get_minutes_left()
-    seconds = white_timer.get_seconds_left_to_last_minute()
+def draw_timer(team):
+    place = (0, 0) if team.is_white_team else (SCORE_BOARD.get_width() - 55, 0)
+    timer = team.timer
+    minutes = timer.get_minutes_left()
+    seconds = timer.get_seconds_left_to_last_minute()
     if seconds == 60:
         seconds = '00'
     seconds = str(seconds).zfill(2)
     minutes = str(minutes).zfill(2)
     text = FONT.render(f"{minutes}:{seconds}", False, colors.WHITE)
-    SCORE_BOARD.blit(text, (0, 0))
-    minutes = black_timer.get_minutes_left()
-    seconds = black_timer.get_seconds_left_to_last_minute()
-    if seconds == 60:
-        seconds = '00'
-    seconds = str(seconds).zfill(2)
-    minutes = str(minutes).zfill(2)
-    text = FONT.render(f"{minutes}:{seconds}", False, colors.BLACK)
-    SCORE_BOARD.blit(text, (SCORE_BOARD.get_width() - 55, 0))
+    SCORE_BOARD.blit(text, place)
+
+
+def draw_timers(white_team, black_team):
+    draw_timer(white_team)
+    draw_timer(black_team)
 
 
 def draw_score(team_got_turn, team_doesnt_got_turn):
@@ -126,9 +130,9 @@ def draw_score(team_got_turn, team_doesnt_got_turn):
     text = FONT.render("Black team score:", False, colors.WHITE)
     SCORE_BOARD.blit(text, (x_pos, SCORE_BOARD.get_height() - 50))
 
-    pygame.draw.rect(SCORE_BOARD, colors.BLACK, (0, SCORE_BOARD.get_height() - 15, length, 10))
+    pygame.draw.rect(SCORE_BOARD, colors.BLACK, (10, SCORE_BOARD.get_height() - 15, length, 10))
     white_rect_length = length/2 + get_score_dif(white_team, black_team)/10
-    pygame.draw.rect(SCORE_BOARD, colors.WHITE, (0, SCORE_BOARD.get_height() - 15, white_rect_length, 10))
+    pygame.draw.rect(SCORE_BOARD, colors.WHITE, (10, SCORE_BOARD.get_height() - 15, white_rect_length, 10))
 
 
 def add_squares_to_board():
@@ -159,12 +163,12 @@ def color_all_square_to_original_color():
                 square.coloring_square_by_original_color()
 
 
-MIDDLE_HORIZENTAL = SCREEN_WIDTH/2
-RECT_WIDTH = 200
-RECT_HEIGHT = 100
-
-
 def starting_screen():
+
+    MIDDLE_HORIZENTAL = SCREEN_WIDTH / 2
+    RECT_WIDTH = 200
+    RECT_HEIGHT = 100
+
     screen.fill(colors.WHITE)
     bg_image = pygame.image.load(os.path.join(PICTURES_PATH, 'opening_screen_picture.png'))
     screen.blit(bg_image, (0, 0))
@@ -189,7 +193,7 @@ def starting_screen():
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                return
+                raise ExitGame
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
