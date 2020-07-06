@@ -33,13 +33,13 @@ class Timer:
 
     def pause(self):
         if self.is_pause:
-            raise TimeError("timer can't pause because already paused")
+            raise TimeError("Timer can't pause because already paused")
         self.time_paused = time.perf_counter()
         self.is_pause = True
 
     def resume(self):
         if not self.is_pause:
-            raise TimeError("timer can't resume because timer isn't paused")
+            raise TimeError("Timer can't resume because timer isn't paused")
         self.is_pause = False
         self.total_time_paused += time.perf_counter() - self.time_paused
 
