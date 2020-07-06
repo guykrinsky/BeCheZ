@@ -41,7 +41,7 @@ def move(white_team: teams.Team, bot_team: teams.Team, depth=2):
     if did_castling:
         return king
 
-    if chess_utils.is_checkmated(bot_team, white_team) or chess_utils.is_tie(bot_team, white_team):
+    if chess_utils.is_checkmated(bot_team, white_team) or chess_utils.is_tie(bot_team):
         return None
 
     score, best_move = mini(white_team, bot_team, depth)
