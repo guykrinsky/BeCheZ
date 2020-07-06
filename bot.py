@@ -46,12 +46,13 @@ def move(white_team: teams.Team, bot_team: teams.Team, depth=2):
 
     score, best_move = mini(white_team, bot_team, depth)
 
-    print(f'piece - {best_move[0]}. moved to - {best_move[1]}\n'
-          f'current score after the move is {score}')
+    piece_moved, move_square = best_move
 
-    piece, move_square = best_move
-    chess_utils.try_to_move(piece, move_square, bot_team, white_team)
-    return piece
+    print(f'piece - {piece_moved}. moved to - {move_square}\n'
+          f'score after the move is {score}')
+
+    chess_utils.try_to_move(piece_moved, move_square, bot_team, white_team)
+    return piece_moved
 
 
 def mini(white_team: teams.Team, bot_team: teams.Team, depth):
@@ -73,6 +74,7 @@ def mini(white_team: teams.Team, bot_team: teams.Team, depth):
                 # If Didn't move, code wouldn't crash, just move to next move.
                 score_after_move = futuire_move(piece, move_square, white_team, bot_team, depth, is_bot_futiure_turn=True)
 
+                return_piece_to_pawn_if_needed(piece, move_square, bot_team)
                 if score_after_move < best_score:
                     best_move = (piece, move_square)
                     best_score = score_after_move
@@ -96,22 +98,28 @@ def maxi(white_team: teams.Team, bot_team: teams.Team, depth):
     for piece in white_team.pieces:
         if piece.is_eaten:
             continue
-
         valid_moves = piece.get_valid_move_squares()
         for move_square in valid_moves:
             try:
                 # If Didn't move code wouldn't crash, just move to next move.
-                with chess_utils.SaveMove(piece, move_square):
-                    score_after_move = futuire_move(piece, move_square, white_team, bot_team, depth, is_bot_futiure_turn=False)
+                score_after_move = futuire_move(piece, move_square, white_team, bot_team, depth, is_bot_futiure_turn=False)
 
-                    if score_after_move > best_score:
-                        best_move = (piece, move_square)
-                        best_score = score_after_move
+                return_piece_to_pawn_if_needed(piece, move_square, white_team)
+                if score_after_move > best_score:
+                    best_move = (piece, move_square)
+                    best_score = score_after_move
 
             except chess_utils.DidntMove:
                 pass
 
     return best_score, best_move
+
+
+def return_piece_to_pawn_if_needed(piece, move_square, team_got_turn):
+    if isinstance(piece, pieces.Pawn) and move_square.line_cord == 8:
+        team_got_turn.pieces.remove(piece.square.current_piece)
+        piece.square.current_piece = piece
+        team_got_turn.pieces.append(piece)
 
 
 def futuire_move(piece, move_square, white_team, bot_team, depth, is_bot_futiure_turn):
