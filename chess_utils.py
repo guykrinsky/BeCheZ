@@ -160,7 +160,7 @@ def castling(king, rook, team_got_turn, team_doesnt_got_turn):
     king_tur = king.square.tur_cord
     save_king_location = (king_line, king_tur)
 
-    next_king_move = -1 if rook.square.tur_cord > king_tur else 1
+    next_king_move = 1 if rook.square.tur_cord > king_tur else -1
 
     king_tur += next_king_move
     try:
