@@ -7,6 +7,9 @@ pygame.init()
 
 SCREEN_WIDTH = 480
 SCREEN_HEIGHT = 680
+MIDDLE_HORIZENTAL = SCREEN_WIDTH / 2
+RECT_WIDTH = 200
+RECT_HEIGHT = 100
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 squares = []
 PICTURES_PATH = 'pictures'
@@ -164,11 +167,6 @@ def color_all_square_to_original_color():
 
 
 def starting_screen():
-
-    MIDDLE_HORIZENTAL = SCREEN_WIDTH / 2
-    RECT_WIDTH = 200
-    RECT_HEIGHT = 100
-
     screen.fill(colors.WHITE)
     bg_image = pygame.image.load(os.path.join(PICTURES_PATH, 'opening_screen_picture.png'))
     screen.blit(bg_image, (0, 0))

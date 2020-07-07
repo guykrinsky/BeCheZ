@@ -11,3 +11,4 @@ You just need to downold pygame libary and python-3 and off course all the image
 
 ## Images
 <!--- TODO add screen shots of the game --->
+![Game Play Of The Game](pictures/gameplay.gif)
