@@ -12,9 +12,7 @@ class Team:
         self.score = sum(piece.score for piece in self.pieces if not piece.is_eaten)
 
     def __str__(self):
-        if self.pieces[0].is_in_white_team:
-            return 'white team'
-        return 'black team'
+        return 'white team' if self.is_white_team else 'black team'
 
     def print_pieces(self):
         for piece in self.pieces:

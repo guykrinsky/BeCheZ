@@ -12,7 +12,7 @@ team_got_turn = None
 team_doesnt_got_turn = None
 
 
-def redraw_game_screen(team_got_turn, team_doesnt_got_turn):
+def redraw_game_screen():
     Screen.draw_bg(team_got_turn, team_doesnt_got_turn)
 
     for line in Screen.squares:
@@ -47,7 +47,7 @@ def switch_turn(white_team, black_team):
 # Changed
 def remove_eaten_pieces(white_team, black_team):
     for piece in white_team.pieces + black_team.pieces:
-        piece_team = white_team if piece.is_in_white_team else black_team
+        piece_team = white_team if piece.team.is_white_team else black_team
         if piece.is_eaten:
             piece_team.pieces.remove(piece)
 
@@ -134,7 +134,7 @@ def game_loop(white_team: Team, black_team: Team, is_one_player_playing):
         if black_team.timer.is_game_ended():
             break
 
-        redraw_game_screen(team_got_turn, team_doesnt_got_turn)
+        redraw_game_screen()
 
 
 def main():
