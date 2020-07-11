@@ -115,9 +115,8 @@ class Pawn(Piece):
             super().__init__(square, team)
 
     def is_reached_to_end(self):
-        if self.team:
-            return self.square.line_cord == BOARD_LINE-1
-        return self.square.line_cord == 0
+        end = BOARD_LINE-1 if self.team.is_white_team else 0
+        return self.square.line_cord == end
 
     def get_valid_move_squares(self):
         line = self.square.line_cord

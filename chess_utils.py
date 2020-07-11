@@ -19,20 +19,29 @@ class SaveMove:
         # Move pieces moved to there last position.
         if exception_type is DidntMove:
             return
+
+        self.return_piece_to_pawn_if_needed()
         self.piece.move(self.current_piece_square)
 
-        # self.return_piece_to_pawn_if_needed()
         if self.eaten_piece is not None:
             self.eaten_piece.move(self.eaten_piece.square)
             self.eaten_piece.is_eaten = False
 
     def return_piece_to_pawn_if_needed(self):
         # TODO Check if work.
-        if isinstance(self.piece, pieces.Pawn) and self.move_square.line_cord == 8 or 0:
-            pawn = self.piece
-            new_piece = self.piece.square.current_piece
-            pawn.team.pieces.remove(new_piece)
-            pawn.team.pieces.appened(pieces.Pawn(pawn.team, square=self.move_square))
+        if not isinstance(self.piece, pieces.Pawn):
+            return
+        if not (self.move_square.line_cord == 7 or self.move_square.line_cord == 0):
+            return
+
+        pawn = self.piece
+        print(pawn)
+        print(self.move_square)
+        new_piece = self.piece.square.current_piece
+        if new_piece is pawn:
+            return
+        pawn.team.pieces.remove(new_piece)
+        pawn.team.pieces.append(pieces.Pawn(pawn.team, square=pawn.square))
 
 
 class DidntMove(Exception):
@@ -139,12 +148,13 @@ def try_to_move(piece_clicked, clicked_square, team_got_turn: Team, team_doesnt_
     piece_clicked.move(clicked_square)
 
     if isinstance(piece_clicked, pieces.Pawn) and piece_clicked.is_reached_to_end():
-        replace_auto_to_queen(team_got_turn, piece_clicked)
+        replace_auto_to_queen(piece_clicked)
 
 
-def replace_auto_to_queen(pawn_team: Team, pawn):
-    pawn_team.pieces.remove(pawn)
-    pawn_team.pieces.append(pieces.Queen(pawn.square, pawn_team))
+def replace_auto_to_queen(pawn):
+    print(pawn)
+    pawn.team.pieces.remove(pawn)
+    pawn.team.pieces.append(pieces.Queen(pawn.square, pawn.team))
 
 
 def replace(pawn_team: Team, pawn):

@@ -45,7 +45,7 @@ def move(white_team: teams.Team, bot_team: teams.Team, depth=2):
         return None
 
     score, best_move = mini(white_team, bot_team, depth)
-
+    print(best_move)
     piece_moved, move_square = best_move
 
     print(f'piece - {piece_moved}. moved to - {move_square}\n'
@@ -58,9 +58,6 @@ def move(white_team: teams.Team, bot_team: teams.Team, depth=2):
 def mini(white_team: teams.Team, bot_team: teams.Team, depth):
     best_score = 1000
     best_move = None
-
-    if chess_utils.is_tie(bot_team, white_team):
-        return 0, None
 
     if depth == 0:
         return teams.get_score_dif(white_team, bot_team), None
@@ -87,9 +84,6 @@ def mini(white_team: teams.Team, bot_team: teams.Team, depth):
 def maxi(white_team: teams.Team, bot_team: teams.Team, depth):
     best_move = None
     best_score = -1000
-
-    if chess_utils.is_tie(white_team, bot_team):
-        return 0, None
 
     if depth == 0:
         return teams.get_score_dif(white_team, bot_team), best_move
