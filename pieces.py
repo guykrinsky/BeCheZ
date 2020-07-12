@@ -110,9 +110,7 @@ class Pawn(Piece):
 
         if square is None:
             square = squares[Pawn.LINE_OF_WHITE_PAWNS][tur] if team.is_white_team else squares[Pawn.LINE_OF_BLACK_PAWNS][tur]
-            super().__init__(square, team)
-        else:
-            super().__init__(square, team)
+        super().__init__(square, team)
 
     def is_reached_to_end(self):
         end = BOARD_LINE-1 if self.team.is_white_team else 0
@@ -125,10 +123,10 @@ class Pawn(Piece):
         # Direction represent one square walk.
         direction = 1 if self.team.is_white_team else -1
         line += direction
+        # Check if nest step is out of board.
         if line > 7 or line < 0:
             return valid_moves
 
-        # Check if nest step is out of board.
         next_square = squares[line][tur]
         valid_moves.extend(self._diagonal_eat(next_square))
 
@@ -167,17 +165,14 @@ class Knight(Piece):
     BASIC_SCORE = 320
     BLACK_IMAGE = pygame.image.load(os.path.join(BLACK_PIECES_PATH, 'black_knight.png'))
     WHITE_IMAGE = pygame.image.load(os.path.join(WHITE_PIECES_PATH, 'white_knight.png'))
-    SCORE_EVOLUTION_TABLE = [[-50,-40,-30,-30,-30,-30,-40,-50],
-                            [-40,-20,  0,  0,  0,  0, -20, -40],
-                            [-30,  0, 10, 15, 15, 10,  0, -30],
-                            [-30,  5, 15, 20, 20, 15,  5, -30],
-                            [-30,  0, 15, 20, 20, 15,  0, -30],
-                            [-30,  5, 10, 15, 15, 10,  5, -30],
-                            [-40, -20,  0,  5,  5,  0, -20, -40],
+    SCORE_EVOLUTION_TABLE = [[-50, -40, -30, -30, -30, -30, -40, -50],
+                            [-40, -20,   0,   0,   0,   0, -20, -40],
+                            [-30,   0,  10,  15,  15,  10,   0, -30],
+                            [-30,   5,  15,  20,  20,  15,   5, -30],
+                            [-30,   0,  15,  20,  20,  15,   0, -30],
+                            [-30,   5,  10,  15,  15,  10,   5, -30],
+                            [-40, -20,   0,   5,   5,   0, -20, -40],
                             [-50, -40, -30, -30, -30, -30, -40, -50]]
-
-    def __init__(self, square, team):
-        super().__init__(square, team)
 
     def get_valid_move_squares(self):
         valid_moves = []
@@ -204,9 +199,6 @@ class Rook(Piece):
                              [-5,  0,  0,  0,  0,  0,  0, -5],
                              [0,  0,  0,  5,  5,  0,  0,  0]]
 
-    def __init__(self, team: Team, square):
-        super(Rook, self).__init__(square, team)
-
     def get_valid_move_squares(self):
         return _get_valid_straight_move_squares(self)
 
@@ -224,9 +216,6 @@ class Bishop(Piece):
                             [-10,  5,  0,  0,  0,  0,  5,-10],
                             [-20,-10,-10,-10,-10,-10,-10,-20]]
 
-    def __init__(self, square, team):
-        super().__init__(square, team)
-
     def get_valid_move_squares(self):
         return _get_diagonal_valid_moves(self)
 
@@ -243,9 +232,6 @@ class Queen(Piece):
                              [-10,   5,   5,  5,  5,   5,   0,  -10],
                              [-10,   0,   5,  0,  0,   0,   0,  -10],
                              [-20, -10, -10, -5, -5, -10, -10,  -20]]
-
-    def __init__(self, square, team):
-        super().__init__(square, team)
 
     def get_valid_move_squares(self):
         valid_squares = []
@@ -311,8 +297,7 @@ def _get_straight_valid_move_squares(piece, is_vertical):
         # If square taken by teamate piece we have to make a new row.
         if square.current_piece.team is piece.team:
             valid_moves = []
-        else:
-            # square is taken by enemy.
+        else:   # square is taken by enemy.
             # we start a new raw from this square(including).
             valid_moves = [square]
             continue
@@ -321,10 +306,8 @@ def _get_straight_valid_move_squares(piece, is_vertical):
     for tur_or_line in range(move_on+1, BOARD_LINE):
         square = squares[permanent][tur_or_line] if is_vertical else squares[tur_or_line][permanent]
         if square.current_piece is None:
-            # If square is empty we just add him to the row.
-            valid_moves.append(square)
+            valid_moves.append(square)  # If square is empty we just add him to the row.
             continue
-        # square is taken by enemy.
 
         # If square taken by teamate piece
         if square.current_piece.team is piece.team:

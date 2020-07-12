@@ -41,7 +41,7 @@ class SaveMove:
         if new_piece is pawn:
             return
         pawn.team.pieces.remove(new_piece)
-        pawn.team.pieces.append(pieces.Pawn(pawn.team, square=pawn.square))
+        pawn.team.pieces.append(pawn)
 
 
 class DidntMove(Exception):

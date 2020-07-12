@@ -44,7 +44,6 @@ def switch_turn(white_team, black_team):
     timer.switch_timers(team_got_turn, team_doesnt_got_turn)
 
 
-# Changed
 def remove_eaten_pieces(white_team, black_team):
     for piece in white_team.pieces + black_team.pieces:
         piece_team = white_team if piece.team.is_white_team else black_team
@@ -73,8 +72,7 @@ def print_board(white_team, black_team):
     black_team.print_pieces()
 
 
-# Changed
-def game_loop(white_team: Team, black_team: Team, is_one_player_playing):
+def game_loop(white_team: Team, black_team: Team, is_one_player_playing, bot_depth):
     print_board(white_team, black_team)
     black_team.timer.pause()
     running = True
@@ -86,7 +84,7 @@ def game_loop(white_team: Team, black_team: Team, is_one_player_playing):
     while running:
 
         if team_got_turn is black_team and is_one_player_playing:
-            piece_moved = bot.move(white_team, black_team)
+            piece_moved = bot.move(white_team, black_team, bot_depth)
             if piece_moved is None:
                 # Bot has nowhere to go, because it's checkmated.
                 print(f'Team won is {team_doesnt_got_turn}')
@@ -139,15 +137,13 @@ def game_loop(white_team: Team, black_team: Team, is_one_player_playing):
 
 def main():
     try:
-        is_one_player = Screen.starting_screen()
-        if is_one_player is None:
-            return
-        timer.set_game_length(5)
+        is_one_player, game_length, bot_depth = Screen.starting_screen()
+        timer.set_game_length(game_length)
         Screen.add_squares_to_board()
         white_team = Team(True)
         black_team = Team(False)
         place_pieces(white_team, black_team)
-        game_loop(white_team, black_team, is_one_player)
+        game_loop(white_team, black_team, is_one_player, bot_depth)
 
     except Screen.ExitGame:
         pass

@@ -10,6 +10,10 @@ SCREEN_HEIGHT = 680
 MIDDLE_HORIZENTAL = SCREEN_WIDTH / 2
 RECT_WIDTH = 200
 RECT_HEIGHT = 100
+
+SMALL_RECT_WIDTH = 60
+SMALL_RECT_HEIGHT = SCREEN_HEIGHT/10
+
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 squares = []
 PICTURES_PATH = 'pictures'
@@ -52,7 +56,6 @@ class Square:
         return f'(line: {self.line_cord}, tur: {self.tur_cord})'
 
 
-# Changed
 def is_move_to_square_valid(tur, line, team):
     """
     Check if square is in board bounds and not taken by teammate piece.
@@ -168,6 +171,10 @@ def color_all_square_to_original_color():
 
 
 def starting_screen():
+    is_one_players_playing = True
+    game_length = 5 # In minutes.
+    level = 2 # depth
+
     screen.fill(colors.WHITE)
     bg_image = pygame.image.load(os.path.join(PICTURES_PATH, 'opening_screen_picture.png'))
     screen.blit(bg_image, (0, 0))
@@ -180,12 +187,45 @@ def starting_screen():
     screen.blit(text, (one_player_rect.centerx - 50, one_player_rect.centery - 10))
     current_print_height += 200
 
-    tow_player_rect = pygame.Rect(MIDDLE_HORIZENTAL - RECT_WIDTH/2, current_print_height, RECT_WIDTH, RECT_HEIGHT)
-    pygame.draw.rect(screen, colors.LIGHT_SILVER, tow_player_rect)
+    two_player_rect = pygame.Rect(MIDDLE_HORIZENTAL - RECT_WIDTH/2, current_print_height, RECT_WIDTH, RECT_HEIGHT)
+    pygame.draw.rect(screen, colors.LIGHT_SILVER, two_player_rect)
 
     text = FONT.render("Tow Players", False, colors.BLACK)
-    screen.blit(text, (tow_player_rect.centerx - 50, tow_player_rect.centery - 10))
-    current_print_height += 100
+    screen.blit(text, (two_player_rect.centerx - 50, two_player_rect.centery - 10))
+    current_print_height += 200
+
+    start_game_rect = pygame.Rect(MIDDLE_HORIZENTAL - RECT_WIDTH / 2, current_print_height, RECT_WIDTH, RECT_HEIGHT)
+    pygame.draw.rect(screen, colors.DARK_GREEN, start_game_rect)
+
+    text = FONT.render("Start Game", False, colors.BLACK)
+    screen.blit(text, (start_game_rect.centerx - 50, start_game_rect.centery - 10))
+
+    game_length_rects = []
+    current_print_height = 10
+    text = FONT.render('game length', True, colors.BROWN)
+    screen.blit(text, (0, current_print_height))
+    current_print_height += 80
+    minutes_options = (1, 3, 5, 10)
+    for minute in minutes_options:
+        rect = pygame.Rect(10, current_print_height, SMALL_RECT_WIDTH, SMALL_RECT_HEIGHT)
+        pygame.draw.rect(screen, colors.BROWN, rect)
+        text = FONT.render(f"{minute}", False, colors.WHITE)
+        screen.blit(text, (rect.centerx-5, rect.centery-5))
+        game_length_rects.append(rect)
+        current_print_height += (SMALL_RECT_HEIGHT*2)
+
+    bot_level_rects = []
+    current_print_height = 10
+    text = FONT.render('Bot Level', True, colors.DARK_BLUE)
+    screen.blit(text, (SCREEN_WIDTH - 100, current_print_height))
+    current_print_height += 80
+    for bot_level in range(1, 5):
+        rect = pygame.Rect(SCREEN_WIDTH - 80, current_print_height, SMALL_RECT_WIDTH, SMALL_RECT_HEIGHT)
+        pygame.draw.rect(screen, colors.DARK_BLUE, rect)
+        text = FONT.render(f"{bot_level}", False, colors.WHITE)
+        screen.blit(text, (rect.centerx - 5, rect.centery - 5))
+        bot_level_rects.append(rect)
+        current_print_height += (SMALL_RECT_HEIGHT * 2)
 
     pygame.display.flip()
 
@@ -198,7 +238,22 @@ def starting_screen():
                 mouse_pos = pygame.mouse.get_pos()
 
                 if one_player_rect.collidepoint(mouse_pos[0], mouse_pos[1]):
-                    return True
+                    is_one_players_playing = True
 
-                elif tow_player_rect.collidepoint(mouse_pos[0], mouse_pos[1]):
-                    return False
+                elif two_player_rect.collidepoint(mouse_pos[0], mouse_pos[1]):
+                    is_one_players_playing = False
+
+                elif start_game_rect.collidepoint(mouse_pos[0], mouse_pos[1]):
+                    return is_one_players_playing, game_length, level
+
+                for rect in game_length_rects:
+                    if rect.collidepoint(mouse_pos[0], mouse_pos[1]):
+                        game_length = minutes_options[game_length_rects.index(rect)]
+
+                for rect in bot_level_rects:
+                    if rect.collidepoint(mouse_pos[0], mouse_pos[1]):
+                        level = bot_level_rects.index(rect) + 1
+
+
+
+

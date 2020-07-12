@@ -56,7 +56,7 @@ def move(white_team: teams.Team, bot_team: teams.Team, depth=2):
 
 
 def mini(white_team: teams.Team, bot_team: teams.Team, depth):
-    best_score = 1000
+    best_score = 10000
     best_move = None
 
     if depth == 0:
@@ -69,7 +69,7 @@ def mini(white_team: teams.Team, bot_team: teams.Team, depth):
         for move_square in valid_moves:
             try:
                 # If Didn't move, code wouldn't crash, just move to next move.
-                score_after_move = future_move(piece, move_square, white_team, bot_team, depth, is_bot_futiure_turn=True)
+                score_after_move = future_move(piece, move_square, white_team, bot_team, depth, is_bot_future_turn=True)
 
                 if score_after_move < best_score:
                     best_move = (piece, move_square)
@@ -83,7 +83,7 @@ def mini(white_team: teams.Team, bot_team: teams.Team, depth):
 
 def maxi(white_team: teams.Team, bot_team: teams.Team, depth):
     best_move = None
-    best_score = -1000
+    best_score = -100000
 
     if depth == 0:
         return teams.get_score_dif(white_team, bot_team), best_move
@@ -95,7 +95,7 @@ def maxi(white_team: teams.Team, bot_team: teams.Team, depth):
         for move_square in valid_moves:
             try:
                 # If Didn't move code wouldn't crash, just move to next move.
-                score_after_move = future_move(piece, move_square, white_team, bot_team, depth, is_bot_futiure_turn=False)
+                score_after_move = future_move(piece, move_square, white_team, bot_team, depth, is_bot_future_turn=False)
 
                 if score_after_move > best_score:
                     best_move = (piece, move_square)
@@ -107,9 +107,9 @@ def maxi(white_team: teams.Team, bot_team: teams.Team, depth):
     return best_score, best_move
 
 
-def future_move(piece, move_square, white_team, bot_team, depth, is_bot_futiure_turn):
-    next_move = maxi if is_bot_futiure_turn else mini
-    team_got_turn = bot_team if is_bot_futiure_turn else white_team
+def future_move(piece, move_square, white_team, bot_team, depth, is_bot_future_turn):
+    next_move = maxi if is_bot_future_turn else mini
+    team_got_turn = bot_team if is_bot_future_turn else white_team
     team_doesnt_got_turn = white_team if team_got_turn is bot_team else bot_team
 
     with chess_utils.SaveMove(piece, move_square):
