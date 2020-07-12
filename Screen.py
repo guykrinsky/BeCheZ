@@ -22,6 +22,7 @@ BOARD_LINE = 8
 HEIGHT_OF_SCOREBOARD = 200
 SCORE_BOARD = pygame.Surface((screen.get_width(), HEIGHT_OF_SCOREBOARD))
 FONT = pygame.font.SysFont('comicsansms', 30)
+largeFONT = pygame.font.Font('freesansbold.ttf', 40)
 
 
 class ExitGame(Exception):
@@ -96,11 +97,11 @@ def draw_squares_bg():
 
 def draw_who_turn_is(team_got_turn):
     if team_got_turn.is_white_team:
-        text = FONT.render('White Player Turn', False, colors.WHITE)
+        text = largeFONT.render('White Player Turn', False, colors.WHITE)
     else:
-        text = FONT.render('Black Player Turn', False, colors.BLACK)
+        text = largeFONT.render('Black Player Turn', False, colors.BLACK)
 
-    SCORE_BOARD.blit(text, (SCORE_BOARD.get_width() / 2 - 80, 0))
+    SCORE_BOARD.blit(text, (SCORE_BOARD.get_width() / 2 - 170, 0))
 
 
 def draw_timer(team):
@@ -178,58 +179,23 @@ def starting_screen():
     screen.fill(colors.WHITE)
     bg_image = pygame.image.load(os.path.join(PICTURES_PATH, 'opening_screen_picture.png'))
     screen.blit(bg_image, (0, 0))
-    current_print_height = 150
 
-    one_player_rect = pygame.Rect(MIDDLE_HORIZENTAL - RECT_WIDTH/2, current_print_height, RECT_WIDTH, RECT_HEIGHT)
-    pygame.draw.rect(screen, colors.LIGHT_SILVER, one_player_rect)
-
-    text = FONT.render("One Player", False, colors.BLACK)
-    screen.blit(text, (one_player_rect.centerx - 50, one_player_rect.centery - 10))
-    current_print_height += 200
-
-    two_player_rect = pygame.Rect(MIDDLE_HORIZENTAL - RECT_WIDTH/2, current_print_height, RECT_WIDTH, RECT_HEIGHT)
-    pygame.draw.rect(screen, colors.LIGHT_SILVER, two_player_rect)
-
-    text = FONT.render("Tow Players", False, colors.BLACK)
-    screen.blit(text, (two_player_rect.centerx - 50, two_player_rect.centery - 10))
-    current_print_height += 200
+    current_print_height = 550
 
     start_game_rect = pygame.Rect(MIDDLE_HORIZENTAL - RECT_WIDTH / 2, current_print_height, RECT_WIDTH, RECT_HEIGHT)
-    pygame.draw.rect(screen, colors.DARK_GREEN, start_game_rect)
+    pygame.draw.rect(screen, colors.YELLOW, start_game_rect)
 
     text = FONT.render("Start Game", False, colors.BLACK)
     screen.blit(text, (start_game_rect.centerx - 50, start_game_rect.centery - 10))
 
-    game_length_rects = []
-    current_print_height = 10
-    text = FONT.render('game length', True, colors.BROWN)
-    screen.blit(text, (0, current_print_height))
-    current_print_height += 80
+    number_of_players_rects = get_and_draw_number_of_players_rects()
+
     minutes_options = (1, 3, 5, 10)
-    for minute in minutes_options:
-        rect = pygame.Rect(10, current_print_height, SMALL_RECT_WIDTH, SMALL_RECT_HEIGHT)
-        pygame.draw.rect(screen, colors.BROWN, rect)
-        text = FONT.render(f"{minute}", False, colors.WHITE)
-        screen.blit(text, (rect.centerx-5, rect.centery-5))
-        game_length_rects.append(rect)
-        current_print_height += (SMALL_RECT_HEIGHT*2)
-
-    bot_level_rects = []
-    current_print_height = 10
-    text = FONT.render('Bot Level', True, colors.DARK_BLUE)
-    screen.blit(text, (SCREEN_WIDTH - 100, current_print_height))
-    current_print_height += 80
-    for bot_level in range(1, 5):
-        rect = pygame.Rect(SCREEN_WIDTH - 80, current_print_height, SMALL_RECT_WIDTH, SMALL_RECT_HEIGHT)
-        pygame.draw.rect(screen, colors.DARK_BLUE, rect)
-        text = FONT.render(f"{bot_level}", False, colors.WHITE)
-        screen.blit(text, (rect.centerx - 5, rect.centery - 5))
-        bot_level_rects.append(rect)
-        current_print_height += (SMALL_RECT_HEIGHT * 2)
-
-    pygame.display.flip()
-
+    game_length_rects = get_and_draw_game_length_rect(minutes_options)
+    bot_level_rects = get_and_draw_bot_levels()
     while True:
+        pygame.display.flip()
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 raise ExitGame
@@ -237,22 +203,98 @@ def starting_screen():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
 
-                if one_player_rect.collidepoint(mouse_pos[0], mouse_pos[1]):
-                    is_one_players_playing = True
-
-                elif two_player_rect.collidepoint(mouse_pos[0], mouse_pos[1]):
-                    is_one_players_playing = False
-
-                elif start_game_rect.collidepoint(mouse_pos[0], mouse_pos[1]):
+                if start_game_rect.collidepoint(*mouse_pos):
                     return is_one_players_playing, game_length, level
 
-                for rect in game_length_rects:
-                    if rect.collidepoint(mouse_pos[0], mouse_pos[1]):
-                        game_length = minutes_options[game_length_rects.index(rect)]
+                for text, rect in number_of_players_rects.items():
+                    if rect.collidepoint(*mouse_pos):
+                        is_one_players_playing = text == 'One Player'
+                        draw_other_rects(number_of_players_rects, rect, colors.LIGHT_SILVER, colors.DARK_SILVER, colors.BLACK)
 
-                for rect in bot_level_rects:
-                    if rect.collidepoint(mouse_pos[0], mouse_pos[1]):
-                        level = bot_level_rects.index(rect) + 1
+                for text, rect in game_length_rects.items():
+                    if rect.collidepoint(*mouse_pos):
+                        game_length = int(text)
+                        draw_other_rects(game_length_rects, rect, colors.RED, colors.DARK_RED)
+
+                for text, rect in bot_level_rects.items():
+                    if rect.collidepoint(*mouse_pos):
+                        level = int(text)
+                        draw_other_rects(bot_level_rects, rect, colors.LIGHT_BLUE, colors.DARK_BLUE)
+
+
+def get_and_draw_bot_levels():
+    bot_level_rects = {}
+    current_print_height = 10
+    text_surfarce = FONT.render('Bot Level', True, colors.DARK_BLUE)
+    screen.blit(text_surfarce, (SCREEN_WIDTH - 100, current_print_height))
+    current_print_height += 90
+    for bot_level in range(1, 5):
+        color = colors.LIGHT_BLUE if bot_level == 2 else colors.DARK_BLUE
+        rect = pygame.Rect(SCREEN_WIDTH - 80, current_print_height, SMALL_RECT_WIDTH, SMALL_RECT_HEIGHT)
+        pygame.draw.rect(screen, color, rect)
+        text = f"{bot_level}"
+        text_surfarce = FONT.render(text, False, colors.WHITE)
+        screen.blit(text_surfarce, (rect.centerx - 5, rect.centery - 5))
+        bot_level_rects[text] = rect
+        current_print_height += (SMALL_RECT_HEIGHT * 2)
+
+    return bot_level_rects
+
+
+def get_and_draw_game_length_rect(minutes_options):
+    game_length_rects = {}
+    current_print_height = 10
+    text_surfarce = FONT.render('Game Length', True, colors.DARK_RED)
+    screen.blit(text_surfarce, (0, current_print_height))
+    current_print_height += 90
+    for minute in minutes_options:
+        color = colors.RED if minute == 5 else colors.DARK_RED
+        text = f"{minute}"
+        rect = pygame.Rect(10, current_print_height, SMALL_RECT_WIDTH, SMALL_RECT_HEIGHT)
+        current_print_height += (SMALL_RECT_HEIGHT*2)
+        pygame.draw.rect(screen, color, rect)
+        text_surfarce = FONT.render(text, False, colors.WHITE)
+        screen.blit(text_surfarce, (rect.centerx - 5, rect.centery - 5))
+        game_length_rects[text] = rect
+
+    print(game_length_rects)
+    return game_length_rects
+
+
+def get_and_draw_number_of_players_rects():
+    current_print_height = 150
+
+    one_player_rect = pygame.Rect(MIDDLE_HORIZENTAL - RECT_WIDTH / 2, current_print_height, RECT_WIDTH, RECT_HEIGHT)
+    pygame.draw.rect(screen, colors.LIGHT_SILVER, one_player_rect)
+
+    number_of_players_rects = {}
+    text = "One Player"
+    text_surface = FONT.render(text, False, colors.BLACK)
+    screen.blit(text_surface, (one_player_rect.centerx - 50, one_player_rect.centery - 10))
+    current_print_height += 200
+    number_of_players_rects[text] = one_player_rect
+
+    two_player_rect = pygame.Rect(MIDDLE_HORIZENTAL - RECT_WIDTH / 2, current_print_height, RECT_WIDTH, RECT_HEIGHT)
+    pygame.draw.rect(screen, colors.DARK_SILVER, two_player_rect)
+
+    text = "Two Players"
+    text_surface = FONT.render(text, False, colors.BLACK)
+    screen.blit(text_surface, (two_player_rect.centerx - 50, two_player_rect.centery - 10))
+    number_of_players_rects[text] = two_player_rect
+    return number_of_players_rects
+
+
+def draw_other_rects(rects_and_texts: dict, choosen_rect, color_of_rect, color_of_other_rects, text_color = colors.WHITE):
+    for text, rect in rects_and_texts.items():
+        color = color_of_rect if rect is choosen_rect else color_of_other_rects
+        pygame.draw.rect(screen, color, rect)
+        text_surfarce = FONT.render(text, False, text_color)
+        if rect.width == RECT_WIDTH:
+            screen.blit(text_surfarce, (rect.centerx - 50, rect.centery - 10))
+            continue
+        screen.blit(text_surfarce, (rect.centerx - 5, rect.centery - 5))
+
+
 
 
 

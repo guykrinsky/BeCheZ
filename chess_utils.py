@@ -85,8 +85,8 @@ def place_pieces(white_team: Team, black_team: Team):
     black_team.pieces.append(pieces.Queen(Screen.squares[7][4], black_team))
     white_team.pieces.append(pieces.Queen(Screen.squares[0][4], white_team))
     # Add rooks.
-    black_team.pieces.extend([pieces.Rook(black_team, Screen.squares[7][0]), pieces.Rook(black_team, Screen.squares[7][7])])
-    white_team.pieces.extend([pieces.Rook(white_team, Screen.squares[0][0]), pieces.Rook(white_team, Screen.squares[0][7])])
+    black_team.pieces.extend([pieces.Rook(Screen.squares[7][0], black_team), pieces.Rook(Screen.squares[7][7], black_team,)])
+    white_team.pieces.extend([pieces.Rook(Screen.squares[0][0], white_team), pieces.Rook(Screen.squares[0][7], white_team)])
 
     add_pawns(white_team, black_team)
     # Add kings.
