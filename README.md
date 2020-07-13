@@ -25,7 +25,6 @@ maybe there wiil have a better eplanition - (https://www.geeksforgeeks.org/minim
 
 This isn't over ;), we can disqualify some roots by, **Alpha–beta pruning**. that s little bit hard to explain in words (maybe there - (https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning)). But there are roots we dont need to check.
 ![alphabetapruning](pictures/alphabetapruning.png "alphabetapruning")
-
 ## Images
 <!--- TODO add screen shots of the game --->
 ![Game Play Of The Game](pictures/gameplay.gif)
