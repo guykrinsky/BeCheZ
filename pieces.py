@@ -1,5 +1,5 @@
 import pygame
-from Screen import *
+from screen import *
 import abc
 import os
 

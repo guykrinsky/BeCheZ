@@ -2,7 +2,7 @@ from chess_utils import *
 from teams import Team, get_score_dif
 import timer
 import pygame
-import Screen
+import screen
 import bot
 import os
 
@@ -13,9 +13,9 @@ team_doesnt_got_turn = None
 
 
 def redraw_game_screen():
-    Screen.draw_bg(team_got_turn, team_doesnt_got_turn)
+    screen.draw_bg(team_got_turn, team_doesnt_got_turn)
 
-    for line in Screen.squares:
+    for line in screen.squares:
         for square in line:
             if square.current_piece is not None:
                 square.current_piece.draw()
@@ -26,7 +26,7 @@ def redraw_game_screen():
 def get_square_clicked():
     mouse_pos = pygame.mouse.get_pos()
 
-    for line in Screen.squares:
+    for line in screen.squares:
         for square in line:
             if square.rect.collidepoint(mouse_pos):
                 return square
@@ -98,7 +98,7 @@ def game_loop(white_team: Team, black_team: Team, is_one_player_playing, bot_dep
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                raise Screen.ExitGame
+                raise screen.ExitGame
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 clicked_square = get_square_clicked()
@@ -137,15 +137,15 @@ def game_loop(white_team: Team, black_team: Team, is_one_player_playing, bot_dep
 
 def main():
     try:
-        is_one_player, game_length, bot_depth = Screen.starting_screen()
+        is_one_player, game_length, bot_depth = screen.starting_screen()
         timer.set_game_length(game_length)
-        Screen.add_squares_to_board()
+        screen.add_squares_to_board()
         white_team = Team(True)
         black_team = Team(False)
         place_pieces(white_team, black_team)
         game_loop(white_team, black_team, is_one_player, bot_depth)
 
-    except Screen.ExitGame:
+    except screen.ExitGame:
         pass
 
 

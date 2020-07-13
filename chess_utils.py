@@ -1,11 +1,11 @@
 import pygame
-import Screen
+import screen
 import pieces
 from teams import Team
 
 
 class SaveMove:
-    def __init__(self, piece: pieces.Piece, move_square: Screen.Square):
+    def __init__(self, piece: pieces.Piece, move_square: screen.Square):
         self.piece = piece
         self.move_square = move_square
         self.eaten_piece = None
@@ -69,24 +69,24 @@ class CantCastling(MoveError):
 
 
 def add_pawns(white_team, black_team):
-    for tur in range(Screen.BOARD_LINE):
+    for tur in range(screen.BOARD_LINE):
         white_team.pieces.append(pieces.Pawn(white_team, tur))
         black_team.pieces.append(pieces.Pawn(black_team, tur))
 
 
 def place_pieces(white_team: Team, black_team: Team):
     # Add knights.
-    black_team.pieces.extend([pieces.Knight(Screen.squares[7][6], black_team), pieces.Knight(Screen.squares[7][1], black_team)])
-    white_team.pieces.extend([pieces.Knight(Screen.squares[0][1], white_team), pieces.Knight(Screen.squares[0][6], white_team)])
+    black_team.pieces.extend([pieces.Knight(screen.squares[7][6], black_team), pieces.Knight(screen.squares[7][1], black_team)])
+    white_team.pieces.extend([pieces.Knight(screen.squares[0][1], white_team), pieces.Knight(screen.squares[0][6], white_team)])
     # Add bishops.
-    black_team.pieces.extend([pieces.Bishop(Screen.squares[7][2], black_team), pieces.Bishop(Screen.squares[7][5], black_team)])
-    white_team.pieces.extend([pieces.Bishop(Screen.squares[0][2], white_team), pieces.Bishop(Screen.squares[0][5], white_team)])
+    black_team.pieces.extend([pieces.Bishop(screen.squares[7][2], black_team), pieces.Bishop(screen.squares[7][5], black_team)])
+    white_team.pieces.extend([pieces.Bishop(screen.squares[0][2], white_team), pieces.Bishop(screen.squares[0][5], white_team)])
     # Add queens.
-    black_team.pieces.append(pieces.Queen(Screen.squares[7][4], black_team))
-    white_team.pieces.append(pieces.Queen(Screen.squares[0][4], white_team))
+    black_team.pieces.append(pieces.Queen(screen.squares[7][4], black_team))
+    white_team.pieces.append(pieces.Queen(screen.squares[0][4], white_team))
     # Add rooks.
-    black_team.pieces.extend([pieces.Rook(Screen.squares[7][0], black_team), pieces.Rook(Screen.squares[7][7], black_team,)])
-    white_team.pieces.extend([pieces.Rook(Screen.squares[0][0], white_team), pieces.Rook(Screen.squares[0][7], white_team)])
+    black_team.pieces.extend([pieces.Rook(screen.squares[7][0], black_team), pieces.Rook(screen.squares[7][7], black_team, )])
+    white_team.pieces.extend([pieces.Rook(screen.squares[0][0], white_team), pieces.Rook(screen.squares[0][7], white_team)])
 
     add_pawns(white_team, black_team)
     # Add kings.
@@ -126,7 +126,7 @@ def is_check_after_move(clicked_square, team_doesnt_got_turn, piece_clicked: pie
 
 
 def try_to_move(piece_clicked, clicked_square, team_got_turn: Team, team_doesnt_got_turn: Team):
-    Screen.color_all_square_to_original_color()
+    screen.color_all_square_to_original_color()
 
     if piece_clicked.team is not team_got_turn:
         raise TeamDoesntGotTurn
@@ -184,14 +184,14 @@ def castling(king, rook, team_got_turn, team_doesnt_got_turn):
 
     king_tur += next_king_move
     try:
-        try_to_move(king, Screen.squares[king_line][king_tur], team_got_turn, team_doesnt_got_turn)
+        try_to_move(king, screen.squares[king_line][king_tur], team_got_turn, team_doesnt_got_turn)
         king_tur += next_king_move
-        try_to_move(king, Screen.squares[king_line][king_tur], team_got_turn, team_doesnt_got_turn)
-        rook.move(Screen.squares[king_line][king_tur - next_king_move])
+        try_to_move(king, screen.squares[king_line][king_tur], team_got_turn, team_doesnt_got_turn)
+        rook.move(screen.squares[king_line][king_tur - next_king_move])
         return True
     
     except MoveError:
-        king.move(Screen.squares[save_king_location[0]][save_king_location[1]])
+        king.move(screen.squares[save_king_location[0]][save_king_location[1]])
         return False
 
 
