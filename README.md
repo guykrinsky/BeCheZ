@@ -24,7 +24,7 @@ That called min-max algorithem.
 maybe there wiil have a better eplanition - (https://www.geeksforgeeks.org/minimax-algorithm-in-game-theory-set-1-introduction/) 
 
 This isn't over ;), we can disqualify some roots by, **Alpha–beta pruning**. that s little bit hard to explain in words (maybe there - (https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning)). But there are roots we dont need to check.
-![alpha-beta-pruning](pictures/alpha-beta-pruning.jpg "alpha-beta-pruning")
+![alpha-beta-pruning](pictures/alpha_beta_pruning.jpg "alpha-beta-pruning")
 
 ## Images
 <!--- TODO add screen shots of the game --->
