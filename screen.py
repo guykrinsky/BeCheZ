@@ -173,12 +173,15 @@ def color_all_square_to_original_color():
 
 def starting_screen():
     is_one_players_playing = True
-    game_length = 5 # In minutes.
-    level = 2 # depth
+    game_length = 5  # In minutes.
+    level = 3  # Depth
 
-    screen.fill(colors.WHITE)
     bg_image = pygame.image.load(os.path.join(PICTURES_PATH, 'opening_screen_picture.png'))
     screen.blit(bg_image, (0, 0))
+
+    current_print_height = 50
+    text = largeFONT.render("BeCheZ", False, colors.YELLOW)
+    screen.blit(text, (SCREEN_WIDTH / 2 - 80, current_print_height))
 
     current_print_height = 550
 
@@ -209,17 +212,17 @@ def starting_screen():
                 for text, rect in number_of_players_rects.items():
                     if rect.collidepoint(*mouse_pos):
                         is_one_players_playing = text == 'One Player'
-                        draw_other_rects(number_of_players_rects, rect, colors.LIGHT_SILVER, colors.DARK_SILVER, colors.BLACK)
+                        draw_other_rects_in_other_color(number_of_players_rects, rect, colors.LIGHT_SILVER, colors.DARK_SILVER, colors.BLACK)
 
                 for text, rect in game_length_rects.items():
                     if rect.collidepoint(*mouse_pos):
                         game_length = int(text)
-                        draw_other_rects(game_length_rects, rect, colors.RED, colors.DARK_RED)
+                        draw_other_rects_in_other_color(game_length_rects, rect, colors.RED, colors.DARK_RED)
 
                 for text, rect in bot_level_rects.items():
                     if rect.collidepoint(*mouse_pos):
                         level = int(text)
-                        draw_other_rects(bot_level_rects, rect, colors.LIGHT_BLUE, colors.DARK_BLUE)
+                        draw_other_rects_in_other_color(bot_level_rects, rect, colors.LIGHT_BLUE, colors.DARK_BLUE)
 
 
 def get_and_draw_bot_levels():
@@ -229,7 +232,7 @@ def get_and_draw_bot_levels():
     screen.blit(text_surfarce, (SCREEN_WIDTH - 100, current_print_height))
     current_print_height += 90
     for bot_level in range(1, 5):
-        color = colors.LIGHT_BLUE if bot_level == 2 else colors.DARK_BLUE
+        color = colors.LIGHT_BLUE if bot_level == 3 else colors.DARK_BLUE
         rect = pygame.Rect(SCREEN_WIDTH - 80, current_print_height, SMALL_RECT_WIDTH, SMALL_RECT_HEIGHT)
         pygame.draw.rect(screen, color, rect)
         text = f"{bot_level}"
@@ -284,7 +287,7 @@ def get_and_draw_number_of_players_rects():
     return number_of_players_rects
 
 
-def draw_other_rects(rects_and_texts: dict, choosen_rect, color_of_rect, color_of_other_rects, text_color = colors.WHITE):
+def draw_other_rects_in_other_color(rects_and_texts: dict, choosen_rect, color_of_rect, color_of_other_rects, text_color = colors.WHITE):
     for text, rect in rects_and_texts.items():
         color = color_of_rect if rect is choosen_rect else color_of_other_rects
         pygame.draw.rect(screen, color, rect)

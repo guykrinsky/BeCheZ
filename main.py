@@ -56,6 +56,13 @@ def update_game_after_move(piece_clicked, black_team, white_team):
 
     switch_turn(white_team, black_team)
 
+    if is_checkmated(team_got_turn, team_doesnt_got_turn):
+        print(f'Team won is {team_doesnt_got_turn}')
+        raise Checkmated
+
+    if is_tie(team_got_turn,team_doesnt_got_turn):
+        raise Tie
+
     piece_clicked.move_counter += 1
 
     remove_eaten_pieces(white_team, black_team)
@@ -91,11 +98,6 @@ def game_loop(white_team: Team, black_team: Team, is_one_player_playing, bot_dep
                 break
             update_game_after_move(piece_moved, team_got_turn, team_doesnt_got_turn)
 
-            # Check if after bot move, you are checkmated.
-            if is_checkmated(team_got_turn, team_doesnt_got_turn):
-                print(f'Team won is {team_doesnt_got_turn}')
-                break
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 raise screen.ExitGame
@@ -118,9 +120,6 @@ def game_loop(white_team: Team, black_team: Team, is_one_player_playing, bot_dep
                     try_to_move(piece_clicked, clicked_square, team_got_turn, team_doesnt_got_turn)
                     # Move is valid.
                     update_game_after_move(piece_clicked, black_team, white_team)
-                    if is_checkmated(team_got_turn, team_doesnt_got_turn):
-                        print(f'Team won is {team_doesnt_got_turn}')
-                        running = False
                 except MoveError:
                     # The move wasn't valid.
                     pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'error.wav')).play()
@@ -145,7 +144,7 @@ def main():
         place_pieces(white_team, black_team)
         game_loop(white_team, black_team, is_one_player, bot_depth)
 
-    except screen.ExitGame:
+    except (GameEnd, screen.ExitGame):
         pass
 
 

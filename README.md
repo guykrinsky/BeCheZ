@@ -1,30 +1,43 @@
-# Chess
+# BeCheZ
 Chess game with pygame library made from zero.
 The game has an AI engine option.
 
-## On The Project
+## Why I Did This Project
 That's was my first python project.
-I did this project because I love chess and i wanted to practice and test my python skills.
+I did this project because I love chess and I wanted to practice and test my python skills.
 
 ## How To Use
-You just need to download pygame library and python-3 and off course all the images and the program.
+All you need is python, pygame package and my code :)
+Run the commands below to install and run the game.
+```bash
+git clone https://github.com/guykrinsky/BeCheZ.git
+pip install pygame
+python main.py
+```
 
-## How bot works
-First thing, every piece got score that represent his value, this is the base of the engine.
+## Bot's Algorithm
+First thing, every piece has a score that represent it's value, this is the base of the engine.
+
 ![pieces_score](pictures/pieces_score.jpeg "pieces score")
 
-In addition, knight in the corner of the board doesn't equal to knight in the middel, so the piece's score dependent on his position.
+In addition, a knight in the corner of the board doesn't equal to a knight in the center, so the piece's score dependents on it's position.
 
-The score of the game represented by the sum of the white team's pieces minus black team's pieces,
-the black player want the score to be **minimal** and the white **max**.
+The score of the game is the sum of the white team's pieces minus black team's pieces,
+the black player want the score to be **minimal** and the white **maximum**.
 
-This is how the bot works, for every move he can do he checks every white team move, and for every white move he checks his own moves, and so on until 1 - 5 future moves. Every player will do his best move, white player will want to do a move that lead to max score and the black player to the min score.
-That called min-max algorithm.
+This is how the bot works, for every move he can do he checks every white team move, and for every white move he checks his own moves,
+and so on until 1 to 5 future moves. Every player will do his best move, white player will want to do a move that lead 
+to max score and the black player to the min score.
+That called **min-max algorithm**.
+
 ![minmax](pictures/minimax.png "minimax")
-maybe there will have a better explanation - (https://www.geeksforgeeks.org/minimax-algorithm-in-game-theory-set-1-introduction/) 
+if you still don't understand and you want to hear more - (https://www.geeksforgeeks.org/minimax-algorithm-in-game-theory-set-1-introduction/) 
 
-This isn't over ;), we can disqualify some roots by, **Alpha–beta pruning**. that s little bit hard to explain in words (maybe there - (https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning)). But there are roots we don't need to check.
+This isn't over ;), we can disqualify some paths by **Alpha–beta pruning**. 
+This part is more complex, you can read here the more boring staff: (https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning)).
 ![alpha_beta_pruning](pictures/alphabetapruning.png "alpha_beta_pruning")
-## Images
-<!--- TODO add screen shots of the game --->
+## Opening Screen
+![starting_screen](pictures/opening_screen_picture.png"starting screen")
+
+## Gameplay
 ![Game Play Of The Game](pictures/gameplay.gif)

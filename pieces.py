@@ -290,27 +290,24 @@ def _get_straight_valid_move_squares(piece, is_vertical):
 
     for tur_or_line in range(move_on):
         square = squares[permanent][tur_or_line] if is_vertical else squares[tur_or_line][permanent]
-        if square.current_piece is None:
-            # If square is empty we just add him to the row.
+        if square.current_piece is None:  # If square is empty we just add him to the row.
             valid_moves.append(square)
             continue
-        # If square taken by teamate piece we have to make a new row.
-        if square.current_piece.team is piece.team:
+        if square.current_piece.team is piece.team:  # If square taken by teamate piece we have to make a new row.
             valid_moves = []
         else:   # square is taken by enemy.
             # we start a new raw from this square(including).
             valid_moves = [square]
             continue
 
-        # Add squares after piece
+    # Add squares after piece
     for tur_or_line in range(move_on+1, BOARD_LINE):
         square = squares[permanent][tur_or_line] if is_vertical else squares[tur_or_line][permanent]
         if square.current_piece is None:
             valid_moves.append(square)  # If square is empty we just add him to the row.
             continue
 
-        # If square taken by teamate piece
-        if square.current_piece.team is piece.team:
+        if square.current_piece.team is piece.team:  # If square taken by teamate piece
             break
         else:
             # square is taken by enemy.
