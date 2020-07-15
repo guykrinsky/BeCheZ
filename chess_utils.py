@@ -83,21 +83,21 @@ class CantCastling(MoveError):
 def add_pawns(white_team, black_team):
     for tur in range(screen.BOARD_LINE):
         white_team.pieces.append(pieces.Pawn(white_team, tur))
-        # black_team.pieces.append(pieces.Pawn(black_team, tur))
+        black_team.pieces.append(pieces.Pawn(black_team, tur))
 
 
 def place_pieces(white_team: Team, black_team: Team):
     # Add knights.
-    # black_team.pieces.extend([pieces.Knight(screen.squares[7][6], black_team), pieces.Knight(screen.squares[7][1], black_team)])
+    black_team.pieces.extend([pieces.Knight(screen.squares[7][6], black_team), pieces.Knight(screen.squares[7][1], black_team)])
     white_team.pieces.extend([pieces.Knight(screen.squares[0][1], white_team), pieces.Knight(screen.squares[0][6], white_team)])
     # Add bishops.
-    # black_team.pieces.extend([pieces.Bishop(screen.squares[7][2], black_team), pieces.Bishop(screen.squares[7][5], black_team)])
+    black_team.pieces.extend([pieces.Bishop(screen.squares[7][2], black_team), pieces.Bishop(screen.squares[7][5], black_team)])
     white_team.pieces.extend([pieces.Bishop(screen.squares[0][2], white_team), pieces.Bishop(screen.squares[0][5], white_team)])
     # Add queens.
-    # black_team.pieces.append(pieces.Queen(screen.squares[7][4], black_team))
+    black_team.pieces.append(pieces.Queen(screen.squares[7][4], black_team))
     white_team.pieces.append(pieces.Queen(screen.squares[0][4], white_team))
     # Add rooks.
-    # black_team.pieces.extend([pieces.Rook(screen.squares[7][0], black_team), pieces.Rook(screen.squares[7][7], black_team, )])
+    black_team.pieces.extend([pieces.Rook(screen.squares[7][0], black_team), pieces.Rook(screen.squares[7][7], black_team, )])
     white_team.pieces.extend([pieces.Rook(screen.squares[0][0], white_team), pieces.Rook(screen.squares[0][7], white_team)])
 
     add_pawns(white_team, black_team)

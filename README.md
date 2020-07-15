@@ -37,7 +37,7 @@ This isn't over ;), we can disqualify some paths by **Alpha–beta pruning**.
 This part is more complex, you can read here the more boring staff: (https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning)).
 ![alpha_beta_pruning](pictures/alphabetapruning.png "alpha_beta_pruning")
 ## Opening Screen
-![starting_screen](pictures/opening_screen_picture.png"starting screen")
+![starting_screen](pictures/opening_screen_screen_shot.png "starting screen")
 
 ## Gameplay
 ![Game Play Of The Game](pictures/gameplay.gif)
