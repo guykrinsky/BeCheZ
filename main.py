@@ -10,6 +10,7 @@ SOUNDS_PATH = 'sounds'
 
 team_got_turn = None
 team_doesnt_got_turn = None
+turn_number = 0
 
 
 def redraw_game_screen():
@@ -52,6 +53,7 @@ def remove_eaten_pieces(white_team, black_team):
 
 
 def update_game_after_move(piece_clicked, black_team, white_team):
+    global turn_number
     pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'pong.wav')).play()
 
     switch_turn(white_team, black_team)
@@ -61,15 +63,20 @@ def update_game_after_move(piece_clicked, black_team, white_team):
         raise Checkmated
 
     if is_tie(team_got_turn,team_doesnt_got_turn):
+        print("tie")
         raise Tie
 
     piece_clicked.move_counter += 1
+    turn_number += 1
 
     remove_eaten_pieces(white_team, black_team)
     white_team.update_score()
     black_team.update_score()
     score_dif = get_score_dif(white_team, black_team)
-    print(f'score diffence is {score_dif}')
+    team_leading = white_team if score_dif > 0 else black_team
+    print(f'turn {turn_number}:\n'
+          f'team leading is {team_leading} in {score_dif}\n'
+          f'keep going!')
 
 
 def print_board(white_team, black_team):
@@ -80,7 +87,6 @@ def print_board(white_team, black_team):
 
 
 def game_loop(white_team: Team, black_team: Team, is_one_player_playing, bot_depth):
-    print_board(white_team, black_team)
     black_team.timer.pause()
     running = True
     piece_clicked = None

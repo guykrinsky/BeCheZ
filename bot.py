@@ -44,15 +44,14 @@ def move(white_team: teams.Team, bot_team: teams.Team, depth=2):
     if did_castling:
         return king
 
-    if chess_utils.is_checkmated(bot_team, white_team) or chess_utils.is_tie(bot_team, white_team):
-        return None
+    if chess_utils.is_checkmated(bot_team, white_team):
+        raise chess_utils.Checkmated
 
-    score, best_move = mini(white_team, bot_team, depth, -10000)
-    print(best_move)
+    if chess_utils.is_tie(bot_team, white_team):
+        raise chess_utils.Tie
+
+    score, best_move = mini(white_team, bot_team, depth, MINIMUM_SCORE)
     piece_moved, move_square = best_move
-
-    print(f'piece - {piece_moved}. moved to - {move_square}\n'
-          f'score after the move is {score}')
 
     chess_utils.try_to_move(piece_moved, move_square, bot_team, white_team)
     return piece_moved
@@ -135,65 +134,3 @@ def future_move(piece, move_square, white_team, bot_team, depth, min_or_max, is_
 
         score_after_move, _ = next_move(white_team, bot_team, depth - 1, min_or_max)
     return score_after_move
-
-
-# This two fuctions not in use.
-def maxi_without_with(white_team: teams.Team, bot_team: teams.Team, depth):
-    best_move = None
-    best_score = -1000
-
-    if chess_utils.is_checkmated(white_team, bot_team):
-        return best_score, best_move
-
-    if depth == 0:
-        return teams.get_score_dif(white_team, bot_team), best_move
-
-    for piece in white_team.pieces:
-        for move_square in piece.get_valid_move_squares():
-            eaten_piece = move_square.current_piece
-            current_piece_square = piece.square
-
-            if chess_utils.try_to_move(piece, move_square, white_team, bot_team):
-
-                score_after_move, _ = mini(white_team, bot_team, depth-1)
-
-                if score_after_move > best_score:
-                    best_move = (piece, move_square)
-                    best_score = score_after_move
-                piece.move(current_piece_square)
-                if eaten_piece is not None:
-                    eaten_piece.move(eaten_piece.square)
-                    eaten_piece.is_eaten = False
-
-    return best_score, best_move
-
-
-def mini_with_alph_beta_proving(white_team: teams.Team, bot_team: teams.Team, alpha, beta, depth):
-    best_score = 1000
-    best_move = None
-
-    if depth == 0:
-        return teams.get_score_dif(white_team, bot_team), best_move
-
-    for piece in bot_team.pieces:
-        valid_moves = piece.get_valid_move_squares()
-        for move_square in valid_moves:
-            with chess_utils.SaveMove(piece, move_square):
-
-                if chess_utils.try_to_move(piece, move_square, bot_team, white_team):
-                    score_after_move, _ = maxi(white_team, bot_team, alpha, beta, depth-1)
-
-                    if score_after_move <= alpha:
-                        best_move = (piece, move_square)
-
-                    if score_after_move < beta:
-                        # Bigger score -> White player is winning.
-                        best_move = (piece, move_square)
-                        beta = score_after_move
-                else:
-                    continue
-
-            if score_after_move <= alpha:
-                return alpha, best_move
-
-    return beta, best_move

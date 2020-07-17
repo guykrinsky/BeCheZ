@@ -34,8 +34,6 @@ class SaveMove:
             return
 
         pawn = self.piece
-        print(pawn)
-        print(self.move_square)
         new_piece = self.piece.square.current_piece
         if new_piece is pawn:
             return
@@ -165,7 +163,6 @@ def try_to_move(piece_clicked, clicked_square, team_got_turn: Team, team_doesnt_
 
 
 def replace_auto_to_queen(pawn):
-    print(pawn)
     pawn.team.pieces.remove(pawn)
     pawn.team.pieces.append(pieces.Queen(pawn.square, pawn.team))
 
