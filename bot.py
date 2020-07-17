@@ -2,6 +2,9 @@ import teams
 import chess_utils
 import pieces
 
+MAXIMUM_SCORE = 10_000_000
+MINIMUM_SCORE = -1 * MAXIMUM_SCORE
+
 
 def try_castling(white_team, bot_team):
     king = None
@@ -56,7 +59,7 @@ def move(white_team: teams.Team, bot_team: teams.Team, depth=2):
 
 
 def mini(white_team: teams.Team, bot_team: teams.Team, depth, max_from_previous_moves):
-    best_score = 10000
+    best_score = MAXIMUM_SCORE
     best_move = None
 
     if depth == 0:
@@ -69,9 +72,10 @@ def mini(white_team: teams.Team, bot_team: teams.Team, depth, max_from_previous_
         for move_square in valid_moves:
             try:
                 # If Didn't move, code wouldn't crash, just move to next move.
-                score_after_move = future_move(piece, move_square, white_team, bot_team, depth,best_score, is_bot_future_turn=True)
+                score_after_move = future_move(piece, move_square, white_team, bot_team, depth, best_score,
+                                               is_bot_future_turn=True)
 
-                if score_after_move < max_from_previous_moves:
+                if score_after_move <= max_from_previous_moves:
                     best_move = (piece, move_square)
                     best_score = score_after_move
                     return best_score, best_move
@@ -88,7 +92,7 @@ def mini(white_team: teams.Team, bot_team: teams.Team, depth, max_from_previous_
 
 def maxi(white_team: teams.Team, bot_team: teams.Team, depth, min_from_previous_moves):
     best_move = None
-    best_score = -100000
+    best_score = MINIMUM_SCORE
 
     if depth == 0:
         return teams.get_score_dif(white_team, bot_team), best_move
@@ -100,9 +104,10 @@ def maxi(white_team: teams.Team, bot_team: teams.Team, depth, min_from_previous_
         for move_square in valid_moves:
             try:
                 # If Didn't move code wouldn't crash, just move to next move.
-                score_after_move = future_move(piece, move_square, white_team, bot_team, depth,best_score, is_bot_future_turn=False)
+                score_after_move = future_move(piece, move_square, white_team, bot_team, depth, best_score,
+                                               is_bot_future_turn=False)
 
-                if score_after_move > min_from_previous_moves:
+                if score_after_move >= min_from_previous_moves:
                     best_move = (piece, move_square)
                     best_score = score_after_move
                     return best_score, best_move
@@ -110,7 +115,6 @@ def maxi(white_team: teams.Team, bot_team: teams.Team, depth, min_from_previous_
                 if score_after_move > best_score:
                     best_move = (piece, move_square)
                     best_score = score_after_move
-
 
             except chess_utils.DidntMove:
                 pass

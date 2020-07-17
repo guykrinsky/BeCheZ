@@ -28,7 +28,6 @@ class SaveMove:
             self.eaten_piece.is_eaten = False
 
     def return_piece_to_pawn_if_needed(self):
-        # TODO Check if work.
         if not isinstance(self.piece, pieces.Pawn):
             return
         if not (self.move_square.line_cord == 7 or self.move_square.line_cord == 0):
@@ -222,7 +221,6 @@ def check_castling(king, rook_square, team_got_turn, team_doesnt_got_turn):
 
 
 def is_tie(team_got_turn, team_doesnt_got_turn):
-    # TODO check if it works.
     for piece in team_got_turn.pieces:
         for move_square in piece.get_valid_move_squares():
             with SaveMove(piece, move_square):
