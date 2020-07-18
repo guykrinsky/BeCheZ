@@ -5,6 +5,7 @@ import pygame
 import screen
 import bot
 import os
+import colors
 
 SOUNDS_PATH = 'sounds'
 
@@ -19,6 +20,7 @@ def redraw_game_screen():
     for line in screen.squares:
         for square in line:
             if square.current_piece is not None:
+                # if isinstance(square.current_piece, pieces.Queen) and square.current_piece.team.is_white_team:
                 square.current_piece.draw()
 
     pygame.display.flip()
@@ -53,17 +55,26 @@ def remove_eaten_pieces(white_team, black_team):
 
 
 def update_game_after_move(piece_clicked, black_team, white_team):
+    redraw_game_screen()
     global turn_number
     pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'pong.wav')).play()
 
     switch_turn(white_team, black_team)
 
+    print(piece_clicked)
+
     if is_checkmated(team_got_turn, team_doesnt_got_turn):
-        print(f'Team won is {team_doesnt_got_turn}')
+        text = f"Team won is {team_doesnt_got_turn}"
+        text_surface = screen.LARGE_FONT.render(text, False, colors.LIGHT_BLUE)
+        screen.screen.blit(text_surface, (screen.SCREEN_WIDTH/2 - 235, screen.SCREEN_HEIGHT/2 - 30))
+        pygame.display.flip()
         raise Checkmated
 
-    if is_tie(team_got_turn,team_doesnt_got_turn):
-        print("tie")
+    if is_tie(team_got_turn, team_doesnt_got_turn):
+        text = f"Tie"
+        text_surface = screen.LARGE_FONT.render(text, False, colors.DARK_GREEN)
+        screen.screen.blit(text_surface, (screen.SCREEN_WIDTH/2 - 50, screen.SCREEN_HEIGHT/2 - 30))
+        pygame.display.flip()
         raise Tie
 
     piece_clicked.move_counter += 1
@@ -98,10 +109,6 @@ def game_loop(white_team: Team, black_team: Team, is_one_player_playing, bot_dep
 
         if team_got_turn is black_team and is_one_player_playing:
             piece_moved = bot.move(white_team, black_team, bot_depth)
-            if piece_moved is None:
-                # Bot has nowhere to go, because it's checkmated.
-                print(f'Team won is {team_doesnt_got_turn}')
-                break
             update_game_after_move(piece_moved, team_got_turn, team_doesnt_got_turn)
 
         for event in pygame.event.get():
@@ -150,8 +157,13 @@ def main():
         place_pieces(white_team, black_team)
         game_loop(white_team, black_team, is_one_player, bot_depth)
 
-    except (GameEnd, screen.ExitGame):
-        pass
+    except screen.ExitGame:
+        return
+
+    except GameEnd:
+        print("Game ended.")
+        timer.sleep(10)
+        # main()
 
 
 if __name__ == '__main__':

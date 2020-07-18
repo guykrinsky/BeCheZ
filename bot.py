@@ -44,11 +44,8 @@ def move(white_team: teams.Team, bot_team: teams.Team, depth=2):
     if did_castling:
         return king
 
-    if chess_utils.is_checkmated(bot_team, white_team):
+    if chess_utils.is_checkmated(bot_team, white_team) or chess_utils.is_tie(bot_team, white_team):
         raise chess_utils.Checkmated
-
-    if chess_utils.is_tie(bot_team, white_team):
-        raise chess_utils.Tie
 
     score, best_move = mini(white_team, bot_team, depth, MINIMUM_SCORE)
     piece_moved, move_square = best_move
@@ -86,6 +83,9 @@ def mini(white_team: teams.Team, bot_team: teams.Team, depth, max_from_previous_
             except chess_utils.DidntMove:
                 pass
 
+    if best_score == MAXIMUM_SCORE:
+        best_score = MINIMUM_SCORE
+
     return best_score, best_move
 
 
@@ -118,6 +118,8 @@ def maxi(white_team: teams.Team, bot_team: teams.Team, depth, min_from_previous_
             except chess_utils.DidntMove:
                 pass
 
+    if best_score == MINIMUM_SCORE:
+        best_score = MAXIMUM_SCORE
     return best_score, best_move
 
 

@@ -41,6 +41,7 @@ class Piece(metaclass=abc.ABCMeta):
         # Move to next square.
         self.square = next_square
         self.square.current_piece = self
+        return
 
     @abc.abstractmethod
     def get_valid_move_squares(self):
