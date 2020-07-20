@@ -20,7 +20,6 @@ def redraw_game_screen():
     for line in screen.squares:
         for square in line:
             if square.current_piece is not None:
-                # if isinstance(square.current_piece, pieces.Queen) and square.current_piece.team.is_white_team:
                 square.current_piece.draw()
 
     pygame.display.flip()

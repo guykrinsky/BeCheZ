@@ -83,8 +83,9 @@ def mini(white_team: teams.Team, bot_team: teams.Team, depth, max_from_previous_
             except chess_utils.DidntMove:
                 pass
 
-    if best_score == MAXIMUM_SCORE:
-        best_score = MINIMUM_SCORE
+    # If we cant move it will be a tie, score will be zero.
+    if best_move is None:
+        best_score = 0
 
     return best_score, best_move
 
@@ -118,8 +119,9 @@ def maxi(white_team: teams.Team, bot_team: teams.Team, depth, min_from_previous_
             except chess_utils.DidntMove:
                 pass
 
-    if best_score == MINIMUM_SCORE:
-        best_score = MAXIMUM_SCORE
+    # If we cant move it will be a tie, score will be zero.
+    if best_move is None:
+        best_score = 0
     return best_score, best_move
 
 
