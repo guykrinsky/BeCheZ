@@ -7,6 +7,10 @@ class TimeError(Exception):
     """
 
 
+class RunOutOfTime(Exception):
+    pass
+
+
 def switch_timers(team_got_turn, team_doesnt_got_turn):
     team_got_turn.timer.resume()
     team_doesnt_got_turn.timer.pause()
@@ -60,5 +64,6 @@ class Timer:
             return
         self.time_passed = time.perf_counter() - self.start_time - self.total_time_paused
 
-    def is_game_ended(self):
-        return self.get_seconds() >= self.GAME_LENGTH
+    def is_out_of_time(self):
+        if self.get_seconds() >= self.GAME_LENGTH:
+            raise RunOutOfTime

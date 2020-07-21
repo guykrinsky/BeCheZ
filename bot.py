@@ -67,7 +67,7 @@ def mini(white_team: teams.Team, bot_team: teams.Team, depth, max_from_previous_
         valid_moves = piece.get_valid_move_squares()
         for move_square in valid_moves:
             try:
-                # If Didn't move, code wouldn't crash, just move to next move.
+                # If didn't move, code wouldn't crash, just move to next move.
                 score_after_move = future_move(piece, move_square, white_team, bot_team, depth, best_score,
                                                is_bot_future_turn=True)
 
@@ -103,7 +103,7 @@ def maxi(white_team: teams.Team, bot_team: teams.Team, depth, min_from_previous_
         valid_moves = piece.get_valid_move_squares()
         for move_square in valid_moves:
             try:
-                # If Didn't move code wouldn't crash, just move to next move.
+                # If didn't move code wouldn't crash, just move to next move.
                 score_after_move = future_move(piece, move_square, white_team, bot_team, depth, best_score,
                                                is_bot_future_turn=False)
 

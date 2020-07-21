@@ -63,10 +63,7 @@ def update_game_after_move(piece_clicked, black_team, white_team):
     print(piece_clicked)
 
     if is_checkmated(team_got_turn, team_doesnt_got_turn):
-        text = f"Team won is {team_doesnt_got_turn}"
-        text_surface = screen.LARGE_FONT.render(text, False, colors.LIGHT_BLUE)
-        screen.screen.blit(text_surface, (screen.SCREEN_WIDTH/2 - 235, screen.SCREEN_HEIGHT/2 - 30))
-        pygame.display.flip()
+        screen.draw_winner(team_doesnt_got_turn)
         raise Checkmated
 
     if is_tie(team_got_turn, team_doesnt_got_turn):
@@ -138,10 +135,16 @@ def game_loop(white_team: Team, black_team: Team, is_one_player_playing, bot_dep
 
                 piece_clicked = None
 
-        if white_team.timer.is_game_ended():
-            break
-        if black_team.timer.is_game_ended():
-            break
+        try:
+            team_won = black_team
+            white_team.timer.is_out_of_time()
+            team_won = white_team
+            black_team.timer.is_out_of_time()
+        except timer.RunOutOfTime:
+            print(team_won)
+            screen.draw_winner(team_won)
+            redraw_game_screen()
+            raise GameEnd
 
         redraw_game_screen()
 
@@ -162,7 +165,6 @@ def main():
     except GameEnd:
         print("Game ended.")
         timer.sleep(10)
-        # main()
 
 
 if __name__ == '__main__':

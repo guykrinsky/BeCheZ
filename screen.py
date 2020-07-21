@@ -297,7 +297,8 @@ def draw_other_rects_in_other_color(rects_and_texts: dict, chosen_rect, color_of
             screen.blit(text_surface, (rect.centerx - 5, rect.centery - 5))
 
 
-
-
-
-
+def draw_winner(team_won):
+    text = f"Team won is {team_won}"
+    text_surface = LARGE_FONT.render(text, False, colors.LIGHT_BLUE)
+    screen.blit(text_surface, (SCREEN_WIDTH / 2 - 235, SCREEN_HEIGHT / 2 - 30))
+    pygame.display.flip()
