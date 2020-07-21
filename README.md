@@ -30,7 +30,7 @@ and so on until 1 to 5 future moves. Every player will do his best move, white p
 to max score and the black player to the min score.
 That called **min-max algorithm**.
 
-![minmax](pictures/minimax.png "minimax")
+![minimax](pictures/minimax.png "minimax")
 If you still don't understand and you want to hear more - (https://www.geeksforgeeks.org/minimax-algorithm-in-game-theory-set-1-introduction/) 
 
 This isn't over ;), we can disqualify some paths by **Alpha–beta pruning**. 

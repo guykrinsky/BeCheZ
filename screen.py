@@ -7,7 +7,7 @@ pygame.init()
 
 SCREEN_WIDTH = 480
 SCREEN_HEIGHT = 680
-MIDDLE_HORIZENTAL = SCREEN_WIDTH / 2
+MIDDLE_HORIZONTAL = SCREEN_WIDTH / 2
 RECT_WIDTH = 200
 RECT_HEIGHT = 100
 
@@ -185,7 +185,7 @@ def starting_screen():
 
     current_print_height = 550
 
-    start_game_rect = pygame.Rect(MIDDLE_HORIZENTAL - RECT_WIDTH / 2, current_print_height, RECT_WIDTH, RECT_HEIGHT)
+    start_game_rect = pygame.Rect(MIDDLE_HORIZONTAL - RECT_WIDTH / 2, current_print_height, RECT_WIDTH, RECT_HEIGHT)
     pygame.draw.rect(screen, colors.YELLOW, start_game_rect)
 
     text = REGULAR_FONT.render("Start Game", False, colors.BLACK)
@@ -212,7 +212,8 @@ def starting_screen():
                 for text, rect in number_of_players_rects.items():
                     if rect.collidepoint(*mouse_pos):
                         is_one_players_playing = text == 'One Player'
-                        draw_other_rects_in_other_color(number_of_players_rects, rect, colors.LIGHT_SILVER, colors.DARK_SILVER, colors.BLACK)
+                        draw_other_rects_in_other_color(number_of_players_rects, rect,
+                                                        colors.LIGHT_SILVER, colors.DARK_SILVER, colors.BLACK)
 
                 for text, rect in game_length_rects.items():
                     if rect.collidepoint(*mouse_pos):
@@ -266,7 +267,7 @@ def get_and_draw_game_length_rect(minutes_options, default_minutes):
 def get_and_draw_number_of_players_rects():
     current_print_height = 150
 
-    one_player_rect = pygame.Rect(MIDDLE_HORIZENTAL - RECT_WIDTH / 2, current_print_height, RECT_WIDTH, RECT_HEIGHT)
+    one_player_rect = pygame.Rect(MIDDLE_HORIZONTAL - RECT_WIDTH / 2, current_print_height, RECT_WIDTH, RECT_HEIGHT)
     pygame.draw.rect(screen, colors.LIGHT_SILVER, one_player_rect)
 
     number_of_players_rects = {}
@@ -276,7 +277,7 @@ def get_and_draw_number_of_players_rects():
     current_print_height += 200
     number_of_players_rects[text] = one_player_rect
 
-    two_player_rect = pygame.Rect(MIDDLE_HORIZENTAL - RECT_WIDTH / 2, current_print_height, RECT_WIDTH, RECT_HEIGHT)
+    two_player_rect = pygame.Rect(MIDDLE_HORIZONTAL - RECT_WIDTH / 2, current_print_height, RECT_WIDTH, RECT_HEIGHT)
     pygame.draw.rect(screen, colors.DARK_SILVER, two_player_rect)
 
     text = "Two Players"
@@ -286,7 +287,8 @@ def get_and_draw_number_of_players_rects():
     return number_of_players_rects
 
 
-def draw_other_rects_in_other_color(rects_and_texts: dict, chosen_rect, color_of_rect, color_of_other_rects, text_color = colors.WHITE):
+def draw_other_rects_in_other_color(rects_and_texts: dict, chosen_rect, color_of_rect, color_of_other_rects,
+                                    text_color=colors.WHITE):
     for text, rect in rects_and_texts.items():
         color = color_of_rect if rect is chosen_rect else color_of_other_rects
         pygame.draw.rect(screen, color, rect)

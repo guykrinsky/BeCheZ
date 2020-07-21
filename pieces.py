@@ -251,17 +251,17 @@ def _get_diagonal_valid_moves(piece):
 
         if found_right_down:
             found_right_down = _check_next_diagonal_valid_move(piece, current_distance, current_distance,
-                                                                              valid_squares)
+                                                               valid_squares)
         if found_left_down:
             found_left_down = _check_next_diagonal_valid_move(piece, current_distance,
-                                                                             current_distance * -1, valid_squares)
+                                                              current_distance * -1, valid_squares)
         if found_right_up:
             found_right_up = _check_next_diagonal_valid_move(piece, current_distance * -1,
-                                                                            current_distance, valid_squares)
+                                                             current_distance, valid_squares)
         if found_left_up:
             found_left_up = _check_next_diagonal_valid_move(piece, current_distance * -1,
-                                                                           current_distance * -1,
-                                                                           valid_squares)
+                                                            current_distance * -1,
+                                                            valid_squares)
     return valid_squares
 
 
@@ -293,7 +293,7 @@ def _get_straight_valid_move_squares(piece, is_vertical):
         if square.current_piece is None:  # If square is empty we just add him to the row.
             valid_moves.append(square)
             continue
-        if square.current_piece.team is piece.team:  # If square taken by teamate piece we have to make a new row.
+        if square.current_piece.team is piece.team:  # If square taken by teammate piece we have to make a new row.
             valid_moves = []
         else:   # square is taken by enemy.
             # we start a new raw from this square(including).
@@ -307,7 +307,7 @@ def _get_straight_valid_move_squares(piece, is_vertical):
             valid_moves.append(square)  # If square is empty we just add him to the row.
             continue
 
-        if square.current_piece.team is piece.team:  # If square taken by teamate piece
+        if square.current_piece.team is piece.team:  # If square taken by teammate piece
             break
         else:
             # square is taken by enemy.
