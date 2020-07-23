@@ -16,7 +16,7 @@ class SaveMove:
         self.current_piece_square = self.piece.square
 
     def __exit__(self, exception_type, exc_value, exc_tb):
-        # Move pieces moved to there last position.
+        # Move pieces moved to their last position.
         if exception_type is DidntMove:
             return
 
@@ -142,12 +142,12 @@ def try_to_move(piece_clicked, clicked_square, team_got_turn: Team, team_doesnt_
     if piece_clicked.team is not team_got_turn:
         raise TeamDoesntGotTurn
 
-    # check_castling.
+    # check if user want to castle and can do castling.
     if isinstance(piece_clicked, pieces.King) and isinstance(clicked_square.current_piece, pieces.Rook):
         if piece_clicked.team is clicked_square.current_piece.team:
             if not check_castling(piece_clicked, clicked_square, team_got_turn, team_doesnt_got_turn):
                 raise CantCastling
-            # Did castling.
+            # Did castling (castling is a move so we shouldn't continue).
             return
 
     if clicked_square not in piece_clicked.get_valid_move_squares():

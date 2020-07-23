@@ -1,12 +1,6 @@
 import time
 
 
-class TimeError(Exception):
-    """
-    Errors on timer class.
-    """
-
-
 class RunOutOfTime(Exception):
     pass
 
@@ -25,7 +19,7 @@ def sleep(sleep_time):
 
 
 class Timer:
-    # IN_SECONDS.
+    # in seconds.
     GAME_LENGTH = 300
 
     def __init__(self):
@@ -48,22 +42,20 @@ class Timer:
         self.total_time_paused += time.perf_counter() - self.time_paused
 
     def get_seconds(self):
-        self._update_timer()
         return int(self.time_passed)
 
     def get_seconds_left_to_last_minute(self):
-        self._update_timer()
         return int(60 - self.get_seconds() % 60)
 
     def get_minutes_left(self):
-        self._update_timer()
         return int(self.GAME_LENGTH / 60 - self.get_seconds() / 60)
 
-    def _update_timer(self):
+    def update_timer(self):
         if self.is_pause:
             return
         self.time_passed = time.perf_counter() - self.start_time - self.total_time_paused
+        self.check_out_of_time()
 
-    def is_out_of_time(self):
+    def check_out_of_time(self):
         if self.get_seconds() >= self.GAME_LENGTH:
             raise RunOutOfTime

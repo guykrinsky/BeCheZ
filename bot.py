@@ -1,6 +1,7 @@
 import teams
 import chess_utils
 import pieces
+import screen
 
 MAXIMUM_SCORE = 10_000_000
 MINIMUM_SCORE = -1 * MAXIMUM_SCORE
@@ -59,7 +60,7 @@ def mini(white_team: teams.Team, bot_team: teams.Team, depth, max_from_previous_
     best_move = None
 
     if depth == 0:
-        return teams.get_score_dif(white_team, bot_team), None
+        return teams.get_score_difference(white_team, bot_team), None
 
     for piece in bot_team.pieces:
         if piece.is_eaten:
@@ -95,7 +96,7 @@ def maxi(white_team: teams.Team, bot_team: teams.Team, depth, min_from_previous_
     best_score = MINIMUM_SCORE
 
     if depth == 0:
-        return teams.get_score_dif(white_team, bot_team), best_move
+        return teams.get_score_difference(white_team, bot_team), best_move
 
     for piece in white_team.pieces:
         if piece.is_eaten:
@@ -126,6 +127,7 @@ def maxi(white_team: teams.Team, bot_team: teams.Team, depth, min_from_previous_
 
 
 def future_move(piece, move_square, white_team, bot_team, depth, min_or_max, is_bot_future_turn):
+
     next_move = maxi if is_bot_future_turn else mini
     team_got_turn = bot_team if is_bot_future_turn else white_team
     team_doesnt_got_turn = white_team if team_got_turn is bot_team else bot_team

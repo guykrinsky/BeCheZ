@@ -1,5 +1,5 @@
 from chess_utils import *
-from teams import Team, get_score_dif
+from teams import Team, get_score_difference
 import timer
 import pygame
 import screen
@@ -79,7 +79,7 @@ def update_game_after_move(piece_clicked, black_team, white_team):
     remove_eaten_pieces(white_team, black_team)
     white_team.update_score()
     black_team.update_score()
-    score_dif = get_score_dif(white_team, black_team)
+    score_dif = get_score_difference(white_team, black_team)
     team_leading = white_team if score_dif > 0 else black_team
     print(f'turn {turn_number}:\n'
           f'team leading is {team_leading} in {score_dif}\n'
@@ -91,6 +91,19 @@ def print_board(white_team, black_team):
     white_team.print_pieces()
     print(black_team)
     black_team.print_pieces()
+
+
+def check_timers_out_of_time(white_team, black_team):
+    try:
+        team_won = black_team
+        white_team.timer.update_timer()
+        team_won = white_team
+        black_team.timer.update_timer()
+    except timer.RunOutOfTime:
+        print(team_won)
+        screen.draw_winner(team_won)
+        redraw_game_screen()
+        raise GameEnd
 
 
 def game_loop(white_team: Team, black_team: Team, is_one_player_playing, bot_depth):
@@ -135,17 +148,7 @@ def game_loop(white_team: Team, black_team: Team, is_one_player_playing, bot_dep
 
                 piece_clicked = None
 
-        try:
-            team_won = black_team
-            white_team.timer.is_out_of_time()
-            team_won = white_team
-            black_team.timer.is_out_of_time()
-        except timer.RunOutOfTime:
-            print(team_won)
-            screen.draw_winner(team_won)
-            redraw_game_screen()
-            raise GameEnd
-
+        check_timers_out_of_time(white_team, black_team)
         redraw_game_screen()
 
 

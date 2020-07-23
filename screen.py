@@ -1,6 +1,6 @@
 import pygame
 import colors
-from teams import Team, get_score_dif
+from teams import Team, get_score_difference
 import os
 
 pygame.init()
@@ -73,17 +73,17 @@ def is_move_to_square_valid(tur, line, team):
 
 
 def draw_bg(team_got_turn: Team, team_doesnt_got_turn: Team):
-    white_team = team_doesnt_got_turn
-    black_team = team_got_turn
-    if team_got_turn.is_white_team:
-        white_team = team_got_turn
-        black_team = team_doesnt_got_turn
+    draw_score_board(team_got_turn, team_doesnt_got_turn)
+    draw_squares_bg()
+
+
+def draw_score_board(team_got_turn: Team, team_doesnt_got_turn: Team):
+    white_team = team_got_turn if team_got_turn.is_white_team else team_doesnt_got_turn
+    black_team = team_got_turn if not team_got_turn.is_white_team else team_doesnt_got_turn
 
     screen.blit(SCORE_BOARD, (0, 0))
     bg_image = pygame.image.load(os.path.join(PICTURES_PATH, 'boardscore_bg.png'))
     SCORE_BOARD.blit(bg_image, (0, 0))
-
-    draw_squares_bg()
     draw_who_turn_is(team_got_turn)
     draw_timers(white_team, black_team)
     draw_score(team_got_turn, team_doesnt_got_turn)
@@ -139,7 +139,7 @@ def draw_score(team_got_turn, team_doesnt_got_turn):
     SCORE_BOARD.blit(text, (x_pos, SCORE_BOARD.get_height() - 50))
 
     pygame.draw.rect(SCORE_BOARD, colors.BLACK, (10, SCORE_BOARD.get_height() - 15, length, 10))
-    white_rect_length = length/2 + get_score_dif(white_team, black_team)/10
+    white_rect_length = length / 2 + get_score_difference(white_team, black_team) / 10
     pygame.draw.rect(SCORE_BOARD, colors.WHITE, (10, SCORE_BOARD.get_height() - 15, white_rect_length, 10))
 
 
