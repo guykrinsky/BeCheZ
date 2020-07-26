@@ -1,9 +1,5 @@
 import time
-
-
-class RunOutOfTime(Exception):
-    pass
-
+import exceptions
 
 def switch_timers(team_got_turn, team_doesnt_got_turn):
     team_got_turn.timer.resume()
@@ -31,13 +27,13 @@ class Timer:
 
     def pause(self):
         if self.is_pause:
-            raise TimeError("Timer can't pause because already paused")
+            raise exceptions.RunOutOfTime("Timer can't pause because already paused")
         self.time_paused = time.perf_counter()
         self.is_pause = True
 
     def resume(self):
         if not self.is_pause:
-            raise TimeError("Timer can't resume because timer isn't paused")
+            raise exceptions.RunOutOfTime("Timer can't resume because timer isn't paused")
         self.is_pause = False
         self.total_time_paused += time.perf_counter() - self.time_paused
 
@@ -58,4 +54,4 @@ class Timer:
 
     def check_out_of_time(self):
         if self.get_seconds() >= self.GAME_LENGTH:
-            raise RunOutOfTime
+            raise exceptions.RunOutOfTime

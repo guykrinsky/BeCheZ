@@ -2,6 +2,7 @@ import pygame
 import colors
 from teams import Team, get_score_difference
 import os
+import exceptions
 
 pygame.init()
 
@@ -23,10 +24,6 @@ HEIGHT_OF_SCOREBOARD = 200
 SCORE_BOARD = pygame.Surface((screen.get_width(), HEIGHT_OF_SCOREBOARD))
 REGULAR_FONT = pygame.font.SysFont('comicsansms', 30)
 LARGE_FONT = pygame.font.Font('freesansbold.ttf', 40)
-
-
-class ExitGame(Exception):
-    pass
 
 
 class Square:
@@ -58,9 +55,6 @@ class Square:
 
 
 def is_move_to_square_valid(tur, line, team):
-    """
-    Check if square is in board bounds and not taken by teammate piece.
-    """
     if 0 <= line < BOARD_LINE and 0 <= tur < BOARD_LINE:
         # Square is on the board
         check_square_piece = squares[line][tur].current_piece
@@ -201,7 +195,7 @@ def starting_screen():
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                raise ExitGame
+                raise exceptions.UserExitGame
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
@@ -303,4 +297,11 @@ def draw_winner(team_won):
     text = f"Team won is {team_won}"
     text_surface = LARGE_FONT.render(text, False, colors.LIGHT_BLUE)
     screen.blit(text_surface, (SCREEN_WIDTH / 2 - 235, SCREEN_HEIGHT / 2 - 30))
+    pygame.display.flip()
+
+
+def draw_tie():
+    text = f"Tie"
+    text_surface = screen.LARGE_FONT.render(text, False, colors.DARK_GREEN)
+    screen.screen.blit(text_surface, (screen.SCREEN_WIDTH / 2 - 50, screen.SCREEN_HEIGHT / 2 - 30))
     pygame.display.flip()

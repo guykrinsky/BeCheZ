@@ -6,6 +6,7 @@ import screen
 import bot
 import os
 import colors
+import exceptions
 
 SOUNDS_PATH = 'sounds'
 
@@ -64,14 +65,11 @@ def update_game_after_move(piece_clicked, black_team, white_team):
 
     if is_checkmated(team_got_turn, team_doesnt_got_turn):
         screen.draw_winner(team_doesnt_got_turn)
-        raise Checkmated
+        raise exceptions.Checkmated
 
     if is_tie(team_got_turn, team_doesnt_got_turn):
-        text = f"Tie"
-        text_surface = screen.LARGE_FONT.render(text, False, colors.DARK_GREEN)
-        screen.screen.blit(text_surface, (screen.SCREEN_WIDTH/2 - 50, screen.SCREEN_HEIGHT/2 - 30))
-        pygame.display.flip()
-        raise Tie
+        screen.draw_tie()
+        raise exceptions.Tie
 
     piece_clicked.move_counter += 1
     turn_number += 1
@@ -99,11 +97,10 @@ def check_timers_out_of_time(white_team, black_team):
         white_team.timer.update_timer()
         team_won = white_team
         black_team.timer.update_timer()
-    except timer.RunOutOfTime:
-        print(team_won)
+    except exceptions.RunOutOfTime:
         screen.draw_winner(team_won)
         redraw_game_screen()
-        raise GameEnd
+        raise
 
 
 def game_loop(white_team: Team, black_team: Team, is_one_player_playing, bot_depth):
@@ -122,7 +119,7 @@ def game_loop(white_team: Team, black_team: Team, is_one_player_playing, bot_dep
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                raise screen.ExitGame
+                raise exceptions.UserExitGame
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 clicked_square = get_square_clicked()
@@ -142,7 +139,7 @@ def game_loop(white_team: Team, black_team: Team, is_one_player_playing, bot_dep
                     try_to_move(piece_clicked, clicked_square, team_got_turn, team_doesnt_got_turn)
                     # Move is valid.
                     update_game_after_move(piece_clicked, black_team, white_team)
-                except MoveError:
+                except exceptions.MoveError:
                     # The move wasn't valid.
                     pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'error.wav')).play()
 
@@ -162,10 +159,10 @@ def main():
         place_pieces(white_team, black_team)
         game_loop(white_team, black_team, is_one_player, bot_depth)
 
-    except screen.ExitGame:
+    except exceptions.UserExitGame:
         return
 
-    except GameEnd:
+    except exceptions.GameEnd:
         print("Game ended.")
         timer.sleep(10)
 
