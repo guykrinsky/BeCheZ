@@ -1,4 +1,3 @@
-import pygame
 import screen
 import pieces
 from teams import Team
@@ -64,7 +63,7 @@ def place_pieces(white_team: Team, black_team: Team):
     white_team.pieces.append(pieces.Queen(screen.squares[0][4], white_team))
     # Add rooks.
     black_team.pieces.extend([pieces.Rook(screen.squares[7][0], black_team),
-                              pieces.Rook(screen.squares[7][7], black_team, )])
+                              pieces.Rook(screen.squares[7][7], black_team)])
     white_team.pieces.extend([pieces.Rook(screen.squares[0][0], white_team),
                               pieces.Rook(screen.squares[0][7], white_team)])
 

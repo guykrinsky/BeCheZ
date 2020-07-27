@@ -1,4 +1,3 @@
-import pygame
 from screen import *
 import abc
 import os

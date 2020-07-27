@@ -1,6 +1,7 @@
 import time
 import exceptions
 
+
 def switch_timers(team_got_turn, team_doesnt_got_turn):
     team_got_turn.timer.resume()
     team_doesnt_got_turn.timer.pause()

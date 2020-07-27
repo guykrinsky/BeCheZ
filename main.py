@@ -5,7 +5,6 @@ import pygame
 import screen
 import bot
 import os
-import colors
 import exceptions
 
 SOUNDS_PATH = 'sounds'
