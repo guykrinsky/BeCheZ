@@ -15,13 +15,7 @@ turn_number = 0
 
 
 def redraw_game_screen():
-    screen.draw_bg(team_got_turn, team_doesnt_got_turn)
-
-    for line in screen.squares:
-        for square in line:
-            if square.current_piece is not None:
-                square.current_piece.draw()
-
+    screen.draw_scoreboard(team_got_turn, team_doesnt_got_turn)
     pygame.display.flip()
 
 
@@ -54,6 +48,7 @@ def remove_eaten_pieces(white_team, black_team):
 
 
 def update_game_after_move(piece_clicked, black_team, white_team):
+    screen.draw_board()
     redraw_game_screen()
     global turn_number
     pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'pong.wav')).play()
@@ -92,10 +87,14 @@ def print_board(white_team, black_team):
 
 def check_timers_out_of_time(white_team, black_team):
     try:
+        # If white team is out of time exception would raise and black team would win
         team_won = black_team
         white_team.timer.update_timer()
+
+        # If black team is out of time exception would raise and white team would win
         team_won = white_team
         black_team.timer.update_timer()
+
     except exceptions.RunOutOfTime:
         screen.draw_winner(team_won)
         redraw_game_screen()
@@ -110,9 +109,11 @@ def game_loop(white_team: Team, black_team: Team, is_one_player_playing, bot_dep
     global team_doesnt_got_turn
     team_got_turn = white_team
     team_doesnt_got_turn = black_team
+    screen.draw_bg(team_got_turn, team_doesnt_got_turn)
     while running:
 
         if team_got_turn is black_team and is_one_player_playing:
+            # bot turn.
             piece_moved = bot.move(white_team, black_team, bot_depth)
             update_game_after_move(piece_moved, team_got_turn, team_doesnt_got_turn)
 
@@ -124,12 +125,14 @@ def game_loop(white_team: Team, black_team: Team, is_one_player_playing, bot_dep
                 clicked_square = get_square_clicked()
 
                 if clicked_square is None:
+                    # User click on something out of board.
                     continue
 
                 if piece_clicked is None:
                     piece_clicked = clicked_square.current_piece
                     if piece_clicked in team_got_turn.pieces:
                         piece_clicked.color_next_step()
+                        screen.draw_board() # Draw the colored squares.
                     continue
 
                 # If user already clicked on a piece,
@@ -142,6 +145,8 @@ def game_loop(white_team: Team, black_team: Team, is_one_player_playing, bot_dep
                     # The move wasn't valid.
                     pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'error.wav')).play()
 
+                # Print all the squares in their original colors.
+                screen.draw_board()
                 piece_clicked = None
 
         check_timers_out_of_time(white_team, black_team)
@@ -164,6 +169,8 @@ def main():
     except exceptions.GameEnd:
         print("Game ended.")
         timer.sleep(10)
+        # TODO: Return to main screen.
+        return
 
 
 if __name__ == '__main__':

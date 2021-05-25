@@ -9,6 +9,7 @@ BLACK_PIECES_PATH = os.path.join(PICTURES_PATH, 'black_pieces')
 class Piece(metaclass=abc.ABCMeta):
     BASIC_SCORE = 0
     SCORE_EVOLUTION_TABLE = None
+    PICTURE_SIDE_SIZE = 60
 
     def __init__(self, square, team):
         self.image = self.WHITE_IMAGE if team.is_white_team else self.BLACK_IMAGE
@@ -47,7 +48,8 @@ class Piece(metaclass=abc.ABCMeta):
 
     def draw(self):
         if not self.is_eaten:
-            screen.blit(self.image, self.square.rect)
+            screen.blit(self.image, (self.square.x_mid - Piece.PICTURE_SIDE_SIZE/2,
+                                     self.square.y_mid - Piece.PICTURE_SIDE_SIZE/2))
 
     @property
     def score(self):
@@ -112,7 +114,7 @@ class Pawn(Piece):
         super().__init__(square, team)
 
     def is_reached_to_end(self):
-        end = BOARD_LINE-1 if self.team.is_white_team else 0
+        end = NUMBER_OF_SQUARES - 1 if self.team.is_white_team else 0
         return self.square.line_cord == end
 
     def get_valid_move_squares(self):
@@ -246,7 +248,7 @@ def _get_diagonal_valid_moves(piece):
     found_right_up = True
     found_left_up = True
 
-    for current_distance in range(1, BOARD_LINE):
+    for current_distance in range(1, NUMBER_OF_SQUARES):
 
         if found_right_down:
             found_right_down = _check_next_diagonal_valid_move(piece, current_distance, current_distance,
@@ -300,7 +302,7 @@ def _get_straight_valid_move_squares(piece, is_vertical):
             continue
 
     # Add squares after piece
-    for tur_or_line in range(move_on+1, BOARD_LINE):
+    for tur_or_line in range(move_on+1, NUMBER_OF_SQUARES):
         square = squares[permanent][tur_or_line] if is_vertical else squares[tur_or_line][permanent]
         if square.current_piece is None:
             valid_moves.append(square)  # If square is empty we just add him to the row.

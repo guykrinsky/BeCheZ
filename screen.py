@@ -6,8 +6,13 @@ import exceptions
 
 pygame.init()
 
-SCREEN_WIDTH = 480
-SCREEN_HEIGHT = 680
+SCREEN_WIDTH = pygame.display.Info().current_w
+SCREEN_HEIGHT = pygame.display.Info().current_h
+HEIGHT_OF_SCOREBOARD = 200
+
+SPACE_FROM_BOARD = 50
+BOARD_SIDE = SCREEN_HEIGHT-HEIGHT_OF_SCOREBOARD - SPACE_FROM_BOARD*2
+
 MIDDLE_HORIZONTAL = SCREEN_WIDTH / 2
 RECT_WIDTH = 200
 RECT_HEIGHT = 100
@@ -16,30 +21,33 @@ SMALL_RECT_WIDTH = 60
 SMALL_RECT_HEIGHT = SCREEN_HEIGHT/10
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+
 squares = []
 PICTURES_PATH = 'pictures'
 
-BOARD_LINE = 8
-HEIGHT_OF_SCOREBOARD = 200
-SCORE_BOARD = pygame.Surface((screen.get_width(), HEIGHT_OF_SCOREBOARD))
+NUMBER_OF_SQUARES = 8
+SCORE_BOARD = pygame.Surface((SCREEN_WIDTH, HEIGHT_OF_SCOREBOARD))
 REGULAR_FONT = pygame.font.SysFont('comicsansms', 30)
 LARGE_FONT = pygame.font.Font('freesansbold.ttf', 40)
 
 
 class Square:
-    WIDTH = 60
-    HEIGHT = 60
+    SIDE = BOARD_SIDE/NUMBER_OF_SQUARES
 
     def __init__(self, x, y, color, tur, line):
-        self.rect = pygame.Rect(x, y, self.WIDTH, self.HEIGHT)
+        self.rect = pygame.Rect(x, y, self.SIDE, self.SIDE)
         self.color = color
         self.original_color = color
         self.tur_cord = tur
         self.line_cord = line
+        self.x_mid = x + Square.SIDE/2
+        self.y_mid = y + Square.SIDE/2
         self.current_piece = None
 
     def draw(self):
         pygame.draw.rect(screen, self.color, self.rect)
+        if self.current_piece is not None:
+            self.current_piece.draw()
 
     def coloring_square_by_original_color(self):
         if self.color == self.original_color:
@@ -54,8 +62,33 @@ class Square:
         return f'(line: {self.line_cord}, tur: {self.tur_cord})'
 
 
+def add_squares_to_board():
+    # at the begging of the game, draw and init the squares.
+
+    bg_image = pygame.image.load(os.path.join(PICTURES_PATH, 'main_background.jpg'))
+    screen.blit(bg_image, (0, HEIGHT_OF_SCOREBOARD))
+
+    x = SPACE_FROM_BOARD
+    y = HEIGHT_OF_SCOREBOARD + SPACE_FROM_BOARD
+    for line in range(NUMBER_OF_SQUARES):
+        tmp = line % 2
+        square_in_line = []
+        for tur in range(NUMBER_OF_SQUARES):
+            if tur % 2 == tmp:
+                color = colors.LIGHT_BROWN
+            else:
+                color = colors.DARK_BROWN
+
+            square_in_line.append(Square(x, y, color, tur, line))
+            x += Square.SIDE
+        x = SPACE_FROM_BOARD
+        y += Square.SIDE
+        squares.append(square_in_line)
+    pygame.display.flip()
+
+
 def is_move_to_square_valid(tur, line, team):
-    if 0 <= line < BOARD_LINE and 0 <= tur < BOARD_LINE:
+    if 0 <= line < NUMBER_OF_SQUARES and 0 <= tur < NUMBER_OF_SQUARES:
         # Square is on the board
         check_square_piece = squares[line][tur].current_piece
         if check_square_piece is not None:
@@ -67,23 +100,27 @@ def is_move_to_square_valid(tur, line, team):
 
 
 def draw_bg(team_got_turn: Team, team_doesnt_got_turn: Team):
-    draw_score_board(team_got_turn, team_doesnt_got_turn)
-    draw_squares_bg()
+    draw_scoreboard(team_got_turn, team_doesnt_got_turn)
+    draw_board()
 
 
-def draw_score_board(team_got_turn: Team, team_doesnt_got_turn: Team):
+def draw_scoreboard(team_got_turn: Team, team_doesnt_got_turn: Team):
     white_team = team_got_turn if team_got_turn.is_white_team else team_doesnt_got_turn
     black_team = team_got_turn if not team_got_turn.is_white_team else team_doesnt_got_turn
 
     screen.blit(SCORE_BOARD, (0, 0))
-    bg_image = pygame.image.load(os.path.join(PICTURES_PATH, 'boardscore_bg.png'))
-    SCORE_BOARD.blit(bg_image, (0, 0))
+    # I switched to just clear color and not an image as the background of the scoreboard.
+    # draw bg image of score board. this way the last "scoreboard" is erased.
+    SCORE_BOARD.fill(colors.DARK_BLUE)
+    # bg_image = pygame.image.load(os.path.join(PICTURES_PATH, 'boardscore_bg.png'))
+    # SCORE_BOARD.blit(bg_image, (0, 0))
+
     draw_who_turn_is(team_got_turn)
     draw_timers(white_team, black_team)
     draw_score(team_got_turn, team_doesnt_got_turn)
 
 
-def draw_squares_bg():
+def draw_board():
     for line in squares:
         for square in line:
             square.draw()
@@ -99,7 +136,6 @@ def draw_who_turn_is(team_got_turn):
 
 
 def draw_timer(team):
-    place = (0, 0) if team.is_white_team else (SCORE_BOARD.get_width() - 55, 0)
     timer = team.timer
     color = colors.WHITE if team.is_white_team else colors.BLACK
     minutes = timer.get_minutes_left()
@@ -109,6 +145,7 @@ def draw_timer(team):
     seconds = str(seconds).zfill(2)
     minutes = str(minutes).zfill(2)
     text = REGULAR_FONT.render(f"{minutes}:{seconds}", False, color)
+    place = (10, 0) if team.is_white_team else (SCORE_BOARD.get_width() - text.get_width(), 0)
     SCORE_BOARD.blit(text, place)
 
 
@@ -126,36 +163,14 @@ def draw_score(team_got_turn, team_doesnt_got_turn):
 
     length = SCREEN_WIDTH - 20
     text = REGULAR_FONT.render("White team score:", False, colors.WHITE)
-    SCORE_BOARD.blit(text, (0, SCORE_BOARD.get_height() - 50))
+    SCORE_BOARD.blit(text, (0, SCORE_BOARD.get_height() - 15 - text.get_height()))
 
-    x_pos = SCREEN_WIDTH - 200
     text = REGULAR_FONT.render("Black team score:", False, colors.WHITE)
-    SCORE_BOARD.blit(text, (x_pos, SCORE_BOARD.get_height() - 50))
+    SCORE_BOARD.blit(text, (SCREEN_WIDTH - text.get_width() - 10, SCORE_BOARD.get_height() - 15 - text.get_height()))
 
     pygame.draw.rect(SCORE_BOARD, colors.BLACK, (10, SCORE_BOARD.get_height() - 15, length, 10))
     white_rect_length = length / 2 + get_score_difference(white_team, black_team) / 10
     pygame.draw.rect(SCORE_BOARD, colors.WHITE, (10, SCORE_BOARD.get_height() - 15, white_rect_length, 10))
-
-
-def add_squares_to_board():
-    SCORE_BOARD.fill(colors.BROWN)
-    x = 0
-    y = HEIGHT_OF_SCOREBOARD
-    for line in range(BOARD_LINE):
-        tmp = line % 2
-        square_in_line = []
-        for tur in range(BOARD_LINE):
-            if tur % 2 == tmp:
-                color = colors.LIGHT_BROWN
-            else:
-                color = colors.DARK_BROWN
-
-            square_in_line.append(Square(x, y, color, tur, line))
-            x += Square.WIDTH
-        x = 0
-        y += Square.HEIGHT
-        squares.append(square_in_line)
-    pygame.display.flip()
 
 
 def color_all_square_to_original_color():

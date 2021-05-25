@@ -42,7 +42,7 @@ class SaveMove:
 
 
 def add_pawns(white_team, black_team):
-    for tur in range(screen.BOARD_LINE):
+    for tur in range(screen.NUMBER_OF_SQUARES):
         white_team.pieces.append(pieces.Pawn(white_team, tur))
         black_team.pieces.append(pieces.Pawn(black_team, tur))
 
