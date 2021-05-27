@@ -201,8 +201,10 @@ def starting_screen():
     screen.blit(text, (start_game_rect.centerx - text.get_width()/2, start_game_rect.centery - text.get_height()/2))
 
     number_of_players_rects = create_players_count_rects()
-    game_length_rects = create_game_length_rects(GAME_LENGTH_OPTION, default_minutes=5)
-    bot_level_rects = create_bot_levels_rects(default_level=3)
+    game_length_rects = create_small_rects("GAME_LENGTH", GAME_LENGTH_OPTION, default=5,
+                                           color=colors.DARK_RED, chosen_color=colors.RED, is_left=True)
+    bot_level_rects = create_small_rects("BOT LEVEL", range(1, 5), default=3,
+                                         color=colors.DARK_BLUE, chosen_color=colors.LIGHT_BLUE, is_left=False)
     while True:
         pygame.display.flip()
 
@@ -216,63 +218,55 @@ def starting_screen():
                 if start_game_rect.collidepoint(*mouse_pos):
                     return is_one_players_playing, game_length, level
 
+                # Check on what rect user clicked.
+                # And change his selection.
                 for text, rect in number_of_players_rects.items():
                     if rect.collidepoint(*mouse_pos):
                         is_one_players_playing = (text == 'One Player')
-                        draw_other_rects_in_other_color(number_of_players_rects, rect,
-                                                        colors.LIGHT_SILVER, colors.DARK_SILVER, colors.BLACK)
+                        change_rects_color(number_of_players_rects, rect,
+                                           colors.LIGHT_SILVER, colors.DARK_SILVER, colors.BLACK)
 
                 for text, rect in game_length_rects.items():
                     if rect.collidepoint(*mouse_pos):
                         game_length = int(text)
-                        draw_other_rects_in_other_color(game_length_rects, rect, colors.RED, colors.DARK_RED)
+                        change_rects_color(game_length_rects, rect, colors.RED, colors.DARK_RED)
 
                 for text, rect in bot_level_rects.items():
                     if rect.collidepoint(*mouse_pos):
                         level = int(text)
-                        draw_other_rects_in_other_color(bot_level_rects, rect, colors.LIGHT_BLUE, colors.DARK_BLUE)
+                        change_rects_color(bot_level_rects, rect, colors.LIGHT_BLUE, colors.DARK_BLUE)
 
 
-def create_bot_levels_rects(default_level):
-    bot_level_rects = {}
-    current_print_height = 100
-    for bot_level in range(1, 5):
-        color = colors.LIGHT_BLUE if bot_level == default_level else colors.DARK_BLUE
-        rect = pygame.Rect(SCREEN_WIDTH - SMALL_RECT_WIDTH - 5, current_print_height, SMALL_RECT_WIDTH, SMALL_RECT_HEIGHT)
-        pygame.draw.rect(screen, color, rect)
-        text = f"{bot_level}"
-        text_surface = REGULAR_FONT.render(text, False, colors.WHITE)
-        screen.blit(text_surface, (rect.centerx - 5, rect.centery - 5))
-        bot_level_rects[text] = rect
-        current_print_height += (SMALL_RECT_HEIGHT * 2)
-
-    text_surface = REGULAR_FONT.render('Bot Level', True, colors.DARK_BLUE)
-    screen.blit(text_surface, (min(rect.centerx - text_surface.get_width()/2, SCREEN_WIDTH - text_surface.get_width() - 10),
-                               10)) # Space from top.
-    return bot_level_rects
-
-
-def create_game_length_rects(minutes_options, default_minutes):
+def create_small_rects(title, options, default, color, chosen_color, is_left):
+    # Draw the rectangles in the sides of the starting screen.
     # Return a dictionary. the key is the text and the value is the rect.
 
-    game_length_rects = {}
-
+    rects = {}
     current_print_height = 100
-    for minute in minutes_options:
-        color = colors.RED if minute == default_minutes else colors.DARK_RED
-        text = f"{minute}"
-        rect = pygame.Rect(10, current_print_height, SMALL_RECT_WIDTH, SMALL_RECT_HEIGHT)
-        pygame.draw.rect(screen, color, rect)
+    x_pos = 5 if is_left else (SCREEN_WIDTH - SMALL_RECT_WIDTH - 5)
+    for option in options:
+        # Set the color of the rect. the chosen option is in other color.
+        rect_color = chosen_color if option == default else color
+        rect = pygame.Rect(x_pos, current_print_height, SMALL_RECT_WIDTH,
+                           SMALL_RECT_HEIGHT)
+        pygame.draw.rect(screen, rect_color, rect)
+        # print the text in rect
+        text = f"{option}"
         text_surface = REGULAR_FONT.render(text, False, colors.WHITE)
-        screen.blit(text_surface, (rect.centerx - text_surface.get_width()/2,
-                                   rect.centery - text_surface.get_height()/2))
-        current_print_height += (SMALL_RECT_HEIGHT*2)
-        game_length_rects[text] = rect
+        screen.blit(text_surface, (rect.centerx - text_surface.get_width() / 2
+                                   , rect.centery - text_surface.get_height() / 2))
+        rects[text] = rect
+        current_print_height += (SMALL_RECT_HEIGHT * 2)
 
-    text_surface = REGULAR_FONT.render('Game Length', True, colors.DARK_RED)
-    screen.blit(text_surface, (max(rect.centerx - text_surface.get_width()/2, 0),
-                               10)) # Space from top.
-    return game_length_rects
+    # Print title.
+    text_surface = REGULAR_FONT.render(title, True, color)
+    if is_left:
+        screen.blit(text_surface,
+                    (max(rect.centerx - text_surface.get_width() / 2, 0), 10))  # Space from top.
+    else:
+        screen.blit(text_surface,
+                    (min(rect.centerx - text_surface.get_width() / 2, SCREEN_WIDTH - text_surface.get_width() - 10), 10))  # Space from top.
+    return rects
 
 
 def create_players_count_rects():
@@ -299,8 +293,8 @@ def create_players_count_rects():
     return number_of_players_rects
 
 
-def draw_other_rects_in_other_color(rects_and_texts: dict, chosen_rect, chosen_rect_color, unchosen_rect_color,
-                                    text_color=colors.WHITE):
+def change_rects_color(rects_and_texts: dict, chosen_rect, chosen_rect_color, unchosen_rect_color,
+                       text_color=colors.WHITE):
     for text, rect in rects_and_texts.items():
         color = chosen_rect_color if rect is chosen_rect else unchosen_rect_color
         pygame.draw.rect(screen, color, rect)
