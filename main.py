@@ -101,7 +101,7 @@ def check_timers_out_of_time(white_team, black_team):
         raise
 
 
-def game_loop(white_team: Team, black_team: Team, is_one_player_playing, bot_depth):
+def game_loop(white_team: Team, black_team: Team, is_one_player_playing, bot_depth, bot_team):
     black_team.timer.pause()
     running = True
     piece_clicked = None
@@ -112,10 +112,10 @@ def game_loop(white_team: Team, black_team: Team, is_one_player_playing, bot_dep
     screen.draw_bg(team_got_turn, team_doesnt_got_turn)
     while running:
 
-        if team_got_turn is black_team and is_one_player_playing:
+        if team_got_turn is bot_team and is_one_player_playing:
             # bot turn.
-            piece_moved = bot.move(white_team, black_team, bot_depth)
-            update_game_after_move(piece_moved, team_got_turn, team_doesnt_got_turn)
+            piece_moved = bot.move(team_doesnt_got_turn, team_got_turn, bot_depth)
+            update_game_after_move(piece_moved, black_team, white_team)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -155,13 +155,14 @@ def game_loop(white_team: Team, black_team: Team, is_one_player_playing, bot_dep
 
 def main():
     try:
-        is_one_player, game_length, bot_depth = screen.starting_screen()
+        is_one_player, game_length, bot_depth, is_player_white = screen.starting_screen()
         timer.set_game_length(game_length)
         screen.add_squares_to_board()
         white_team = Team(True)
         black_team = Team(False)
         place_pieces(white_team, black_team)
-        game_loop(white_team, black_team, is_one_player, bot_depth)
+        bot_team = black_team if is_player_white else white_team
+        game_loop(white_team, black_team, is_one_player, bot_depth, bot_team)
 
     except exceptions.UserExitGame:
         return

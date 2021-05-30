@@ -190,6 +190,7 @@ def starting_screen():
 
     # Print background image.
     bg_image = pygame.image.load(os.path.join(PICTURES_PATH, 'opening_screen_picture.png'))
+    bg_image = pygame.transform.scale(bg_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
     screen.blit(bg_image, (0, 0))
     # Print title.
     text = LARGE_FONT.render("BeCheZ", False, colors.YELLOW)
@@ -205,6 +206,9 @@ def starting_screen():
                                            color=colors.DARK_RED, chosen_color=colors.RED, is_left=True)
     bot_level_rects = create_small_rects("BOT LEVEL", range(1, 5), default=3,
                                          color=colors.DARK_BLUE, chosen_color=colors.LIGHT_BLUE, is_left=False)
+    # Passing the 'one player' rect as argument to the function.
+    is_white = True
+    team_selection_rects = draw_team_selection_rects(number_of_players_rects["One Player"].midright, is_white)
     while True:
         pygame.display.flip()
 
@@ -216,15 +220,30 @@ def starting_screen():
                 mouse_pos = pygame.mouse.get_pos()
 
                 if start_game_rect.collidepoint(*mouse_pos):
-                    return is_one_players_playing, game_length, level
+                    return is_one_players_playing, game_length, level, is_white
 
                 # Check on what rect user clicked.
                 # And change his selection.
                 for text, rect in number_of_players_rects.items():
                     if rect.collidepoint(*mouse_pos):
                         is_one_players_playing = (text == 'One Player')
+                        if is_one_players_playing:
+                            # Passing the 'one player' rect as argument to the function.
+                            draw_team_selection_rects(number_of_players_rects["One Player"].midright, is_white)
+                        else:
+                            # Erase team selection rectangles.
+                            screen.blit(bg_image, team_selection_rects["WHITE TEAM"].topleft,
+                                        team_selection_rects["WHITE TEAM"])
+                            screen.blit(bg_image, team_selection_rects["BLACK TEAM"].topleft,
+                                        team_selection_rects["BLACK TEAM"])
                         change_rects_color(number_of_players_rects, rect,
                                            colors.LIGHT_SILVER, colors.DARK_SILVER, colors.BLACK)
+
+                for text, rect in team_selection_rects.items():
+                    if rect.collidepoint(*mouse_pos):
+                        is_white = True if text == "WHITE TEAM" else False
+                        change_rects_color(team_selection_rects, rect,
+                                       colors.LIGHT_SILVER, colors.DARK_SILVER, colors.BLACK)
 
                 for text, rect in game_length_rects.items():
                     if rect.collidepoint(*mouse_pos):
@@ -272,7 +291,7 @@ def create_small_rects(title, options, default, color, chosen_color, is_left):
 def create_players_count_rects():
     # Return a dictionary. the key is the text and the value is the rect.
 
-    number_of_players_rects = {}
+    rects = {}
     current_print_height = 150
     one_player_rect = pygame.Rect(MIDDLE_HORIZONTAL - RECT_WIDTH / 2, current_print_height, RECT_WIDTH, RECT_HEIGHT)
     pygame.draw.rect(screen, colors.LIGHT_SILVER, one_player_rect)
@@ -281,7 +300,7 @@ def create_players_count_rects():
     screen.blit(text_surface, (one_player_rect.centerx - text_surface.get_width()/2,
                                one_player_rect.centery - text_surface.get_height()/2))
     current_print_height += 200
-    number_of_players_rects[text] = one_player_rect
+    rects[text] = one_player_rect
 
     two_player_rect = pygame.Rect(MIDDLE_HORIZONTAL - RECT_WIDTH / 2, current_print_height, RECT_WIDTH, RECT_HEIGHT)
     pygame.draw.rect(screen, colors.DARK_SILVER, two_player_rect)
@@ -289,8 +308,34 @@ def create_players_count_rects():
     text_surface = REGULAR_FONT.render(text, False, colors.BLACK)
     screen.blit(text_surface, (two_player_rect.centerx - text_surface.get_width()/2,
                                two_player_rect.centery - text_surface.get_height()/2))
-    number_of_players_rects[text] = two_player_rect
-    return number_of_players_rects
+    rects[text] = two_player_rect
+    return rects
+
+
+def draw_team_selection_rects(one_player_cords, isWhite=True):
+    x_pos, y_pos = one_player_cords
+    x_pos += SCREEN_WIDTH / 10
+    white_team_y_pos = y_pos - SCREEN_WIDTH / 20
+    black_team_y_pos = y_pos + SCREEN_WIDTH / 20
+    white_team_color, black_team_color = (colors.LIGHT_SILVER, colors.DARK_SILVER) if isWhite else \
+        (colors.DARK_SILVER, colors.LIGHT_SILVER)
+    rects = {}
+    rect = pygame.Rect(x_pos, white_team_y_pos, RECT_WIDTH, RECT_HEIGHT)
+    pygame.draw.rect(screen, white_team_color, rect)
+    text = "WHITE TEAM"
+    text_surface = REGULAR_FONT.render(text, False, colors.BLACK)
+    screen.blit(text_surface, (rect.centerx - text_surface.get_width() / 2,
+                               rect.centery - text_surface.get_height() / 2))
+    rects[text] = rect
+
+    rect = pygame.Rect(x_pos, black_team_y_pos, RECT_WIDTH, RECT_HEIGHT)
+    pygame.draw.rect(screen, black_team_color, rect)
+    text = "BLACK TEAM"
+    text_surface = REGULAR_FONT.render(text, False, colors.BLACK)
+    screen.blit(text_surface, (rect.centerx - text_surface.get_width() / 2,
+                               rect.centery - text_surface.get_height() / 2))
+    rects[text] = rect
+    return rects
 
 
 def change_rects_color(rects_and_texts: dict, chosen_rect, chosen_rect_color, unchosen_rect_color,
