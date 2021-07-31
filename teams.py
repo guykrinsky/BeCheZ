@@ -7,6 +7,7 @@ class Team:
         self.timer = timer.Timer()
         self.score = 0
         self.is_white_team = is_white_team
+        self.eaten_pieces = []
 
     def update_score(self):
         self.score = sum(piece.score for piece in self.pieces if not piece.is_eaten)

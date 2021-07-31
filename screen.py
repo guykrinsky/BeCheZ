@@ -10,8 +10,8 @@ SCREEN_WIDTH = pygame.display.Info().current_w
 SCREEN_HEIGHT = pygame.display.Info().current_h
 HEIGHT_OF_SCOREBOARD = 200
 
-SPACE_FROM_BOARD = 50
-BOARD_SIDE = SCREEN_HEIGHT-HEIGHT_OF_SCOREBOARD - SPACE_FROM_BOARD*2
+SPACE_FROM_SCOREBOARD = 50
+BOARD_SIDE = SCREEN_HEIGHT - HEIGHT_OF_SCOREBOARD - SPACE_FROM_SCOREBOARD * 2
 
 MIDDLE_HORIZONTAL = SCREEN_WIDTH / 2
 RECT_WIDTH = 200
@@ -30,6 +30,7 @@ NUMBER_OF_SQUARES = 8
 SCORE_BOARD = pygame.Surface((SCREEN_WIDTH, HEIGHT_OF_SCOREBOARD))
 REGULAR_FONT = pygame.font.SysFont('comicsansms', 30)
 LARGE_FONT = pygame.font.Font('freesansbold.ttf', 40)
+SPACE_BETWEEN_BOARD_AND_EATEN_PIECES = 100
 
 GAME_LENGTH_OPTION = (1, 3, 5, 10)
 
@@ -71,8 +72,8 @@ def add_squares_to_board():
     bg_image = pygame.image.load(os.path.join(PICTURES_PATH, 'main_background.jpg'))
     screen.blit(bg_image, (0, HEIGHT_OF_SCOREBOARD))
 
-    x = SPACE_FROM_BOARD
-    y = HEIGHT_OF_SCOREBOARD + SPACE_FROM_BOARD
+    x = SPACE_FROM_SCOREBOARD
+    y = HEIGHT_OF_SCOREBOARD + SPACE_FROM_SCOREBOARD
     for line in range(NUMBER_OF_SQUARES):
         tmp = line % 2
         square_in_line = []
@@ -84,7 +85,7 @@ def add_squares_to_board():
 
             square_in_line.append(Square(x, y, color, tur, line))
             x += Square.SIDE
-        x = SPACE_FROM_BOARD
+        x = SPACE_FROM_SCOREBOARD
         y += Square.SIDE
         squares.append(square_in_line)
     pygame.display.flip()
@@ -183,6 +184,32 @@ def color_all_square_to_original_color():
                 square.coloring_square_by_original_color()
 
 
+def draw_eaten_pieces(white_team: Team, black_team: Team):
+    # TODO: Think if it is OK that pieces would show not in the order they got eaten. you can't see black rect.
+    width, height = int(SCREEN_WIDTH - BOARD_SIDE - (SPACE_BETWEEN_BOARD_AND_EATEN_PIECES * 2)),\
+                    int(white_team.pieces[0].image.get_height() + 5)
+    rect = pygame.Rect(BOARD_SIDE + SPACE_BETWEEN_BOARD_AND_EATEN_PIECES,
+                       SCORE_BOARD.get_height() + (SPACE_FROM_SCOREBOARD*2), width, height)
+    pygame.draw.rect(screen, colors.DARK_BLUE, rect)
+    x = BOARD_SIDE + SPACE_BETWEEN_BOARD_AND_EATEN_PIECES
+    size = int(min(width / 16, white_team.pieces[0].image.get_height()))
+    for eaten_piece in white_team.eaten_pieces:
+        image = pygame.transform.scale(eaten_piece.image, (size, size))
+        screen.blit(image, (x, rect.top))
+        x += size
+
+    rect = pygame.Rect(BOARD_SIDE + SPACE_BETWEEN_BOARD_AND_EATEN_PIECES,
+                       SCREEN_HEIGHT - (SPACE_FROM_SCOREBOARD*2) - height, width, height)
+    pygame.draw.rect(screen, colors.WHITE, rect)
+    x = BOARD_SIDE + SPACE_BETWEEN_BOARD_AND_EATEN_PIECES
+    for eaten_piece in black_team.eaten_pieces:
+        image = pygame.transform.scale(eaten_piece.image, (size, size))
+        screen.blit(image, (x, rect.top))
+        x += size
+
+
+
+# All next function is for starting screen.
 def starting_screen():
     is_one_players_playing = True
     game_length = 5  # In minutes.

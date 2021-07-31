@@ -47,8 +47,20 @@ def remove_eaten_pieces(white_team, black_team):
             piece_team.pieces.remove(piece)
 
 
+def update_eaten_pieces(white_team: Team, black_team: Team):
+    for piece in white_team.pieces:
+        if piece.is_eaten and piece not in white_team.eaten_pieces:
+            white_team.eaten_pieces.append(piece)
+            return
+    for piece in black_team.pieces:
+        if piece.is_eaten and piece not in black_team.eaten_pieces:
+            black_team.eaten_pieces.append(piece)
+
+
 def update_game_after_move(piece_clicked, black_team, white_team):
     screen.draw_board()
+    update_eaten_pieces(white_team, black_team)
+    screen.draw_eaten_pieces(white_team, black_team)
     redraw_game_screen()
     global turn_number
     pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'pong.wav')).play()
@@ -162,6 +174,7 @@ def main():
         black_team = Team(False)
         place_pieces(white_team, black_team)
         bot_team = black_team if is_player_white else white_team
+        screen.draw_eaten_pieces(white_team, black_team)
         game_loop(white_team, black_team, is_one_player, bot_depth, bot_team)
 
     except exceptions.UserExitGame:

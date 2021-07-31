@@ -9,10 +9,12 @@ BLACK_PIECES_PATH = os.path.join(PICTURES_PATH, 'black_pieces')
 class Piece(metaclass=abc.ABCMeta):
     BASIC_SCORE = 0
     SCORE_EVOLUTION_TABLE = None
-    PICTURE_SIDE_SIZE = 60
 
     def __init__(self, square, team):
         self.image = self.WHITE_IMAGE if team.is_white_team else self.BLACK_IMAGE
+        # TODO: check y hurting quality of image.
+        # resize the image
+        self.image = pygame.transform.scale(self.image, (int(Square.SIDE * 2/3), int(Square.SIDE * 2/3)))
         self.square = square
         self.square.current_piece = self
         self.team = team
@@ -36,7 +38,8 @@ class Piece(metaclass=abc.ABCMeta):
         self.square.current_piece = None
         # Check if next square is taken by other team.
         if next_square.current_piece is not None:
-            next_square.current_piece.is_eaten = True
+            eaten_piece = next_square.current_piece
+            eaten_piece.is_eaten = True
 
         # Move to next square.
         self.square = next_square
@@ -48,8 +51,8 @@ class Piece(metaclass=abc.ABCMeta):
 
     def draw(self):
         if not self.is_eaten:
-            screen.blit(self.image, (self.square.x_mid - Piece.PICTURE_SIDE_SIZE/2,
-                                     self.square.y_mid - Piece.PICTURE_SIDE_SIZE/2))
+            screen.blit(self.image, (self.square.x_mid - self.image.get_width()/2,
+                                     self.square.y_mid - self.image.get_height()/2))
 
     @property
     def score(self):
