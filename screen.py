@@ -1,6 +1,6 @@
 import pygame
 import colors
-from teams import Team, get_score_difference
+from teams import *
 import os
 import exceptions
 
@@ -109,9 +109,8 @@ def draw_bg(team_got_turn: Team, team_doesnt_got_turn: Team):
 
 
 def draw_scoreboard(team_got_turn: Team, team_doesnt_got_turn: Team):
-    white_team = team_got_turn if team_got_turn.is_white_team else team_doesnt_got_turn
-    black_team = team_got_turn if not team_got_turn.is_white_team else team_doesnt_got_turn
 
+    white_team, black_team = get_teams_colors(team_got_turn, team_doesnt_got_turn)
     screen.blit(SCORE_BOARD, (0, 0))
     # I switched to just clear color and not an image as the background of the scoreboard.
     # draw bg image of score board. this way the last "scoreboard" is erased.
@@ -144,9 +143,8 @@ def draw_timer(team):
     color = colors.WHITE if team.is_white_team else colors.BLACK
     minutes = timer.get_minutes_left()
     seconds = timer.get_seconds_left_to_last_minute()
-    if seconds == 60:
-        seconds = '00'
-    seconds = str(seconds).zfill(2)
+
+    seconds = '00' if seconds == 60 else str(seconds).zfill(2)
     minutes = str(minutes).zfill(2)
     text = REGULAR_FONT.render(f"{minutes}:{seconds}", False, color)
     place = (10, 0) if team.is_white_team else (SCORE_BOARD.get_width() - text.get_width(), 0)
@@ -206,7 +204,6 @@ def draw_eaten_pieces(white_team: Team, black_team: Team):
         image = pygame.transform.scale(eaten_piece.image, (size, size))
         screen.blit(image, (x, rect.top))
         x += size
-
 
 
 # All next function is for starting screen.

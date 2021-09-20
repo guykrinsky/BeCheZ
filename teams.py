@@ -1,6 +1,13 @@
 import timer
 
 
+def get_teams_colors(team_got_turn, team_doesnt_got_turn):
+    # Return white team and black team.
+    white_team = team_got_turn if team_got_turn.is_white_team else team_doesnt_got_turn
+    black_team = team_got_turn if not team_got_turn.is_white_team else team_doesnt_got_turn
+    return white_team, black_team
+
+
 class Team:
     def __init__(self, is_white_team):
         self.pieces = []

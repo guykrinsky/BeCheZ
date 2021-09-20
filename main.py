@@ -1,22 +1,30 @@
 from chess_utils import *
-from teams import Team, get_score_difference
+from teams import *
 import timer
 import pygame
 import screen
 import bot
 import os
 import exceptions
+import threading
 
 SOUNDS_PATH = 'sounds'
 
-team_got_turn = None
-team_doesnt_got_turn = None
+team_got_turn = Team(is_white_team=True)
+team_doesnt_got_turn = Team(is_white_team=False)
 turn_number = 0
 
 
-def redraw_game_screen():
-    screen.draw_scoreboard(team_got_turn, team_doesnt_got_turn)
-    pygame.display.flip()
+def update_screen():
+    while True:
+        pygame.display.flip()
+
+
+def redraw_scoreboard():
+    white_team, black_team = get_teams_colors(team_got_turn, team_doesnt_got_turn)
+    while True:
+        screen.draw_scoreboard(team_got_turn, team_doesnt_got_turn)
+        check_timers_out_of_time(white_team, black_team)
 
 
 def get_square_clicked():
@@ -58,14 +66,12 @@ def update_eaten_pieces(white_team: Team, black_team: Team):
 
 
 def update_game_after_move(piece_clicked, black_team, white_team):
+    switch_turn(white_team, black_team)
     screen.draw_board()
     update_eaten_pieces(white_team, black_team)
     screen.draw_eaten_pieces(white_team, black_team)
-    redraw_game_screen()
     global turn_number
     pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'pong.wav')).play()
-
-    switch_turn(white_team, black_team)
 
     print(piece_clicked)
 
@@ -81,8 +87,8 @@ def update_game_after_move(piece_clicked, black_team, white_team):
     turn_number += 1
 
     remove_eaten_pieces(white_team, black_team)
-    white_team.update_score()
-    black_team.update_score()
+
+    # only for print shit.
     score_dif = get_score_difference(white_team, black_team)
     team_leading = white_team if score_dif > 0 else black_team
     print(f'turn {turn_number}:\n'
@@ -109,60 +115,65 @@ def check_timers_out_of_time(white_team, black_team):
 
     except exceptions.RunOutOfTime:
         screen.draw_winner(team_won)
-        redraw_game_screen()
         raise
 
 
-def game_loop(white_team: Team, black_team: Team, is_one_player_playing, bot_depth, bot_team):
-    black_team.timer.pause()
-    running = True
-    piece_clicked = None
-    global team_got_turn
-    global team_doesnt_got_turn
-    team_got_turn = white_team
-    team_doesnt_got_turn = black_team
-    screen.draw_bg(team_got_turn, team_doesnt_got_turn)
-    while running:
+def even_handler(event, piece_clicked):
+    white_team, black_team = get_teams_colors(team_got_turn, team_doesnt_got_turn)
 
+    if event.type == pygame.QUIT:
+        raise exceptions.UserExitGame
+
+    if event.type != pygame.MOUSEBUTTONDOWN:
+        return piece_clicked
+
+    # User clikced on something.
+    clicked_square = get_square_clicked()
+
+    if clicked_square is None:
+        # User click on something out of board.
+        return piece_clicked
+
+    if piece_clicked is None:
+        if clicked_square.current_piece in team_got_turn.pieces:
+            piece_clicked = clicked_square.current_piece
+            piece_clicked.color_next_step()
+            screen.draw_board()  # Draw the colored squares.
+        return piece_clicked
+
+    # If user already clicked on a piece,
+    # we try to move the piece to the square the user clicked on.
+    try:
+        try_to_move(piece_clicked, clicked_square, team_got_turn, team_doesnt_got_turn)
+        # Move is valid.
+        update_game_after_move(piece_clicked, black_team, white_team)
+        return None
+
+    except exceptions.MoveError:
+        # The move wasn't valid.
+        pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'error.wav')).play()
+
+        # Print all the squares in their original colors.
+        screen.draw_board()
+        return None
+
+
+def game_loop(is_one_player_playing, bot_depth, bot_team):
+    white_team, black_team = get_teams_colors(team_got_turn, team_doesnt_got_turn)
+    white_team.timer.resume()
+    piece_clicked = None
+    screen.draw_bg(team_got_turn, team_doesnt_got_turn)
+
+    while True:
         if team_got_turn is bot_team and is_one_player_playing:
             # bot turn.
             piece_moved = bot.move(team_doesnt_got_turn, team_got_turn, bot_depth)
             update_game_after_move(piece_moved, black_team, white_team)
 
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                raise exceptions.UserExitGame
+            piece_clicked = even_handler(event, piece_clicked)
 
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                clicked_square = get_square_clicked()
-
-                if clicked_square is None:
-                    # User click on something out of board.
-                    continue
-
-                if piece_clicked is None:
-                    piece_clicked = clicked_square.current_piece
-                    if piece_clicked in team_got_turn.pieces:
-                        piece_clicked.color_next_step()
-                        screen.draw_board() # Draw the colored squares.
-                    continue
-
-                # If user already clicked on a piece,
-                # we try to move the piece to the square the user clicked on.
-                try:
-                    try_to_move(piece_clicked, clicked_square, team_got_turn, team_doesnt_got_turn)
-                    # Move is valid.
-                    update_game_after_move(piece_clicked, black_team, white_team)
-                except exceptions.MoveError:
-                    # The move wasn't valid.
-                    pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'error.wav')).play()
-
-                # Print all the squares in their original colors.
-                screen.draw_board()
-                piece_clicked = None
-
-        check_timers_out_of_time(white_team, black_team)
-        redraw_game_screen()
+        pygame.display.flip()
 
 
 def main():
@@ -170,12 +181,16 @@ def main():
         is_one_player, game_length, bot_depth, is_player_white = screen.starting_screen()
         timer.set_game_length(game_length)
         screen.add_squares_to_board()
-        white_team = Team(True)
-        black_team = Team(False)
+        white_team, black_team = get_teams_colors(team_got_turn, team_doesnt_got_turn)
         place_pieces(white_team, black_team)
         bot_team = black_team if is_player_white else white_team
         screen.draw_eaten_pieces(white_team, black_team)
-        game_loop(white_team, black_team, is_one_player, bot_depth, bot_team)
+        scoreboard_thread = threading.Thread(target=redraw_scoreboard, daemon=True)
+        scoreboard_thread.start()
+        board_thread = threading.Thread(target=update_screen, daemon=True)
+        board_thread.start()
+
+        game_loop(is_one_player, bot_depth, bot_team)
 
     except exceptions.UserExitGame:
         return
