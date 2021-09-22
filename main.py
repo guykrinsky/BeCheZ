@@ -1,18 +1,22 @@
 from chess_utils import *
 from teams import *
 import timer
-import pygame
+import protocol
 import screen
+import exceptions
 import bot
 import os
-import exceptions
 import threading
+import socket
+import pygame
 
 SOUNDS_PATH = 'sounds'
 
 team_got_turn = Team(is_white_team=True)
 team_doesnt_got_turn = Team(is_white_team=False)
 turn_number = 0
+name = "default_name"
+my_socket = None
 
 
 def update_screen():
@@ -118,7 +122,7 @@ def check_timers_out_of_time(white_team, black_team):
         raise
 
 
-def even_handler(event, piece_clicked):
+def event_handler(event, piece_clicked):
     white_team, black_team = get_teams_colors(team_got_turn, team_doesnt_got_turn)
 
     if event.type == pygame.QUIT:
@@ -144,8 +148,14 @@ def even_handler(event, piece_clicked):
     # If user already clicked on a piece,
     # we try to move the piece to the square the user clicked on.
     try:
+        starting_square = str(piece_clicked.square.line_cord) + str(piece_clicked.square.tur_cord)
+        destination_square = str(clicked_square.line_cord) + str(clicked_square.tur_cord)
         try_to_move(piece_clicked, clicked_square, team_got_turn, team_doesnt_got_turn)
-        # Move is valid.
+        # Move have finished successfully.
+        # send move to server
+        move = starting_square + destination_square
+        request = protocol.set_request_to_server(protocol.Request(name, protocol.REGULAR_MOVE, move))
+        my_socket.send(request)
         update_game_after_move(piece_clicked, black_team, white_team)
         return None
 
@@ -158,39 +168,93 @@ def even_handler(event, piece_clicked):
         return None
 
 
-def game_loop(is_one_player_playing, bot_depth, bot_team):
+def game_loop(bot_depth, bot_team):
     white_team, black_team = get_teams_colors(team_got_turn, team_doesnt_got_turn)
     white_team.timer.resume()
     piece_clicked = None
     screen.draw_bg(team_got_turn, team_doesnt_got_turn)
 
     while True:
-        if team_got_turn is bot_team and is_one_player_playing:
+        if bot_team is team_got_turn:
             # bot turn.
             piece_moved = bot.move(team_doesnt_got_turn, team_got_turn, bot_depth)
             update_game_after_move(piece_moved, black_team, white_team)
 
         for event in pygame.event.get():
-            piece_clicked = even_handler(event, piece_clicked)
+            piece_clicked = event_handler(event, piece_clicked)
 
         pygame.display.flip()
 
 
-def main():
-    try:
-        is_one_player, game_length, bot_depth, is_player_white = screen.starting_screen()
-        timer.set_game_length(game_length)
-        screen.add_squares_to_board()
-        white_team, black_team = get_teams_colors(team_got_turn, team_doesnt_got_turn)
-        place_pieces(white_team, black_team)
-        bot_team = black_team if is_player_white else white_team
-        screen.draw_eaten_pieces(white_team, black_team)
-        scoreboard_thread = threading.Thread(target=redraw_scoreboard, daemon=True)
-        scoreboard_thread.start()
-        board_thread = threading.Thread(target=update_screen, daemon=True)
-        board_thread.start()
+def get_games_list():
+    games = list()
+    list_length = my_socket.recv(1).decode()
+    print(f"number of players waiting for their games is {list_length}")
+    for x in range(int(list_length)):
+        game_title_length = int(my_socket.recv(1).decode())
+        games.append(my_socket.recv(game_title_length).decode())
+    return games
 
-        game_loop(is_one_player, bot_depth, bot_team)
+
+def main():
+    # Get game data from user.
+    is_one_player, game_length, bot_depth, is_player_white = screen.starting_screen()
+
+    timer.set_game_length(game_length)
+    screen.add_squares_to_board()
+    white_team, black_team = get_teams_colors(team_got_turn, team_doesnt_got_turn)
+    place_pieces(white_team, black_team)
+
+    # set bot team.
+    bot_team = black_team if is_player_white else white_team
+    if not is_one_player:
+        bot_team = None
+    screen.draw_eaten_pieces(white_team, black_team)
+
+    # Start remote threads.
+    scoreboard_thread = threading.Thread(target=redraw_scoreboard, daemon=True)
+    scoreboard_thread.start()
+    board_thread = threading.Thread(target=update_screen, daemon=True)
+    board_thread.start()
+
+    # connect to server
+    global my_socket
+    my_socket = socket.socket()
+    my_socket.connect(("127.0.0.1", protocol.SERVER_PORT))
+    global name
+    name = input("Enter your name:")
+    # name = "guy"
+
+    my_socket.send(protocol.set_request_to_server(protocol.Request(name, protocol.GET_GAMES)))
+    games_list = get_games_list()
+    print(f"Games list is: {games_list}")
+
+    if len(games_list) == 0:
+        print("Creating game")
+        my_socket.send(protocol.set_request_to_server(protocol.Request(name, protocol.CREATE_GAME)))
+        print("waiting for second player")
+        opponent_player_name_length = int(my_socket.recv(1).decode())
+        opponent_player_name = my_socket.recv(opponent_player_name_length).decode()
+        print(f"Playing against: {opponent_player_name}")
+
+    # There is someone waiting for opponent.
+    else:
+        counter = 0
+        while counter < len(games_list):
+            opponent_name = games_list[counter]
+            print(f"trying to join to {opponent_name} game")
+            my_socket.send(protocol.set_request_to_server(protocol.Request(name, protocol.JOIN_GAME, opponent_name)))
+            is_valid = my_socket.recv(1)
+            if not is_valid:
+                print("oops Error")
+                counter += 1
+
+            # joined to game successfully.
+            print("")
+            break
+
+    try:
+        game_loop(bot_depth, bot_team)
 
     except exceptions.UserExitGame:
         return

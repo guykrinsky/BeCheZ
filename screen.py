@@ -7,7 +7,7 @@ import exceptions
 pygame.init()
 
 SCREEN_WIDTH = pygame.display.Info().current_w
-SCREEN_HEIGHT = pygame.display.Info().current_h
+SCREEN_HEIGHT = pygame.display.Info().current_h - 50
 HEIGHT_OF_SCOREBOARD = 200
 
 SPACE_FROM_SCOREBOARD = 50
@@ -44,6 +44,7 @@ class Square:
         self.original_color = color
         self.tur_cord = tur
         self.line_cord = line
+        self.id = str(line) + str(tur)
         self.x_mid = x + Square.SIDE/2
         self.y_mid = y + Square.SIDE/2
         self.current_piece = None
@@ -76,18 +77,22 @@ def add_squares_to_board():
     y = HEIGHT_OF_SCOREBOARD + SPACE_FROM_SCOREBOARD
     for line in range(NUMBER_OF_SQUARES):
         tmp = line % 2
-        square_in_line = []
+        line_of_squars = []
         for tur in range(NUMBER_OF_SQUARES):
             if tur % 2 == tmp:
                 color = colors.LIGHT_BROWN
             else:
                 color = colors.DARK_BROWN
 
-            square_in_line.append(Square(x, y, color, tur, line))
+            current_square = Square(x, y, color, tur, line)
+            line_of_squars.append(current_square)
+
             x += Square.SIDE
+
+        squares.append(line_of_squars)
         x = SPACE_FROM_SCOREBOARD
         y += Square.SIDE
-        squares.append(square_in_line)
+
     pygame.display.flip()
 
 
