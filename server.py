@@ -4,6 +4,7 @@ import protocol
 from dataclasses import dataclass
 
 SERVER_IP = "0.0.0.0"
+PLAYERS_PLAYING = dict()
 
 
 @dataclass
@@ -36,8 +37,12 @@ def handle_request(request_sender_socket: socket.socket, waiting_players: dict):
     request_type = request_sender_socket.recv(1).decode()
 
     if request_type == protocol.REGULAR_MOVE:
-        print(f"{request_sender_name} move {request_sender_socket.recv(2).decode()}"
-              f" to {request_sender_socket.recv(2).decode()}")
+        start_square = request_sender_socket.recv(2).decode()
+        destination_square = request_sender_socket.recv(2).decode()
+        print(f"{request_sender_name} move {start_square}"
+              f" to {destination_square}")
+        opponent_player = PLAYERS_PLAYING[request_sender_name].opponent_player
+        return [Message((start_square + destination_square).encode(), opponent_player.socket)]
 
     elif request_type == protocol.CREATE_GAME:
         first_player = Player(request_sender_name, request_sender_socket)
@@ -49,12 +54,15 @@ def handle_request(request_sender_socket: socket.socket, waiting_players: dict):
 
     elif request_type == protocol.JOIN_GAME:
         other_player_length = int(request_sender_socket.recv(1).decode())
-        other_player = request_sender_socket.recv(other_player_length).decode()
+        other_player_name = request_sender_socket.recv(other_player_length).decode()
 
-        if other_player in waiting_players.keys():
-            other_player = waiting_players.pop(other_player)
+        if other_player_name in waiting_players.keys():
+            other_player = waiting_players.pop(other_player_name)
             # player_join is the player who send the request.
             player_join = Player(request_sender_name, request_sender_socket, other_player)
+            PLAYERS_PLAYING[other_player_name] = other_player
+            PLAYERS_PLAYING[request_sender_name] = player_join
+
             other_player.opponent_player = player_join
             # Return  two messages:
             # first approval that the request has accomplished
