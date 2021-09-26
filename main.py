@@ -3,6 +3,7 @@ from teams import *
 import timer
 import protocol
 import screen
+import opening_screen
 import exceptions
 import bot
 import os
@@ -17,13 +18,8 @@ SOUNDS_PATH = 'sounds'
 team_got_turn = Team(is_white_team=True)
 team_doesnt_got_turn = Team(is_white_team=False)
 turn_number = 0
-name = "default_name"
+username = "default_name"
 my_socket = None
-
-
-BOT_GAME = 1
-ONLINE_GAME = 2
-TWO_PLAYERS_GAME = 3
 
 
 def update_screen():
@@ -133,16 +129,6 @@ def random_word(length):
     return ''.join(random.choice(string.ascii_letters) for x in range(length))
 
 
-def get_games_list():
-    games = list()
-    list_length = my_socket.recv(1).decode()
-    print(f"number of players waiting for their games is {list_length}")
-    for x in range(int(list_length)):
-        game_title_length = int(my_socket.recv(1).decode())
-        games.append(my_socket.recv(game_title_length).decode())
-    return games
-
-
 def event_handler(event, piece_clicked, game_type):
     white_team, black_team = get_teams_colors(team_got_turn, team_doesnt_got_turn)
 
@@ -175,11 +161,10 @@ def event_handler(event, piece_clicked, game_type):
         try_to_move(piece_clicked, clicked_square, team_got_turn, team_doesnt_got_turn)
         # Move have finished successfully.
 
-        if game_type == ONLINE_GAME:
+        if game_type == opening_screen.ONLINE_GAME_TYPE:
 
-            # send move to server
             move = starting_square + destination_square
-            request = protocol.set_request_to_server(protocol.Request(name, protocol.REGULAR_MOVE, move))
+            request = protocol.Request(username, protocol.REGULAR_MOVE, move).set_request_to_server()
             my_socket.send(request)
 
         update_game_after_move(piece_clicked, black_team, white_team)
@@ -201,12 +186,12 @@ def game_loop(game_type, my_team, bot_depth=0):
     screen.draw_bg(team_got_turn, team_doesnt_got_turn)
 
     while True:
-        if team_got_turn is not my_team and game_type == BOT_GAME:
+        if team_got_turn is not my_team and game_type == opening_screen.BOT_GAME_TYPE:
             # bot turn.
             piece_moved = bot.move(team_doesnt_got_turn, team_got_turn, bot_depth)
             update_game_after_move(piece_moved, black_team, white_team)
 
-        elif team_got_turn is not my_team and game_type == ONLINE_GAME:
+        elif team_got_turn is not my_team and game_type == opening_screen.ONLINE_GAME_TYPE:
             start_square = screen.squares[int(my_socket.recv(1))][int(my_socket.recv(1))]
             destination_square = screen.squares[int(my_socket.recv(1))][int(my_socket.recv(1))]
             piece_moved = start_square.current_piece
@@ -219,8 +204,20 @@ def game_loop(game_type, my_team, bot_depth=0):
 
 
 def main():
-    # Get game data from user.
-    is_one_player, game_length, bot_depth, is_player_white = screen.starting_screen()
+    global my_socket
+    global username
+    try:
+        # Get game data from user.
+        # The return values is in the global vars of opening screen module.
+        opening_screen.starting_screen()
+
+    except exceptions.FinishStartingScreen:
+        game_type = opening_screen.game_type
+        game_length = opening_screen.game_length
+        bot_depth = opening_screen.level
+        is_player_white = opening_screen.is_white
+        my_socket = opening_screen.my_socket
+        username = opening_screen.username
 
     timer.set_game_length(game_length)
     screen.add_squares_to_board()
@@ -228,7 +225,6 @@ def main():
     place_pieces(white_team, black_team)
 
     my_team = white_team if is_player_white else black_team
-    game_type = ONLINE_GAME
 
     screen.draw_eaten_pieces(white_team, black_team)
 
@@ -237,46 +233,6 @@ def main():
     scoreboard_thread.start()
     board_thread = threading.Thread(target=update_screen, daemon=True)
     board_thread.start()
-
-    if game_type == ONLINE_GAME:
-        # connect to server
-        global my_socket
-        my_socket = socket.socket()
-        my_socket.connect(("127.0.0.1", protocol.SERVER_PORT))
-        global name
-        # name = input("Enter your name:")
-        name = random_word(5)
-        print(f"Your name is : {name}")
-
-        my_socket.send(protocol.set_request_to_server(protocol.Request(name, protocol.GET_GAMES)))
-        games_list = get_games_list()
-        print(f"Games list is: {games_list}")
-
-        if len(games_list) == 0:
-            my_team = white_team
-            print("Creating game")
-            my_socket.send(protocol.set_request_to_server(protocol.Request(name, protocol.CREATE_GAME)))
-            print("waiting for second player")
-            opponent_player_name_length = int(my_socket.recv(1).decode())
-            opponent_player_name = my_socket.recv(opponent_player_name_length).decode()
-            print(f"Playing against: {opponent_player_name}")
-
-        # There is someone waiting for opponent.
-        else:
-            my_team = black_team
-            counter = 0
-            while counter < len(games_list):
-                opponent_name = games_list[counter]
-                print(f"trying to join to {opponent_name} game")
-                my_socket.send(protocol.set_request_to_server(protocol.Request(name, protocol.JOIN_GAME, opponent_name)))
-                is_valid = my_socket.recv(1)
-                if not is_valid:
-                    print("oops Error")
-                    counter += 1
-
-                # joined to game successfully.
-                print("")
-                break
 
     try:
         game_loop(game_type, my_team)

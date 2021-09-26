@@ -40,3 +40,15 @@ class DidntMove(Exception):
 
 class UserExitGame(Exception):
     pass
+
+
+class FinishStartingScreen(Exception):
+    pass
+
+
+class BackToLastScreen(Exception):
+    pass
+
+
+class NonReturnValue(Exception):
+    pass

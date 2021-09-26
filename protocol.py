@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 
-
+# Types of requests:
 REGULAR_MOVE = "1"
 GET_GAMES = "2"
 CREATE_GAME = "3"
 JOIN_GAME = "4"
 
+# Status code:
 ERROR_MESSAGE = "0".encode()
 OK_MESSAGE = "1".encode()
 
@@ -14,9 +15,28 @@ SERVER_PORT = 5555
 
 @dataclass
 class Request:
-    owner: str
+    owner: str  # User who sent the request.
     type: str
     content: str = None
+
+    def set_request_to_server(self):
+        """
+        :return
+        final request to server would look like this:
+        name-length_name_request-type content
+        """
+
+        request_string = str(len(self.owner)) + self.owner + self.type
+
+        if self.type == REGULAR_MOVE:
+            # If request type is regular move, length is fixed.
+            request_string = request_string + self.content
+
+        elif self.content is not None:
+            request_string = request_string + str(len(self.content)) + self.content
+
+        print(f"Your final request is: {request_string}")
+        return request_string.encode()
 
 
 def set_server_regular_message(msg):
@@ -36,21 +56,3 @@ def set_waiting_players_msg(waiting_players: dict):
     for player in waiting_players.values():
         msg = msg + str(len(player.name)) + player.name
     return msg.encode()
-
-
-def set_request_to_server(request: Request):
-    """
-    msg should look like this:
-    name-length_name_request-type_content
-    """
-
-    request_string = str(len(request.owner)) + request.owner + request.type
-
-    if request.type == REGULAR_MOVE:
-        request_string = request_string + request.content
-
-    elif request.content is not None:
-        request_string = request_string + str(len(request.content)) + request.content
-
-    print(f"Your final request is: {request_string}")
-    return request_string.encode()
