@@ -52,3 +52,7 @@ class BackToLastScreen(Exception):
 
 class NonReturnValue(Exception):
     pass
+
+
+class JoinGameError(Exception):
+    pass

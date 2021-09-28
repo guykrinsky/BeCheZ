@@ -28,12 +28,12 @@ class Request:
 
         request_string = str(len(self.owner)) + self.owner + self.type
 
-        if self.type == REGULAR_MOVE:
+        if self.type == REGULAR_MOVE or self.type == CREATE_GAME:
             # If request type is regular move, length is fixed.
-            request_string = request_string + self.content
+            request_string += self.content
 
         elif self.content is not None:
-            request_string = request_string + str(len(self.content)) + self.content
+            request_string += str(len(self.content)) + self.content
 
         print(f"Your final request is: {request_string}")
         return request_string.encode()
@@ -49,10 +49,12 @@ def set_waiting_players_msg(waiting_players: dict):
      list of players who waiting for other player to join their game.
     :return:
     A valid message including all games waiting for a player.
-    The message form is first players waiting count and than every name length and the name itself
-    "43guy5yuval4anne4itay".encode()
+    The message form is that:
+     players waiting count
+     name length, name , is first player white (1/0), game length
+    "43guy0105yuval1104anne054itay13".encode()
     """
     msg = str(len(waiting_players))
     for player in waiting_players.values():
-        msg = msg + str(len(player.name)) + player.name
+        msg = msg + str(len(player.name)) + player.name + player.is_player_white + player.game_length
     return msg.encode()

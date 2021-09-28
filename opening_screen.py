@@ -53,9 +53,16 @@ TEXT_BOX_HEIGHT = REGULAR_FONT.get_height() + 20
 TEXT_BOX_WIDTH = 600
 
 
+class WaitingGame:
+    def __init__(self, name, is_other_player_white, current_game_length):
+        self.opponent_player_name = name
+        self.is_white = not is_other_player_white
+        self.length = current_game_length
+
+
 def starting_screen():
     global game_type
-    game_type = ONLINE_GAME_TYPE if is_one_players_playing else TWO_PLAYERS_GAME_TYPE
+    game_type = BOT_GAME_TYPE if is_one_players_playing else TWO_PLAYERS_GAME_TYPE
 
     # Print background image.
     screen.blit(bg_image, (0, 0))
@@ -161,8 +168,6 @@ def get_join_create_rectangles(textbox: pygame.Rect) -> tuple:
 
 def join_game_screen(*ignore):
     global opponent_player_name
-    global is_white
-    is_white = False
     rectangles = dict()
 
     # Print background.
@@ -171,8 +176,9 @@ def join_game_screen(*ignore):
     rectangles[BACK_SIGN] = draw_and_get_back_sign()
     # Join server.
     connect_to_server()
-    # Send request to server.
-    my_socket.send(protocol.Request(username, protocol.GET_GAMES).set_request_to_server())
+    final_request = protocol.Request(username, protocol.GET_GAMES).set_request_to_server()
+
+    my_socket.send(final_request)
     games_list = get_games_list()
     print(f"Games list is: {games_list}")
     rectangles[JOIN_GAME_RECTS] = create_join_game_rectangles(games_list)
@@ -181,28 +187,25 @@ def join_game_screen(*ignore):
         pygame.display.flip()
         for event in pygame.event.get():
             try:
-                return_value = handle_event(event, rectangles)
-                if return_value is None:
-                    continue
-                server_answer, opponent_player = return_value
-                if server_answer == protocol.OK_MESSAGE:
-                    opponent_player_name = opponent_player
-                    raise exceptions.FinishStartingScreen
+                handle_event(event, rectangles)
 
             except exceptions.BackToLastScreen:
                 online_screen()
 
+            except exceptions.JoinGameError:
+                pass
+
 
 def create_game():
     global opponent_player_name
-    global is_white
-    is_white = True
 
     screen.blit(bg_image, (0, 0))
     connect_to_server()
 
     print("Creating game")
-    my_socket.send(protocol.Request(username, protocol.CREATE_GAME).set_request_to_server())
+    msg_content = "1" if is_white else "0"
+    msg_content += str(game_length).zfill(2)
+    my_socket.send(protocol.Request(username, protocol.CREATE_GAME, msg_content).set_request_to_server())
     text = LARGE_FONT.render("waiting for second player...", False, colors.DARK_BLUE)
     screen.blit(text, (SCREEN_WIDTH/2 - text.get_width()/2, SCREEN_HEIGHT/2 - text.get_height()/2))
     pygame.display.flip()
@@ -217,12 +220,16 @@ def create_join_game_rectangles(games_name: list):
     rectangle_height = REGULAR_FONT.get_height() + 20
     last_rectangle_bottom = 0
     rectangles = dict()
-    for name in games_name:
-        text = REGULAR_FONT.render(name, False, colors.WHITE)
+    for game in games_name:
+        text_string = f"opponent player is: {game.opponent_player_name} - "
+        your_team = "white team" if game.is_white else "black team"
+        text_string += f"your team: {your_team} - "
+        text_string += f"game length: {str(game_length)}"
+        text = REGULAR_FONT.render(text_string, False, colors.WHITE)
         current_game_rect = pygame.Rect(MIDDLE_HORIZONTAL - int(rectangle_width/2),
                                         last_rectangle_bottom + rectangle_height, rectangle_width, rectangle_height)
         last_rectangle_bottom = current_game_rect.bottom
-        rectangles[name] = current_game_rect
+        rectangles[game] = current_game_rect
         pygame.draw.rect(screen, colors.DARK_BLUE, current_game_rect)
         screen.blit(text, (MIDDLE_HORIZONTAL - text.get_width()/2, current_game_rect.top + 10))
 
@@ -235,12 +242,19 @@ def create_join_game_rectangles(games_name: list):
 
 
 def get_games_list() -> list:
+    """"
+    :return A list with all data of the games waiting for second player
+    data of game including: first player name, is first player white, game length
+    """
     games = list()
     list_length = my_socket.recv(1).decode()
     print(f"number of players waiting for their games is {list_length}")
     for x in range(int(list_length)):
-        game_title_length = int(my_socket.recv(1).decode())
-        games.append(my_socket.recv(game_title_length).decode())
+        name_length = int(my_socket.recv(1).decode())
+        name = my_socket.recv(name_length).decode()
+        is_opponent_player_white = int(my_socket.recv(1).decode())
+        current_game_length = int(my_socket.recv(2).decode())
+        games.append(WaitingGame(name, is_opponent_player_white, current_game_length))
     return games
 
 
@@ -324,10 +338,19 @@ def get_rect(mouse_pos, rectangles):
     raise exceptions.NonReturnValue
 
 
-def join_to(rect_clicked, text, rectangles):
-    final_request = protocol.Request(username, protocol.JOIN_GAME, text).set_request_to_server()
+def join_to(rect_clicked, game: WaitingGame, rectangles):
+    final_request = protocol.Request(username, protocol.JOIN_GAME, game.opponent_player_name).set_request_to_server()
     my_socket.send(final_request)
-    return my_socket.recv(1), text
+    if my_socket.recv(1) == protocol.OK_MESSAGE:
+        global is_white
+        global opponent_player_name
+        global game_length
+        is_white = game.is_white
+        game_length = game.length
+        opponent_player_name = game.opponent_player_name
+        raise exceptions.FinishStartingScreen
+    else:
+        raise exceptions.JoinGameError
 
 
 def set_team(rect_clicked, text, rectangles):
@@ -349,16 +372,19 @@ def finish_starting_screen(*ignore):
 
 def set_number_of_players(rect_clicked, text, rectangles):
     global is_one_players_playing
+    global game_type
     is_one_players_playing = (text == 'One Player')
     if is_one_players_playing:
         # Passing the 'one player' rect as argument to the function.
         draw_team_selection_rects(rectangles[NUMBER_OF_PLAYERS]["One Player"].midright, is_white)
+        game_type = BOT_GAME_TYPE
     else:
         # Erase team selection rectangles.
         screen.blit(bg_image, rectangles[TEAM_SELECTION]["WHITE TEAM"].topleft,
                     rectangles[TEAM_SELECTION]["WHITE TEAM"])
         screen.blit(bg_image, rectangles[TEAM_SELECTION]["BLACK TEAM"].topleft,
                     rectangles[TEAM_SELECTION]["BLACK TEAM"])
+        game_type = TWO_PLAYERS_GAME_TYPE
 
     set_rects_color(rectangles[NUMBER_OF_PLAYERS], rect_clicked,
                        colors.LIGHT_SILVER, colors.DARK_SILVER, colors.BLACK)

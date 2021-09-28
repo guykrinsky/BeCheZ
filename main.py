@@ -162,7 +162,6 @@ def event_handler(event, piece_clicked, game_type):
         # Move have finished successfully.
 
         if game_type == opening_screen.ONLINE_GAME_TYPE:
-
             move = starting_square + destination_square
             request = protocol.Request(username, protocol.REGULAR_MOVE, move).set_request_to_server()
             my_socket.send(request)
@@ -206,6 +205,7 @@ def game_loop(game_type, my_team, bot_depth=0):
 def main():
     global my_socket
     global username
+
     try:
         # Get game data from user.
         # The return values is in the global vars of opening screen module.
@@ -235,7 +235,7 @@ def main():
     board_thread.start()
 
     try:
-        game_loop(game_type, my_team)
+        game_loop(game_type, my_team, bot_depth)
 
     except exceptions.UserExitGame:
         return

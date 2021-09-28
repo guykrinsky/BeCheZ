@@ -15,23 +15,23 @@ class Message:
 
 
 class Player:
-    def __init__(self, name: str, player_socket: socket.socket, opponent_player=None):
+    def __init__(self, name: str, player_socket: socket.socket, game_length=5, is_player_white=0, opponent_player=None):
         self.name = name
         self.socket = player_socket
         self.opponent_player = opponent_player
-
-
-@dataclass
-class Game:
-    # When creating game you don't know who is your opponent player.
-    player1: Player
-    player2: Player = None
+        if opponent_player is None:
+            self.game_length = game_length
+            self.is_player_white = is_player_white
+        else:
+            self.game_length = opponent_player.game_length
+            self.is_player_white = not is_player_white
 
 
 def handle_request(request_sender_socket: socket.socket, waiting_players: dict):
     """
     :param request_sender_socket: The socket of the player who sent the request.
-    :param waiting_players: List of players who waiting for opponent.
+    :param waiting_players: Dict of players who waiting for opponent.
+    this is dict and not list because server need to find player by name when clients asking to join game
     :return: A list with new messages would be send to clients.
     """
     request_sender_name_length = int(request_sender_socket.recv(1).decode())
@@ -47,9 +47,13 @@ def handle_request(request_sender_socket: socket.socket, waiting_players: dict):
         return [Message((start_square + destination_square).encode(), opponent_player.socket)]
 
     elif request_type == protocol.CREATE_GAME:
-        first_player = Player(request_sender_name, request_sender_socket)
+        # message content including is player white team and game length.
+        is_player_white = request_sender_socket.recv(1).decode() # True or false
+        # Game length should be always 2 digits. zero fill.
+        game_length = request_sender_socket.recv(2).decode()
+        first_player = Player(request_sender_name, request_sender_socket, game_length, is_player_white)
         waiting_players[request_sender_name] = first_player
-        print(f"{first_player.name} waiting for player to join his game")
+        print(f"{first_player.name} created game: length {first_player.game_length} he is white: {first_player.is_player_white}")
 
     elif request_type == protocol.GET_GAMES:
         print(f"{request_sender_name} want to see all the games. The games:\n {waiting_players}")
@@ -62,7 +66,7 @@ def handle_request(request_sender_socket: socket.socket, waiting_players: dict):
         if other_player_name in waiting_players.keys():
             other_player = waiting_players.pop(other_player_name)
             # player_join is the player who send the request.
-            player_join = Player(request_sender_name, request_sender_socket, other_player)
+            player_join = Player(request_sender_name, request_sender_socket, opponent_player=other_player)
             PLAYERS_PLAYING[other_player_name] = other_player
             PLAYERS_PLAYING[request_sender_name] = player_join
 
@@ -93,6 +97,7 @@ def main():
     waiting_players = dict()
     ready_messages = list()
     while True:
+        # TODO: client socket quit option
         rlist, wlist, xlist = select.select([server_socket] + clients_sockets, [server_socket] + clients_sockets, [])
 
         # New client
