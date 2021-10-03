@@ -28,7 +28,7 @@ class Player:
 
 
 def player_left(player_quit_name: str, waiting_players: dict, clients_socket: list):
-    # If player isn't in waiting player or PLAYERS PLAYING he's opponent already left.
+    # If player isn't in waiting player or PLAYERS PLAYING his opponent already left.
 
     msg = None
 

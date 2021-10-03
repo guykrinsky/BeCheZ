@@ -16,6 +16,14 @@ BACK_BUTTON_IMAGE_PATH = os.path.join(PICTURES_PATH, 'back_sign.png')
 back_button_image = pygame.image.load(BACK_BUTTON_IMAGE_PATH)
 back_button_image = pygame.transform.scale(back_button_image, (int(SCREEN_WIDTH/10), int(SCREEN_HEIGHT/10)))
 
+REFRESH_BUTTON_IMAGE_PATH = os.path.join(PICTURES_PATH, 'refresh_button.png')
+refresh_button_image = pygame.image.load(REFRESH_BUTTON_IMAGE_PATH)
+refresh_button_image = pygame.transform.scale(refresh_button_image,
+                                              (back_button_image.get_width(), back_button_image.get_height()))
+
+SOUNDS_PATH = 'sounds'
+
+
 PASSIVE_TEXTBOX_COLOR = colors.WHITE
 ACTIVE_TEXTBOX_COLOR = colors.LIGHT_BLUE
 
@@ -26,26 +34,26 @@ TWO_PLAYERS_GAME_TYPE = 3
 
 
 # Keys in rectangles dict
-# TODO: check if there is better way to it.
 START_GAME = 0
 NUMBER_OF_PLAYERS = 1
 GAME_LENGTH = 2
 BOT_LEVEL = 3
 TEAM_SELECTION = 4
 ONLINE_GAME = 5
-BACK_SIGN = 8
+BACK_BUTTON = 8
 JOIN_GAME_RECTS = 9
+REFRESH_BUTTON = 10
 
 MAX_USERNAME_LENGTH = 10
 
-ONE_RECT_GROUPS = [START_GAME, ONLINE_GAME, BACK_SIGN]
+ONE_RECT_GROUPS = [START_GAME, ONLINE_GAME, BACK_BUTTON, REFRESH_BUTTON]
 
 # default values
 is_one_players_playing = True
 game_length = 5  # In minutes.
 level = 3  # Bot Depth
 is_white = True
-username = "guy"
+username = ""
 my_socket = None
 opponent_player_name = ""
 game_type = BOT_GAME_TYPE
@@ -85,13 +93,9 @@ def online_screen(*ignore):
     global game_type
     global my_socket
 
-    if my_socket is not None:
-        quit_request = protocol.Request(username, protocol.QUIT).set_request_to_server()
-        my_socket.send(quit_request)
-        my_socket = None
     game_type = ONLINE_GAME_TYPE
     screen.blit(bg_image, (0, 0))
-    back_sign_rect = draw_and_get_back_sign()
+    back_button_rect = draw_and_get_back_button()
 
     # Print title.
     text = LARGE_FONT.render("ENTER YOUR NAME:", False, colors.DARK_BLUE)
@@ -119,7 +123,7 @@ def online_screen(*ignore):
                     is_active = False
                 draw_text_box(username, text_box, is_active)
 
-                if back_sign_rect.collidepoint(pygame.mouse.get_pos()):
+                if back_button_rect.collidepoint(pygame.mouse.get_pos()):
                     return starting_screen()
 
                 if create_game_rect.collidepoint(pygame.mouse.get_pos()) and len(username) > 0:
@@ -181,7 +185,8 @@ def join_game_screen(*ignore):
     # Print background.
     screen.blit(bg_image, (0, 0))
 
-    rectangles[BACK_SIGN] = draw_and_get_back_sign()
+    rectangles[BACK_BUTTON] = draw_and_get_back_button()
+    rectangles[REFRESH_BUTTON] = draw_and_get_refresh_button()
     # Join server.
     connect_to_server()
     final_request = protocol.Request(username, protocol.GET_GAMES).set_request_to_server()
@@ -201,7 +206,7 @@ def join_game_screen(*ignore):
                 online_screen()
 
             except exceptions.JoinGameError:
-                pass
+                pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'error.wav')).play()
 
 
 def create_game():
@@ -275,6 +280,8 @@ def draw_text_box(username, text_box, is_active):
 
 def connect_to_server():
     global my_socket
+    if my_socket is not None:
+        return
     my_socket = socket.socket()
     my_socket.connect(("127.0.0.1", protocol.SERVER_PORT))
 
@@ -507,13 +514,21 @@ def set_rects_color(rects_and_texts: dict, chosen_rect, chosen_rect_color, uncho
                                        rect.centery - text_surface.get_height() / 2))
 
 
-def draw_and_get_back_sign():
-    back_sign_x_pos = 0
-    back_sign_y_pos = SCREEN_HEIGHT - back_button_image.get_height()
-    screen.blit(back_button_image, (back_sign_x_pos, back_sign_y_pos))
+def draw_and_get_back_button():
+    back_button_x_pos = 0
+    back_button_y_pos = SCREEN_HEIGHT - back_button_image.get_height() - 20
+    screen.blit(back_button_image, (back_button_x_pos, back_button_y_pos))
     tmp_rect = back_button_image.get_rect()
-    tmp_rect.topleft = (back_sign_x_pos, back_sign_y_pos)
+    tmp_rect.topleft = (back_button_x_pos, back_button_y_pos)
     return tmp_rect
+
+
+def draw_and_get_refresh_button():
+    refresh_button_x_pos = SCREEN_WIDTH - refresh_button_image.get_width()
+    refresh_button_y_pos = SCREEN_HEIGHT - refresh_button_image.get_height() - 20
+    screen.blit(refresh_button_image, (refresh_button_x_pos, refresh_button_y_pos))
+    return pygame.Rect(refresh_button_x_pos, refresh_button_y_pos,
+                       refresh_button_image.get_width(), refresh_button_image.get_width())
 
 
 rect_group_to_function = dict()
@@ -523,6 +538,7 @@ rect_group_to_function[GAME_LENGTH] = set_game_length
 rect_group_to_function[BOT_LEVEL] = set_bot_level
 rect_group_to_function[TEAM_SELECTION] = set_team
 rect_group_to_function[ONLINE_GAME] = online_screen
-rect_group_to_function[BACK_SIGN] = back_to_last_screen
+rect_group_to_function[BACK_BUTTON] = back_to_last_screen
 rect_group_to_function[JOIN_GAME_RECTS] = join_to
+rect_group_to_function[REFRESH_BUTTON] = join_game_screen
 

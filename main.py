@@ -190,6 +190,7 @@ def game_loop(game_type, my_team, bot_depth=0):
             game_status = my_socket.recv(1)
             logging.debug(f"game status: {game_status}")
             if game_status == protocol.ERROR_MESSAGE:
+                logging.info("opponent player quit")
                 screen.draw_winner(my_team)
                 raise exceptions.GameEnd
 
@@ -214,7 +215,7 @@ def  quit_from_sever(client_socket: socket.socket):
 def main():
     global my_socket
     global username
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
 
     try:
         # Get game data from user.
