@@ -137,24 +137,6 @@ def replace_auto_to_queen(pawn):
     pawn.team.pieces.append(pieces.Queen(pawn.square, pawn.team))
 
 
-def replace(pawn_team: Team, pawn):
-    pawn_team.pieces.remove(pawn)
-    print("Which piece do you want instead of the pawn?")
-    piece_chose = input("q - queen, b - bishop, r - rook, k - knight\n")
-    option_to_piece = {
-        'q': pieces.Queen(pawn.square, pawn.team),
-        'b': pieces.Bishop(pawn.square, pawn.team),
-        'r': pieces.Rook(pawn.team, pawn.square),
-        'k': pieces.Knight(pawn.square, pawn.team),
-    }
-    try:
-        pawn_team.pieces.append(option_to_piece[piece_chose])
-        pawn.square.current_piece = option_to_piece[piece_chose]
-    except KeyError:
-        pawn_team.pieces.append(pawn)
-        replace(pawn_team, pawn)
-
-
 def castling(king, rook, team_got_turn, team_doesnt_got_turn):
     king_line = king.square.line_cord
     king_tur = king.square.tur_cord

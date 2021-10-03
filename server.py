@@ -27,8 +27,25 @@ class Player:
             self.is_player_white = not is_player_white
 
 
-def handle_request(request_sender_socket: socket.socket, waiting_players: dict):
+def player_left(player_quit_name: str, waiting_players: dict, clients_socket: list):
+    # If player isn't in waiting player or PLAYERS PLAYING he's opponent already left.
+
+    msg = None
+
+    if player_quit_name in waiting_players.keys():
+        waiting_players.pop(player_quit_name)
+
+    elif player_quit_name in PLAYERS_PLAYING:
+        player_quit = PLAYERS_PLAYING.pop(player_quit_name)
+        opponent_player = PLAYERS_PLAYING.pop(player_quit.opponent_player.name)
+        msg = [Message(protocol.ERROR_MESSAGE, opponent_player.socket)]
+
+    return msg
+
+
+def handle_request(request_sender_socket: socket.socket, waiting_players: dict, clients_socket: list):
     """
+    :param clients_socket: list of all connected sockets. it would be change when player quit.
     :param request_sender_socket: The socket of the player who sent the request.
     :param waiting_players: Dict of players who waiting for opponent.
     this is dict and not list because server need to find player by name when clients asking to join game
@@ -38,25 +55,31 @@ def handle_request(request_sender_socket: socket.socket, waiting_players: dict):
     request_sender_name = request_sender_socket.recv(request_sender_name_length).decode()
     request_type = request_sender_socket.recv(1).decode()
 
+    if request_type == protocol.QUIT:
+        logging.info(f"{request_sender_name} left the server")
+        clients_socket.remove(request_sender_socket)
+        return player_left(request_sender_name, waiting_players,  clients_socket)
+
     if request_type == protocol.REGULAR_MOVE:
         start_square = request_sender_socket.recv(2).decode()
         destination_square = request_sender_socket.recv(2).decode()
-        print(f"{request_sender_name} moved {start_square}"
-              f" to {destination_square}")
+        logging.info(f"{request_sender_name} moved {start_square} to {destination_square}")
+
         opponent_player = PLAYERS_PLAYING[request_sender_name].opponent_player
-        return [Message((start_square + destination_square).encode(), opponent_player.socket)]
+        return [Message((protocol.OK_MESSAGE.decode() + start_square + destination_square).encode(), opponent_player.socket)]
 
     elif request_type == protocol.CREATE_GAME:
         # message content including is player white team and game length.
-        is_player_white = request_sender_socket.recv(1).decode() # True or false
+        is_player_white = request_sender_socket.recv(1).decode()  # True or false
         # Game length should be always 2 digits. zero fill.
         game_length = request_sender_socket.recv(2).decode()
         first_player = Player(request_sender_name, request_sender_socket, game_length, is_player_white)
         waiting_players[request_sender_name] = first_player
-        print(f"{first_player.name} created game: length {first_player.game_length} he is white: {first_player.is_player_white}")
+        logging.info(f"{first_player.name} created game: length {first_player.game_length} he is white: {first_player.is_player_white}")
 
     elif request_type == protocol.GET_GAMES:
-        print(f"{request_sender_name} want to see all the games. The games:\n {waiting_players}")
+        logging.info(f"{request_sender_name} want to see all players waiting for opponent.")
+        logging.debug(f"players waiting for opponent: {waiting_players}")
         return [Message(protocol.set_waiting_players_msg(waiting_players), request_sender_socket)]
 
     elif request_type == protocol.JOIN_GAME:
@@ -74,11 +97,12 @@ def handle_request(request_sender_socket: socket.socket, waiting_players: dict):
             # Return two messages:
             # first approval that the request has accomplished
             # second the name of the player who joined to the player who waiting.
+            logging.info(f"{request_sender_name} joined {other_player_name} game")
             return [Message(protocol.OK_MESSAGE, request_sender_socket),
                     Message(protocol.set_server_regular_message(request_sender_name), other_player.socket)]
 
         else:
-            # ERROR
+            logging.error(f"{request_sender_name} want to connect to a doesn't exist game.")
             return [Message(protocol.ERROR_MESSAGE, request_sender_socket)]
 
 
@@ -90,8 +114,9 @@ def start_server() -> socket.socket:
 
 
 def main():
+    logging.basicConfig(level=logging.INFO)
     server_socket = start_server()
-    print("Server is up")
+    logging.info("Server is up")
     clients_sockets = list()
     # Players opened games and waiting for other player.
     waiting_players = dict()
@@ -104,12 +129,12 @@ def main():
         if server_socket in rlist:
             new_client_socket, new_client_address = server_socket.accept()
             clients_sockets.append(new_client_socket)
-            print("new client arrived")
+            logging.info("new client arrived")
             rlist.remove(server_socket)
 
         # New data
         for request_sender_socket in rlist:
-            msg = handle_request(request_sender_socket, waiting_players)
+            msg = handle_request(request_sender_socket, waiting_players, clients_sockets)
 
             if msg is not None:
                 ready_messages.extend(msg)

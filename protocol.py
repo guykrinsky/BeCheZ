@@ -1,11 +1,12 @@
 from dataclasses import dataclass
+import logging
 
 # Types of requests:
 REGULAR_MOVE = "1"
 GET_GAMES = "2"
 CREATE_GAME = "3"
 JOIN_GAME = "4"
-
+QUIT = "5"
 # Status code:
 ERROR_MESSAGE = "0".encode()
 OK_MESSAGE = "1".encode()
@@ -35,7 +36,7 @@ class Request:
         elif self.content is not None:
             request_string += str(len(self.content)) + self.content
 
-        print(f"Your final request is: {request_string}")
+        logging.debug(f"final request is: {request_string}")
         return request_string.encode()
 
 

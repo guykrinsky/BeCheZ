@@ -22,6 +22,7 @@ class Team:
     def __str__(self):
         return 'white team' if self.is_white_team else 'black team'
 
+    # For debugging
     def print_pieces(self):
         for piece in self.pieces:
             print(f'\n{piece}')

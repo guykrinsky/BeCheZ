@@ -3,6 +3,7 @@ import screen
 import os
 import socket
 import protocol
+import logging
 from screen import *
 
 clock = pygame.time.Clock()
@@ -44,7 +45,7 @@ is_one_players_playing = True
 game_length = 5  # In minutes.
 level = 3  # Bot Depth
 is_white = True
-username = ""
+username = "guy"
 my_socket = None
 opponent_player_name = ""
 game_type = BOT_GAME_TYPE
@@ -81,6 +82,14 @@ def starting_screen():
 
 def online_screen(*ignore):
     global username
+    global game_type
+    global my_socket
+
+    if my_socket is not None:
+        quit_request = protocol.Request(username, protocol.QUIT).set_request_to_server()
+        my_socket.send(quit_request)
+        my_socket = None
+    game_type = ONLINE_GAME_TYPE
     screen.blit(bg_image, (0, 0))
     back_sign_rect = draw_and_get_back_sign()
 
@@ -95,7 +104,6 @@ def online_screen(*ignore):
 
     # Colors of text box
     is_active = False
-    username = ""
     draw_text_box(username, text_box, is_active)
     while True:
         pygame.display.flip()
@@ -180,7 +188,7 @@ def join_game_screen(*ignore):
 
     my_socket.send(final_request)
     games_list = get_games_list()
-    print(f"Games list is: {games_list}")
+    logging.debug(f"Games list is: {games_list}")
     rectangles[JOIN_GAME_RECTS] = create_join_game_rectangles(games_list)
 
     while True:
@@ -202,7 +210,7 @@ def create_game():
     screen.blit(bg_image, (0, 0))
     connect_to_server()
 
-    print("Creating game")
+    logging.debug("Creating game")
     msg_content = "1" if is_white else "0"
     msg_content += str(game_length).zfill(2)
     my_socket.send(protocol.Request(username, protocol.CREATE_GAME, msg_content).set_request_to_server())
@@ -224,7 +232,7 @@ def create_join_game_rectangles(games_name: list):
         text_string = f"opponent player is: {game.opponent_player_name} - "
         your_team = "white team" if game.is_white else "black team"
         text_string += f"your team: {your_team} - "
-        text_string += f"game length: {str(game_length)}"
+        text_string += f"game length: {str(game.length)}"
         text = REGULAR_FONT.render(text_string, False, colors.WHITE)
         current_game_rect = pygame.Rect(MIDDLE_HORIZONTAL - int(rectangle_width/2),
                                         last_rectangle_bottom + rectangle_height, rectangle_width, rectangle_height)
@@ -248,7 +256,7 @@ def get_games_list() -> list:
     """
     games = list()
     list_length = my_socket.recv(1).decode()
-    print(f"number of players waiting for their games is {list_length}")
+    logging.debug(f"number of players waiting for their games is {list_length}")
     for x in range(int(list_length)):
         name_length = int(my_socket.recv(1).decode())
         name = my_socket.recv(name_length).decode()

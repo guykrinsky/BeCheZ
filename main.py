@@ -12,6 +12,7 @@ import socket
 import pygame
 import random
 import string
+import logging
 
 SOUNDS_PATH = 'sounds'
 
@@ -80,7 +81,7 @@ def update_game_after_move(piece_clicked, black_team, white_team):
     global turn_number
     pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'pong.wav')).play()
 
-    print(piece_clicked)
+    logging.debug(f"piece moved is {piece_clicked}")
 
     if is_checkmated(team_got_turn, team_doesnt_got_turn):
         screen.draw_winner(team_doesnt_got_turn)
@@ -91,18 +92,13 @@ def update_game_after_move(piece_clicked, black_team, white_team):
         raise exceptions.Tie
 
     piece_clicked.move_counter += 1
-    turn_number += 1
-
     remove_eaten_pieces(white_team, black_team)
 
-    # only for print shit.
-    score_dif = get_score_difference(white_team, black_team)
-    team_leading = white_team if score_dif > 0 else black_team
-    print(f'turn {turn_number}:\n'
-          f'team leading is {team_leading} in {score_dif}\n'
-          f'keep going!')
+    turn_number += 1
+    logging.info(f"turn number: {turn_number}")
 
 
+# For debugging
 def print_board(white_team, black_team):
     print(white_team)
     white_team.print_pieces()
@@ -191,8 +187,15 @@ def game_loop(game_type, my_team, bot_depth=0):
             update_game_after_move(piece_moved, black_team, white_team)
 
         elif team_got_turn is not my_team and game_type == opening_screen.ONLINE_GAME_TYPE:
+            game_status = my_socket.recv(1)
+            logging.debug(f"game status: {game_status}")
+            if game_status == protocol.ERROR_MESSAGE:
+                screen.draw_winner(my_team)
+                raise exceptions.GameEnd
+
             start_square = screen.squares[int(my_socket.recv(1))][int(my_socket.recv(1))]
             destination_square = screen.squares[int(my_socket.recv(1))][int(my_socket.recv(1))]
+
             piece_moved = start_square.current_piece
             piece_moved.move(destination_square)
             update_game_after_move(piece_moved, black_team, white_team)
@@ -202,9 +205,16 @@ def game_loop(game_type, my_team, bot_depth=0):
                 piece_clicked = event_handler(event, piece_clicked, game_type)
 
 
+def  quit_from_sever(client_socket: socket.socket):
+    quit_request = protocol.Request(opening_screen.username, protocol.QUIT).set_request_to_server()
+    opening_screen.my_socket.send(quit_request)
+    client_socket.close()
+
+
 def main():
     global my_socket
     global username
+    logging.basicConfig(level=logging.DEBUG)
 
     try:
         # Get game data from user.
@@ -219,30 +229,41 @@ def main():
         my_socket = opening_screen.my_socket
         username = opening_screen.username
 
-    timer.set_game_length(game_length)
-    screen.add_squares_to_board()
-    white_team, black_team = get_teams_colors(team_got_turn, team_doesnt_got_turn)
-    place_pieces(white_team, black_team)
-
-    my_team = white_team if is_player_white else black_team
-
-    screen.draw_eaten_pieces(white_team, black_team)
-
-    # Start remote threads.
-    scoreboard_thread = threading.Thread(target=redraw_scoreboard, daemon=True)
-    scoreboard_thread.start()
-    board_thread = threading.Thread(target=update_screen, daemon=True)
-    board_thread.start()
+    except exceptions.UserExitGame:
+        if opening_screen.my_socket is not None:
+            quit_from_sever(opening_screen.my_socket)
+        return
 
     try:
+        timer.set_game_length(game_length)
+        screen.add_squares_to_board()
+        white_team, black_team = get_teams_colors(team_got_turn, team_doesnt_got_turn)
+        place_pieces(white_team, black_team)
+
+        my_team = white_team if is_player_white else black_team
+
+        screen.draw_eaten_pieces(white_team, black_team)
+
+        # Start remote threads.
+        scoreboard_thread = threading.Thread(target=redraw_scoreboard, daemon=True)
+        scoreboard_thread.start()
+        board_thread = threading.Thread(target=update_screen, daemon=True)
+        board_thread.start()
+
         game_loop(game_type, my_team, bot_depth)
 
     except exceptions.UserExitGame:
+        if my_socket is not None:
+            # Already connected to server
+            quit_from_sever(my_socket)
         return
 
     except exceptions.GameEnd:
-        print("Game ended.")
+        logging.info("Game ended.")
         timer.sleep(10)
+        if my_socket is not None:
+            # Already connected to server
+            quit_from_sever(my_socket)
         # TODO: Return to main screen.
         return
 

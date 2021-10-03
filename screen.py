@@ -3,6 +3,7 @@ import colors
 from teams import *
 import os
 import exceptions
+import logging
 
 pygame.init()
 
@@ -142,7 +143,7 @@ def draw_who_turn_is(team_got_turn):
     else:
         text = LARGE_FONT.render('Black Player Turn', False, colors.BLACK)
 
-    SCORE_BOARD.blit(text, (SCORE_BOARD.get_width() / 2 - 170, 0))
+    SCORE_BOARD.blit(text, (MIDDLE_HORIZONTAL - text.get_width()/2, 0))
 
 
 def draw_timer(team):
@@ -215,8 +216,9 @@ def draw_eaten_pieces(white_team: Team, black_team: Team):
 
 def draw_winner(team_won):
     text = f"Team won is {team_won}"
+    logging.info(text)
     text_surface = LARGE_FONT.render(text, False, colors.LIGHT_BLUE)
-    screen.blit(text_surface, (SCREEN_WIDTH / 2 - 235, SCREEN_HEIGHT / 2 - 30))
+    screen.blit(text_surface, (MIDDLE_HORIZONTAL - text_surface.get_width()/2, SCREEN_HEIGHT / 2 - text_surface.get_height()/2))
     pygame.display.flip()
 
 
