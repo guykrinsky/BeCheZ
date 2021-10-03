@@ -118,7 +118,7 @@ def check_timers_out_of_time(white_team, black_team):
 
     except exceptions.RunOutOfTime:
         screen.draw_winner(team_won)
-        raise
+        raise exceptions.GameEnd
 
 
 def random_word(length):
