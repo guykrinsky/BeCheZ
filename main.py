@@ -235,22 +235,22 @@ def main():
             quit_from_sever(opening_screen.my_socket)
         return
 
+    timer.set_game_length(game_length)
+    screen.add_squares_to_board()
+    white_team, black_team = get_teams_colors(team_got_turn, team_doesnt_got_turn)
+    place_pieces(white_team, black_team)
+
+    my_team = white_team if is_player_white else black_team
+
+    screen.draw_eaten_pieces(white_team, black_team)
+
+    # Start remote threads.
+    scoreboard_thread = threading.Thread(target=redraw_scoreboard, daemon=True)
+    scoreboard_thread.start()
+    board_thread = threading.Thread(target=update_screen, daemon=True)
+    board_thread.start()
+
     try:
-        timer.set_game_length(game_length)
-        screen.add_squares_to_board()
-        white_team, black_team = get_teams_colors(team_got_turn, team_doesnt_got_turn)
-        place_pieces(white_team, black_team)
-
-        my_team = white_team if is_player_white else black_team
-
-        screen.draw_eaten_pieces(white_team, black_team)
-
-        # Start remote threads.
-        scoreboard_thread = threading.Thread(target=redraw_scoreboard, daemon=True)
-        scoreboard_thread.start()
-        board_thread = threading.Thread(target=update_screen, daemon=True)
-        board_thread.start()
-
         game_loop(game_type, my_team, bot_depth)
 
     except exceptions.UserExitGame:
@@ -265,7 +265,6 @@ def main():
         if my_socket is not None:
             # Already connected to server
             quit_from_sever(my_socket)
-        # TODO: Return to main screen.
         return
 
 

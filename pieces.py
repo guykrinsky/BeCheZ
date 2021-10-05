@@ -12,7 +12,6 @@ class Piece(metaclass=abc.ABCMeta):
 
     def __init__(self, square, team):
         self.image = self.WHITE_IMAGE if team.is_white_team else self.BLACK_IMAGE
-        # TODO: check y hurting quality of image.
         # resize the image
         self.image = pygame.transform.scale(self.image, (int(Square.SIDE * 2/3), int(Square.SIDE * 2/3)))
         self.square = square

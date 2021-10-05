@@ -37,6 +37,9 @@ SPACE_BETWEEN_BOARD_AND_EATEN_PIECES = 100
 
 GAME_LENGTH_OPTION = (1, 3, 5, 10)
 
+LIGHT_SQUARE_COLOR = colors.LIGHT_BLUE
+DARK_SQUARE_COLOR = colors.DARK_BLUE
+
 
 class Square:
     SIDE = BOARD_SIDE/NUMBER_OF_SQUARES
@@ -59,7 +62,7 @@ class Square:
 
     def coloring_square_by_original_color(self):
         if self.color == self.original_color:
-            if self.original_color == colors.DARK_BROWN:
+            if self.original_color == DARK_SQUARE_COLOR:
                 self.color = colors.DARK_RED
             else:
                 self.color = colors.LIGHT_RED
@@ -83,9 +86,9 @@ def add_squares_to_board():
         line_of_squars = []
         for tur in range(NUMBER_OF_SQUARES):
             if tur % 2 == tmp:
-                color = colors.LIGHT_BROWN
+                color = LIGHT_SQUARE_COLOR
             else:
-                color = colors.DARK_BROWN
+                color = DARK_SQUARE_COLOR
 
             current_square = Square(x, y, color, tur, line)
             line_of_squars.append(current_square)
@@ -191,7 +194,6 @@ def color_all_square_to_original_color():
 
 
 def draw_eaten_pieces(white_team: Team, black_team: Team):
-    # TODO: Think if it is OK that pieces would show not in the order they got eaten. you can't see black rect.
     width, height = int(SCREEN_WIDTH - BOARD_SIDE - (SPACE_BETWEEN_BOARD_AND_EATEN_PIECES * 2)),\
                     int(white_team.pieces[0].image.get_height() + 5)
     rect = pygame.Rect(BOARD_SIDE + SPACE_BETWEEN_BOARD_AND_EATEN_PIECES,
@@ -224,6 +226,6 @@ def draw_winner(team_won):
 
 def draw_tie():
     text = f"Tie"
-    text_surface = screen.LARGE_FONT.render(text, False, colors.DARK_GREEN)
-    screen.screen.blit(text_surface, (screen.SCREEN_WIDTH / 2 - 50, screen.SCREEN_HEIGHT / 2 - 30))
+    text_surface = LARGE_FONT.render(text, False, colors.DARK_GREEN)
+    screen.blit(text_surface, (SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT / 2 - 30))
     pygame.display.flip()

@@ -126,11 +126,17 @@ def online_screen(*ignore):
                 if back_button_rect.collidepoint(pygame.mouse.get_pos()):
                     return starting_screen()
 
-                if create_game_rect.collidepoint(pygame.mouse.get_pos()) and len(username) > 0:
-                    create_game()
+                if create_game_rect.collidepoint(pygame.mouse.get_pos()):
+                    if len(username) > 0:
+                        create_game()
+                    else:
+                        pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'error.wav')).play()
 
-                if join_game_rect.collidepoint(pygame.mouse.get_pos()) and len(username) > 0:
-                    join_game_screen()
+                if join_game_rect.collidepoint(pygame.mouse.get_pos()):
+                    if len(username) > 0:
+                        join_game_screen()
+                    else:
+                        pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'error.wav')).play()
 
             if is_active and event.type == pygame.KEYDOWN:
 
@@ -144,7 +150,6 @@ def online_screen(*ignore):
                 draw_text_box(username, text_box, is_active)
 
             # deactivate create and join game rect.
-            # TODO: play frog sound when user clicked on create game when deactive
             if len(username) == 0:
                 pygame.draw.rect(screen, colors.WHITE, create_game_rect)
                 pygame.draw.rect(screen, colors.WHITE, join_game_rect)

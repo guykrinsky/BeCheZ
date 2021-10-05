@@ -122,7 +122,6 @@ def main():
     waiting_players = dict()
     ready_messages = list()
     while True:
-        # TODO: client socket quit option
         rlist, wlist, xlist = select.select([server_socket] + clients_sockets, [server_socket] + clients_sockets, [])
 
         # New client

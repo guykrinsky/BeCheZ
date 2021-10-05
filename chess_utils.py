@@ -17,7 +17,7 @@ class SaveMove:
 
     def __exit__(self, exception_type, exc_value, exc_tb):
         # Move pieces moved to their last position.
-        if exception_type is exceptions.DidntMove:
+        if exception_type is exceptions.MoveError:
             return
 
         self.return_piece_to_pawn_if_needed()
