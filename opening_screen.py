@@ -288,7 +288,7 @@ def connect_to_server():
     if my_socket is not None:
         return
     my_socket = socket.socket()
-    my_socket.connect(("127.0.0.1", protocol.SERVER_PORT))
+    my_socket.connect((protocol.SERVER_IP, protocol.SERVER_PORT))
 
 
 def set_rectangles():

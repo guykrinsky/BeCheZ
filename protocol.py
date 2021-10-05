@@ -12,6 +12,7 @@ ERROR_MESSAGE = "0".encode()
 OK_MESSAGE = "1".encode()
 
 SERVER_PORT = 5555
+SERVER_IP = "127.0.0.1"
 
 
 @dataclass
