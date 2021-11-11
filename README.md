@@ -51,20 +51,6 @@ Since my computer doesn't have an public IP, I can only play against other compu
 Because I run server.py only in my local server, if you want to play an online game, first you have to run server.py.
 After that you need to change the ip of the server in main.py, and than you can play.
 
-I change the opponening screen for the online game, and switch to full screen so the gamplay isn't updated.
 ## Gameplay
 ![Game Play Of The Game](pictures/readme/gameplay.gif)
 
-## Opening Screen
-menu screen:
-
-![starting_screen](pictures/readme/openingscreen_screenshot1.png "starting screen")
-
-online screen:
-![online_screen](pictures/readme/openingscreen_screenshot2.png "online screen")
-
-join game screen:
-![join_game_screen](pictures/readme/openingscreen_screenshot3.png "join game screen")
-
-create game screen:
-![create_game_screen](pictures/readme/openingscreen_screenshot4.png "create game screen")
